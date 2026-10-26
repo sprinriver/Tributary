@@ -5,3 +5,8 @@ artifacts/
 pnpm-lock.yaml
 apps/compute/
 infra/
+# Hand-written kit docs and guardrails keep their layout
+*.md
+.claude/
+uv.lock
+.venv/

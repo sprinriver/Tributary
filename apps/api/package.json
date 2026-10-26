@@ -1,0 +1,19 @@
+{
+  "name": "@tributary/api",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "dev": "node --watch src/server.ts",
+    "start": "node src/server.ts"
+  },
+  "dependencies": {
+    "@tributary/contracts": "workspace:*",
+    "fastify": "5.12.7"
+  },
+  "devDependencies": {
+    "vitest": "5.0.5"
+  }
+}

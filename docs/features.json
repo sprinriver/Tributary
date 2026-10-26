@@ -1,5 +1,5 @@
 [
-  {"id": "OPS-01", "phase": 0, "parity": "new", "description": "Monorepo, local stack, CI and guardrails work: pnpm check green, compose healthy, smoke e2e passes", "verify": "pnpm check && pnpm e2e smoke", "passes": false},
+  {"id": "OPS-01", "phase": 0, "parity": "new", "description": "Monorepo, local stack, CI and guardrails work: pnpm check green, compose healthy, smoke e2e passes", "verify": "pnpm check && pnpm e2e smoke", "passes": true},
   {"id": "CON-01", "phase": 1, "parity": "v1 §3", "description": "Manifest schema built from a template rejects bad wells, unknown species, unit-less doses, duplicate keys and missing required fields with field-level errors", "verify": "pnpm run test:contracts CON-01", "passes": false},
   {"id": "CON-02", "phase": 1, "parity": "new", "description": "Quantity parsing normalises dose and time to SI and rejects unknown units", "verify": "pnpm run test:contracts CON-02", "passes": false},
   {"id": "CON-03", "phase": 1, "parity": "v1 §6", "description": "QuerySpec validation enforces column whitelist and operator x type matrix; OpenAPI and JSON Schema generated", "verify": "pnpm run test:contracts CON-03 && pnpm gen", "passes": false},

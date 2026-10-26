@@ -40,7 +40,7 @@ Definition of done (each item provable by a command or an artifact):
 ---
 
 ## Phase 0 — Scaffold and guardrails
-Status: todo
+Status: done
 Goal: An empty-but-working monorepo where `pnpm check`, the local stack and a smoke e2e all pass, with Claude Code guardrails active.
 Spec: ARCHITECTURE §2–3, §12   Features: OPS-01
 In scope:
@@ -62,12 +62,12 @@ In scope:
 Out of scope: any domain feature.
 Risks: SeaweedFS Iceberg catalog config; tooling that lags TypeScript 6 (check peer ranges, record any pin in an ADR).
 Definition of done:
-- [ ] `pnpm check` exits 0 (paste the last lines)
-- [ ] `docker compose up -d` → `docker compose ps` shows all services healthy
-- [ ] `pnpm e2e smoke` passes; screenshot `artifacts/phase-0/home.png`
-- [ ] An attempted edit to `.env` is blocked by the protect-files hook (show the message)
-- [ ] ARCHITECTURE §3 versions updated; ADR-0014 written (or "no Celeste repo provided" in PROGRESS)
-- [ ] CI workflow present (it goes green on first push — I will check)
+- [x] `pnpm check` exits 0 (paste the last lines)
+- [x] `docker compose up -d` → `docker compose ps` shows all services healthy
+- [x] `pnpm e2e smoke` passes; screenshot `artifacts/phase-0/home.png`
+- [x] An attempted edit to `.env` is blocked by the protect-files hook (show the message)
+- [x] ARCHITECTURE §3 versions updated; ADR-0014 written (or "no Celeste repo provided" in PROGRESS)
+- [x] CI workflow present (it goes green on first push — I will check)
 
 ## Phase 1 — Contracts
 Status: todo

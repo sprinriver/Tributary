@@ -1,0 +1,9 @@
+{
+  "identities": [
+    {
+      "name": "tributary-dev",
+      "credentials": [{ "accessKey": "tributary-dev", "secretKey": "tributary-dev-secret" }],
+      "actions": ["Admin", "Read", "Write", "List", "Tagging"]
+    }
+  ]
+}

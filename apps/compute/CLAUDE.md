@@ -1,0 +1,7 @@
+# apps/compute — Python FastAPI service (uv)
+- Test: `pnpm run test:compute [-k <pattern>]` (pytest, `tests/`; names `test_<FEATURE_ID>_...`)
+- Lint/types: `pnpm run lint:compute` (ruff check + ruff format --check + pyright strict)
+- Dev: `pnpm dev` (port 8000). Synthetic data: `pnpm synth` (Phase 2).
+- Dependencies: only via `uv add` (asks the user); scripts use `uv run --locked` / `uv sync --frozen`.
+- HTTP tests use `httpx.ASGITransport` (see `tests/test_health.py`), not starlette's TestClient.
+- Rules: `.claude/rules/science.md` (cite formulas, guard inputs, seed randomness).
