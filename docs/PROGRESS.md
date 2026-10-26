@@ -82,4 +82,4 @@ Entry template:
 - Gaps and follow-ups: OpenAPI has no `paths` until Phase 3. Plan-reviewer subagent not run (no `/phase-finish`).
   OLS4-backed `TermIndex` in Phase 5. Experiment-scope manifest fields (experiment tab) are typed by the template
   but not validated by `validateManifest`, which covers sample rows only.
-- Commit: (pending)
+- Commit: 2d2fbc8

@@ -70,7 +70,7 @@ Definition of done:
 - [x] CI workflow present (it goes green on first push — I will check)
 
 ## Phase 1 — Contracts
-Status: done
+Status: done (2d2fbc8)
 Goal: `packages/contracts` is the zod source of truth for entities and shared specs and emits OpenAPI 3.1 + JSON Schema.
 Spec: §4, §6.1–6.2, §7.1–7.2   Features: CON-01, CON-02, CON-03
 In scope: zod schemas for every §4 entity; `buildManifestSchema(template, customFields)`; quantity parsing (M, mM, µM/uM, nM, pM; s, min, h, d → SI); well validation per plate format; QuerySpec + RuleGroup + operator × type matrix; ChartSpec + ChartDefinition types (registry empty); dataset contract registry for §6.2 kinds (columns, types, nullability, declared join keys, quality rules); error shape `{code, field, message}`; `pnpm gen` emits `openapi.json` and JSON Schemas; Python pydantic models generated in apps/compute (verify the generator and its licence).
