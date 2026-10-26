@@ -1,0 +1,7 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+IMM-RNA-10-S01	K-562 culture 1	Homo sapiens	K-562	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	1	not applicable	not applicable	not applicable	IMM-RNA-10-S01_R1.fastq.gz	IMM-RNA-10_run01
+IMM-RNA-10-S02	K-562 culture 2	Homo sapiens	K-562	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	2	not applicable	not applicable	not applicable	IMM-RNA-10-S02_R1.fastq.gz	IMM-RNA-10_run02
+IMM-RNA-10-S03	K-562 culture 3	Homo sapiens	K-562	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	3	not applicable	not applicable	not applicable	IMM-RNA-10-S03_R1.fastq.gz	IMM-RNA-10_run03
+IMM-RNA-10-S04	K-562 culture 4	Homo sapiens	K-562	CPD-000003	DMSO	1 µM	24 h	CPD-000003@1 µM	CPD-000003@1 µM	1	not applicable	not applicable	not applicable	IMM-RNA-10-S04_R1.fastq.gz	IMM-RNA-10_run04
+IMM-RNA-10-S05	K-562 culture 5	Homo sapiens	K-562	CPD-000003	DMSO	1 µM	24 h	CPD-000003@1 µM	CPD-000003@1 µM	2	not applicable	not applicable	not applicable	IMM-RNA-10-S05_R1.fastq.gz	IMM-RNA-10_run05
+IMM-RNA-10-S06	K-562 culture 6	Homo sapiens	K-562	CPD-000003	DMSO	1 µM	24 h	CPD-000003@1 µM	CPD-000003@1 µM	3	not applicable	not applicable	not applicable	IMM-RNA-10-S06_R1.fastq.gz	IMM-RNA-10_run06

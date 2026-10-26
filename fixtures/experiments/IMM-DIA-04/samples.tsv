@@ -1,0 +1,13 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+IMM-DIA-04-S01	HEK293 culture 1	Homo sapiens	HEK293	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	1	IMM-DIA-04-P1	A01	not applicable	IMM-DIA-04_run01.raw	IMM-DIA-04_run01
+IMM-DIA-04-S02	HEK293 culture 2	Homo sapiens	HEK293	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	2	IMM-DIA-04-P1	A02	not applicable	IMM-DIA-04_run02.raw	IMM-DIA-04_run02
+IMM-DIA-04-S03	HEK293 culture 3	Homo sapiens	HEK293	CPD-000004	DMSO	1 nM	24 h	CPD-000004@1 nM	CPD-000004@1 nM	1	IMM-DIA-04-P1	A03	not applicable	IMM-DIA-04_run03.raw	IMM-DIA-04_run03
+IMM-DIA-04-S04	HEK293 culture 4	Homo sapiens	HEK293	CPD-000004	DMSO	1 nM	24 h	CPD-000004@1 nM	CPD-000004@1 nM	2	IMM-DIA-04-P1	A04	not applicable	IMM-DIA-04_run04.raw	IMM-DIA-04_run04
+IMM-DIA-04-S05	HEK293 culture 5	Homo sapiens	HEK293	CPD-000004	DMSO	10 nM	24 h	CPD-000004@10 nM	CPD-000004@10 nM	1	IMM-DIA-04-P1	A05	not applicable	IMM-DIA-04_run05.raw	IMM-DIA-04_run05
+IMM-DIA-04-S06	HEK293 culture 6	Homo sapiens	HEK293	CPD-000004	DMSO	10 nM	24 h	CPD-000004@10 nM	CPD-000004@10 nM	2	IMM-DIA-04-P1	A06	not applicable	IMM-DIA-04_run06.raw	IMM-DIA-04_run06
+IMM-DIA-04-S07	HEK293 culture 7	Homo sapiens	HEK293	CPD-000004	DMSO	100 nM	24 h	CPD-000004@100 nM	CPD-000004@100 nM	1	IMM-DIA-04-P1	A07	not applicable	IMM-DIA-04_run07.raw	IMM-DIA-04_run07
+IMM-DIA-04-S08	HEK293 culture 8	Homo sapiens	HEK293	CPD-000004	DMSO	100 nM	24 h	CPD-000004@100 nM	CPD-000004@100 nM	2	IMM-DIA-04-P1	A08	not applicable	IMM-DIA-04_run08.raw	IMM-DIA-04_run08
+IMM-DIA-04-S09	HEK293 culture 9	Homo sapiens	HEK293	CPD-000004	DMSO	1 µM	24 h	CPD-000004@1 µM	CPD-000004@1 µM	1	IMM-DIA-04-P1	A09	not applicable	IMM-DIA-04_run09.raw	IMM-DIA-04_run09
+IMM-DIA-04-S10	HEK293 culture 10	Homo sapiens	HEK293	CPD-000004	DMSO	1 µM	24 h	CPD-000004@1 µM	CPD-000004@1 µM	2	IMM-DIA-04-P1	A10	not applicable	IMM-DIA-04_run10.raw	IMM-DIA-04_run10
+IMM-DIA-04-S11	HEK293 culture 11	Homo sapiens	HEK293	CPD-000004	DMSO	10 µM	24 h	CPD-000004@10 µM	CPD-000004@10 µM	1	IMM-DIA-04-P1	A11	not applicable	IMM-DIA-04_run11.raw	IMM-DIA-04_run11
+IMM-DIA-04-S12	HEK293 culture 12	Homo sapiens	HEK293	CPD-000004	DMSO	10 µM	24 h	CPD-000004@10 µM	CPD-000004@10 µM	2	IMM-DIA-04-P1	A12	not applicable	IMM-DIA-04_run12.raw	IMM-DIA-04_run12

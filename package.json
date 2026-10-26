@@ -22,7 +22,7 @@
     "lint:compute": "cd apps/compute && uv run --locked ruff check . && uv run --locked ruff format --check . && uv run --locked pyright",
     "e2e": "node scripts/e2e-pattern.mjs",
     "db:migrate": "node packages/db/scripts/migrate.ts",
-    "db:seed": "node -e \"console.log('db:seed: nothing to seed yet (Phase 2)')\"",
+    "db:seed": "node packages/db/scripts/seed.ts",
     "gen": "node packages/contracts/scripts/gen.ts && node packages/db/scripts/gen-types.ts && pnpm run gen:python",
     "synth": "cd apps/compute && uv run --locked python -m tributary_compute.synth",
     "bench:query": "node -e \"console.log('bench:query: placeholder until Phase 12')\"",

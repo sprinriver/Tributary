@@ -1,0 +1,11 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+ONC-TMT-07-S01	A-549 culture 1	Homo sapiens	A-549	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	1	ONC-TMT-07-P1	A01	TMT126	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S02	A-549 culture 2	Homo sapiens	A-549	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	2	ONC-TMT-07-P1	A02	TMT127N	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S03	A-549 culture 3	Homo sapiens	A-549	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	3	ONC-TMT-07-P1	A03	TMT127C	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S04	A-549 culture 4	Homo sapiens	A-549	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	4	ONC-TMT-07-P1	A04	TMT128N	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S05	A-549 culture 5	Homo sapiens	A-549	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	5	ONC-TMT-07-P1	A05	TMT128C	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S06	A-549 culture 6	Homo sapiens	A-549	CPD-000007	DMSO	1 µM	24 h	CPD-000007@1 µM	CPD-000007@1 µM	1	ONC-TMT-07-P1	A06	TMT129N	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S07	A-549 culture 7	Homo sapiens	A-549	CPD-000007	DMSO	1 µM	24 h	CPD-000007@1 µM	CPD-000007@1 µM	2	ONC-TMT-07-P1	A07	TMT129C	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S08	A-549 culture 8	Homo sapiens	A-549	CPD-000007	DMSO	1 µM	24 h	CPD-000007@1 µM	CPD-000007@1 µM	3	ONC-TMT-07-P1	A08	TMT130N	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S09	A-549 culture 9	Homo sapiens	A-549	CPD-000007	DMSO	1 µM	24 h	CPD-000007@1 µM	CPD-000007@1 µM	4	ONC-TMT-07-P1	A09	TMT130C	ONC-TMT-07_F01.raw	ONC-TMT-07_F01
+ONC-TMT-07-S10	A-549 culture 10	Homo sapiens	A-549	CPD-000007	DMSO	1 µM	24 h	CPD-000007@1 µM	CPD-000007@1 µM	5	ONC-TMT-07-P1	A10	TMT131	ONC-TMT-07_F01.raw	ONC-TMT-07_F01

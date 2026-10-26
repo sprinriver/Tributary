@@ -1,0 +1,284 @@
+[
+  {
+    "assay_type": "proteomics_dia",
+    "contrasts": [],
+    "description": "Synthetic proteomics_dia dose series with CPD-000001 in HeLa cells.",
+    "design": "dose_series",
+    "experiment_date": "2026-03-02",
+    "key": "ONC-DIA-01",
+    "manifest": "samples.tsv",
+    "name": "ONC-DIA-01: dose series in HeLa",
+    "outputs": [
+      "report.pg_matrix.tsv",
+      "curves.txt"
+    ],
+    "program_code": "ONC",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "proteomics_dia",
+    "contrasts": [],
+    "description": "Synthetic proteomics_dia dose series with CPD-000002 in A-549 cells.",
+    "design": "dose_series",
+    "experiment_date": "2026-03-09",
+    "key": "ONC-DIA-02",
+    "manifest": "samples.tsv",
+    "name": "ONC-DIA-02: dose series in A-549",
+    "outputs": [
+      "report.pg_matrix.tsv",
+      "curves.txt"
+    ],
+    "program_code": "ONC",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "proteomics_dia",
+    "contrasts": [],
+    "description": "Synthetic proteomics_dia dose series with CPD-000003 in K-562 cells.",
+    "design": "dose_series",
+    "experiment_date": "2026-03-16",
+    "key": "IMM-DIA-03",
+    "manifest": "samples.tsv",
+    "name": "IMM-DIA-03: dose series in K-562",
+    "outputs": [
+      "report.pg_matrix.tsv",
+      "curves.txt"
+    ],
+    "program_code": "IMM",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "proteomics_dia",
+    "contrasts": [],
+    "description": "Synthetic proteomics_dia dose series with CPD-000004 in HEK293 cells.",
+    "design": "dose_series",
+    "experiment_date": "2026-03-23",
+    "key": "IMM-DIA-04",
+    "manifest": "samples.tsv",
+    "name": "IMM-DIA-04: dose series in HEK293",
+    "outputs": [
+      "report.pg_matrix.tsv",
+      "curves.txt"
+    ],
+    "program_code": "IMM",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "proteomics_dia",
+    "contrasts": [
+      {
+        "denominator": "DMSO",
+        "label": "CPD-000005@1 µM vs DMSO",
+        "numerator": "CPD-000005@1 µM"
+      }
+    ],
+    "description": "Synthetic proteomics_dia contrast with CPD-000005 in MCF-7 cells.",
+    "design": "contrast",
+    "experiment_date": "2026-04-06",
+    "key": "ONC-DIA-05",
+    "manifest": "samples.tsv",
+    "name": "ONC-DIA-05: contrast in MCF-7",
+    "outputs": [
+      "report.pg_matrix.tsv",
+      "toptable.tsv"
+    ],
+    "program_code": "ONC",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "proteomics_dia",
+    "contrasts": [
+      {
+        "denominator": "DMSO",
+        "label": "CPD-000006@1 µM vs DMSO",
+        "numerator": "CPD-000006@1 µM"
+      }
+    ],
+    "description": "Synthetic proteomics_dia contrast with CPD-000006 in K-562 cells.",
+    "design": "contrast",
+    "experiment_date": "2026-04-13",
+    "key": "IMM-DIA-06",
+    "manifest": "samples.tsv",
+    "name": "IMM-DIA-06: contrast in K-562",
+    "outputs": [
+      "report.pg_matrix.tsv",
+      "toptable.tsv"
+    ],
+    "program_code": "IMM",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "proteomics_tmt",
+    "contrasts": [
+      {
+        "denominator": "DMSO",
+        "label": "CPD-000007@1 µM vs DMSO",
+        "numerator": "CPD-000007@1 µM"
+      }
+    ],
+    "description": "Synthetic proteomics_tmt contrast with CPD-000007 in A-549 cells.",
+    "design": "contrast",
+    "experiment_date": "2026-05-04",
+    "key": "ONC-TMT-07",
+    "manifest": "samples.tsv",
+    "name": "ONC-TMT-07: contrast in A-549",
+    "outputs": [
+      "toptable.tsv"
+    ],
+    "program_code": "ONC",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "proteomics_tmt",
+    "contrasts": [
+      {
+        "denominator": "DMSO",
+        "label": "CPD-000008@1 µM vs DMSO",
+        "numerator": "CPD-000008@1 µM"
+      }
+    ],
+    "description": "Synthetic proteomics_tmt contrast with CPD-000008 in HEK293 cells.",
+    "design": "contrast",
+    "experiment_date": "2026-05-11",
+    "key": "IMM-TMT-08",
+    "manifest": "samples.tsv",
+    "name": "IMM-TMT-08: contrast in HEK293",
+    "outputs": [
+      "toptable.tsv"
+    ],
+    "program_code": "IMM",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "rnaseq",
+    "contrasts": [
+      {
+        "denominator": "DMSO",
+        "label": "CPD-000001@1 µM vs DMSO",
+        "numerator": "CPD-000001@1 µM"
+      }
+    ],
+    "description": "Synthetic rnaseq contrast with CPD-000001 in HeLa cells.",
+    "design": "contrast",
+    "experiment_date": "2026-06-01",
+    "key": "ONC-RNA-09",
+    "manifest": "samples.tsv",
+    "name": "ONC-RNA-09: contrast in HeLa",
+    "outputs": [
+      "salmon.merged.gene_counts.tsv"
+    ],
+    "program_code": "ONC",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "rnaseq",
+    "contrasts": [
+      {
+        "denominator": "DMSO",
+        "label": "CPD-000003@1 µM vs DMSO",
+        "numerator": "CPD-000003@1 µM"
+      }
+    ],
+    "description": "Synthetic rnaseq contrast with CPD-000003 in K-562 cells.",
+    "design": "contrast",
+    "experiment_date": "2026-06-08",
+    "key": "IMM-RNA-10",
+    "manifest": "samples.tsv",
+    "name": "IMM-RNA-10: contrast in K-562",
+    "outputs": [
+      "salmon.merged.gene_counts.tsv"
+    ],
+    "program_code": "IMM",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "crispr_screen",
+    "contrasts": [
+      {
+        "denominator": "T0",
+        "label": "T14 vs T0",
+        "numerator": "T14"
+      }
+    ],
+    "description": "Synthetic crispr_screen screen in A-549 cells.",
+    "design": "screen",
+    "experiment_date": "2026-07-06",
+    "key": "ONC-CRI-11",
+    "manifest": "samples.tsv",
+    "name": "ONC-CRI-11: screen in A-549",
+    "outputs": [
+      "gene_summary.txt"
+    ],
+    "program_code": "ONC",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  },
+  {
+    "assay_type": "crispr_screen",
+    "contrasts": [
+      {
+        "denominator": "T0",
+        "label": "T14 vs T0",
+        "numerator": "T14"
+      }
+    ],
+    "description": "Synthetic crispr_screen screen in K-562 cells.",
+    "design": "screen",
+    "experiment_date": "2026-07-13",
+    "key": "IMM-CRI-12",
+    "manifest": "samples.tsv",
+    "name": "IMM-CRI-12: screen in K-562",
+    "outputs": [
+      "gene_summary.txt"
+    ],
+    "program_code": "IMM",
+    "species": {
+      "id": "NCBITaxon:9606",
+      "label": "Homo sapiens"
+    },
+    "template_version": "1.0.0"
+  }
+]

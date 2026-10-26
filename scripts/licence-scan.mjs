@@ -21,6 +21,7 @@ const ALLOWED = new Set([
   'CC0-1.0',
   'CC-BY-4.0', // data-only packages such as caniuse-lite
   'Unlicense',
+  'Zlib',
   'Python-2.0',
   'PSF-2.0',
   // Weak, file-level copyleft: fine to depend on unmodified; never copy its source into ours.
@@ -28,11 +29,13 @@ const ALLOWED = new Set([
   'Mozilla Public License 2.0 (MPL 2.0)',
 ]);
 
-/** An "A OR B" expression passes when any alternative is allowed. */
+/** "A OR B" passes when any alternative is allowed; "A AND B" only when every part is (SPDX expressions). */
 function isAllowed(licence) {
   const trimmed = licence.trim();
   const cleaned = trimmed.startsWith('(') && trimmed.endsWith(')') ? trimmed.slice(1, -1) : trimmed;
-  return cleaned.split(/\s+OR\s+|;\s*/).some((part) => ALLOWED.has(part.trim()));
+  return cleaned
+    .split(/\s+OR\s+|;\s*/)
+    .some((alternative) => alternative.split(/\s+AND\s+/).every((part) => ALLOWED.has(part.trim())));
 }
 
 const failures = [];

@@ -9,13 +9,16 @@ export interface SeedTerm extends OntologyTerm {
   ontology: string;
 }
 
-/** In-memory index: matches a term by CURIE or label, ignoring case and surrounding spaces. */
+/** In-memory index: matches a term by CURIE or label, ignoring case (also of the ontology prefix) and spaces. */
 export function createStaticTermIndex(terms: readonly SeedTerm[]): TermIndex {
   const byKey = new Map<string, OntologyTerm>();
   for (const { ontology, id, label } of terms) {
-    for (const key of [id, label]) byKey.set(`${ontology}|${key.trim().toLowerCase()}`, { id, label });
+    for (const key of [id, label])
+      byKey.set(`${ontology.toLowerCase()}|${key.trim().toLowerCase()}`, { id, label });
   }
-  return { resolve: (ontology, value) => byKey.get(`${ontology}|${value.trim().toLowerCase()}`) };
+  return {
+    resolve: (ontology, value) => byKey.get(`${ontology.toLowerCase()}|${value.trim().toLowerCase()}`),
+  };
 }
 
 /**
@@ -27,9 +30,9 @@ export const SEED_TERMS: readonly SeedTerm[] = [
   { ontology: 'NCBITaxon', id: 'NCBITaxon:10090', label: 'Mus musculus' },
   { ontology: 'NCBITaxon', id: 'NCBITaxon:10116', label: 'Rattus norvegicus' },
   { ontology: 'NCBITaxon', id: 'NCBITaxon:9544', label: 'Macaca mulatta' },
-  { ontology: 'Cellosaurus', id: 'cellosaurus:CVCL_0030', label: 'HeLa' },
-  { ontology: 'Cellosaurus', id: 'cellosaurus:CVCL_0023', label: 'A-549' },
-  { ontology: 'Cellosaurus', id: 'cellosaurus:CVCL_0045', label: 'HEK293' },
-  { ontology: 'Cellosaurus', id: 'cellosaurus:CVCL_0004', label: 'K-562' },
-  { ontology: 'Cellosaurus', id: 'cellosaurus:CVCL_0031', label: 'MCF-7' },
+  { ontology: 'cellosaurus', id: 'cellosaurus:CVCL_0030', label: 'HeLa' },
+  { ontology: 'cellosaurus', id: 'cellosaurus:CVCL_0023', label: 'A-549' },
+  { ontology: 'cellosaurus', id: 'cellosaurus:CVCL_0045', label: 'HEK293' },
+  { ontology: 'cellosaurus', id: 'cellosaurus:CVCL_0004', label: 'K-562' },
+  { ontology: 'cellosaurus', id: 'cellosaurus:CVCL_0031', label: 'MCF-7' },
 ];

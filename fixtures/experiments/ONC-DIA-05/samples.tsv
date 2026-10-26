@@ -1,0 +1,7 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+ONC-DIA-05-S01	MCF-7 culture 1	Homo sapiens	MCF-7	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	1	ONC-DIA-05-P1	A01	not applicable	ONC-DIA-05_run01.raw	ONC-DIA-05_run01
+ONC-DIA-05-S02	MCF-7 culture 2	Homo sapiens	MCF-7	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	2	ONC-DIA-05-P1	A02	not applicable	ONC-DIA-05_run02.raw	ONC-DIA-05_run02
+ONC-DIA-05-S03	MCF-7 culture 3	Homo sapiens	MCF-7	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	3	ONC-DIA-05-P1	A03	not applicable	ONC-DIA-05_run03.raw	ONC-DIA-05_run03
+ONC-DIA-05-S04	MCF-7 culture 4	Homo sapiens	MCF-7	CPD-000005	DMSO	1 µM	24 h	CPD-000005@1 µM	CPD-000005@1 µM	1	ONC-DIA-05-P1	A04	not applicable	ONC-DIA-05_run04.raw	ONC-DIA-05_run04
+ONC-DIA-05-S05	MCF-7 culture 5	Homo sapiens	MCF-7	CPD-000005	DMSO	1 µM	24 h	CPD-000005@1 µM	CPD-000005@1 µM	2	ONC-DIA-05-P1	A05	not applicable	ONC-DIA-05_run05.raw	ONC-DIA-05_run05
+ONC-DIA-05-S06	MCF-7 culture 6	Homo sapiens	MCF-7	CPD-000005	DMSO	1 µM	24 h	CPD-000005@1 µM	CPD-000005@1 µM	3	ONC-DIA-05-P1	A06	not applicable	ONC-DIA-05_run06.raw	ONC-DIA-05_run06

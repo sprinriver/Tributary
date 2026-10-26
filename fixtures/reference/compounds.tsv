@@ -1,0 +1,9 @@
+compound_id	batch_id	program_code	name	smiles	inchikey
+CPD-000001	B01	ONC	Demo compound 1	Cc1ccc(NC(=O)c2ccccc2)cc1	
+CPD-000002	B01	IMM	Demo compound 2	O=C(Nc1ccccc1)c1ccncc1	
+CPD-000003	B01	ONC	Demo compound 3	COc1ccc(cc1)S(N)(=O)=O	
+CPD-000004	B01	IMM	Demo compound 4	c1ccc2ncccc2c1	
+CPD-000005	B01	ONC	Demo compound 5	Clc1ccc(cc1)C(=O)N1CCOCC1	
+CPD-000006	B01	IMM	Demo compound 6	OC(=O)c1ccc(cc1)C(F)(F)F	
+CPD-000007	B01	ONC	Demo compound 7	Nc1ncnc2[nH]cnc12	
+CPD-000008	B01	IMM	Demo compound 8	CC(C)Nc1nccc(n1)-c1ccccc1	

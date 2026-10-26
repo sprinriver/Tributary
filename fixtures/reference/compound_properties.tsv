@@ -1,0 +1,33 @@
+compound_id	batch_id	program_code	property	value	unit	qualifier	assay_category	assay_name
+CPD-000001	B01	ONC	logD7.4	4.233		=	physchem	Shake-flask logD, pH 7.4
+CPD-000001	B01	ONC	kinetic_solubility	74.63	µM	=	ADME	Kinetic solubility, PBS pH 7.4
+CPD-000001	B01	ONC	Papp_A_B	22.69	1e-6 cm/s	=	ADME	Caco-2 permeability, apical to basolateral
+CPD-000001	B01	ONC	CLint	46.76	µL/min/mg	=	ADME	Human liver microsome intrinsic clearance
+CPD-000002	B01	IMM	logD7.4	2.019		=	physchem	Shake-flask logD, pH 7.4
+CPD-000002	B01	IMM	kinetic_solubility	70.14	µM	=	ADME	Kinetic solubility, PBS pH 7.4
+CPD-000002	B01	IMM	Papp_A_B	1.705	1e-6 cm/s	=	ADME	Caco-2 permeability, apical to basolateral
+CPD-000002	B01	IMM	CLint	99.22	µL/min/mg	=	ADME	Human liver microsome intrinsic clearance
+CPD-000003	B01	ONC	logD7.4	0.5291		=	physchem	Shake-flask logD, pH 7.4
+CPD-000003	B01	ONC	kinetic_solubility	78.51	µM	=	ADME	Kinetic solubility, PBS pH 7.4
+CPD-000003	B01	ONC	Papp_A_B	9.57	1e-6 cm/s	=	ADME	Caco-2 permeability, apical to basolateral
+CPD-000003	B01	ONC	CLint	103.8	µL/min/mg	=	ADME	Human liver microsome intrinsic clearance
+CPD-000004	B01	IMM	logD7.4	2.314		=	physchem	Shake-flask logD, pH 7.4
+CPD-000004	B01	IMM	kinetic_solubility	56.49	µM	=	ADME	Kinetic solubility, PBS pH 7.4
+CPD-000004	B01	IMM	Papp_A_B	29.65	1e-6 cm/s	=	ADME	Caco-2 permeability, apical to basolateral
+CPD-000004	B01	IMM	CLint	120.8	µL/min/mg	=	ADME	Human liver microsome intrinsic clearance
+CPD-000005	B01	ONC	logD7.4	0.9749		=	physchem	Shake-flask logD, pH 7.4
+CPD-000005	B01	ONC	kinetic_solubility	33.47	µM	=	ADME	Kinetic solubility, PBS pH 7.4
+CPD-000005	B01	ONC	Papp_A_B	16.64	1e-6 cm/s	=	ADME	Caco-2 permeability, apical to basolateral
+CPD-000005	B01	ONC	CLint	72.46	µL/min/mg	=	ADME	Human liver microsome intrinsic clearance
+CPD-000006	B01	IMM	logD7.4	1.861		=	physchem	Shake-flask logD, pH 7.4
+CPD-000006	B01	IMM	kinetic_solubility	79.31	µM	=	ADME	Kinetic solubility, PBS pH 7.4
+CPD-000006	B01	IMM	Papp_A_B	10.01	1e-6 cm/s	=	ADME	Caco-2 permeability, apical to basolateral
+CPD-000006	B01	IMM	CLint	66.31	µL/min/mg	=	ADME	Human liver microsome intrinsic clearance
+CPD-000007	B01	ONC	logD7.4	2.591		=	physchem	Shake-flask logD, pH 7.4
+CPD-000007	B01	ONC	kinetic_solubility	40.8	µM	=	ADME	Kinetic solubility, PBS pH 7.4
+CPD-000007	B01	ONC	Papp_A_B	6.517	1e-6 cm/s	=	ADME	Caco-2 permeability, apical to basolateral
+CPD-000007	B01	ONC	CLint	99.32	µL/min/mg	=	ADME	Human liver microsome intrinsic clearance
+CPD-000008	B01	IMM	logD7.4	0.3333		=	physchem	Shake-flask logD, pH 7.4
+CPD-000008	B01	IMM	kinetic_solubility	200	µM	>	ADME	Kinetic solubility, PBS pH 7.4
+CPD-000008	B01	IMM	Papp_A_B	1.454	1e-6 cm/s	=	ADME	Caco-2 permeability, apical to basolateral
+CPD-000008	B01	IMM	CLint	141	µL/min/mg	=	ADME	Human liver microsome intrinsic clearance

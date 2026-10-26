@@ -76,9 +76,9 @@ One deployment per customer AWS account (single-tenant). Four deployables plus s
 | Query engine | DuckDB via `@duckdb/node-api` | 2.0.x LTS | Same DuckDB version in Python. Consider waiting for 2.0.1. **Pinned:** `@duckdb/node-api` 2.0.0-r.1 (Python duckdb to match when added). |
 | Table format | Apache Iceberg in Amazon S3 Tables | Iceberg 1.12 | Local: SeaweedFS Iceberg REST catalog. |
 | Auth | openid-client + jose; CASL | 6.8.8 / 6.2.13; 7.0.2 | BFF sessions. |
-| Python compute | FastAPI, pydantic, scipy, statsmodels, scikit-learn, numpy, pandas/polars, pyarrow, duckdb, sdrf-pipelines (pydeseq2 optional) | 0.162 / 2.14 / 1.18 / 0.15 / 1.9 / 2.5 / 3.1 / 2.0 / 26 / 2.0 / 0.1.6 (0.5.4) | All permissive. No inmoose: it is GPL-3.0-or-later (PyPI, checked 2026-10-26). |
+| Python compute | FastAPI, pydantic, scipy, statsmodels, scikit-learn, numpy, pandas/polars, pyarrow, duckdb, sdrf-pipelines (pydeseq2 optional) | 0.162 / 2.14 / 1.18 / 0.15 / 1.9 / 2.5 / 3.1 / 2.0 / 26 / 2.0 / 0.1.6 (0.5.4) | All permissive. **Pinned so far:** numpy 2.5.4 (`pnpm synth`). No inmoose: it is GPL-3.0-or-later (PyPI, checked 2026-10-26). |
 | Testing | Vitest 5, Testcontainers 12, Playwright 1.64, pytest | 5.0.5 / 12.2.1 / 1.64.1 | **Pinned:** testcontainers + @testcontainers/postgresql 12.2.1 (install scripts of ssh2, cpu-features, protobufjs denied in pnpm-workspace.yaml), vitest 5.0.5, @playwright/test 1.64.1, @playwright/mcp 0.0.83, pytest 9.1.1, httpx 0.28.1 (ASGI transport for tests), ruff 0.17.2, pyright 1.1.414, fastapi 0.162.0, uvicorn 0.54.0, pip-licenses 5.5.5. Integration tests use real Postgres/SeaweedFS containers, not mocks. |
-| AWS SDK | @aws-sdk/client-* v3 | 3.1156.x | omics, batch, s3, sqs, cloudwatch-logs, s3tables. |
+| AWS SDK | @aws-sdk/client-* v3 | 3.1156.x | omics, batch, s3, sqs, cloudwatch-logs, s3tables. **Pinned:** @aws-sdk/client-s3 3.1156.0 (packages/db seed staging). |
 | AI (optional) | Vercel AI SDK (in-app assistant), MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), Anthropic/Bedrock providers | verify | Claude Agent SDK only for sandboxed batch analysis (later). |
 | Observability | pino, `@fastify/otel`, OpenTelemetry SDK | 0.21.4 / 0.300.0 | `@opentelemetry/instrumentation-fastify` is deprecated. |
 | IaC | Terraform (OpenTofu-compatible HCL) | 1.15–1.17 | CDKTF is archived — don't use. |

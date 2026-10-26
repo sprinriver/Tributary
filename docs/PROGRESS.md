@@ -114,3 +114,38 @@ Entry template:
 - Gaps and follow-ups: Phase 2b (synth + seed). Embedding dimension fixed in Phase 17 (needs a new migration).
   The API's login user and its grant of `tributary_app` are per-environment (Phase 3 / Terraform).
 - Commit: 6e044cc
+
+## 2026-10-26 — Phase 2b: Synthetic data and seed — done
+- Built: `pnpm synth` (apps/compute `tributary_compute/synth`, seed 20261026) → `fixtures/` (36 files, 464 KB):
+  2 programs, 12 experiments (4 DIA dose series, 2 DIA contrasts, 2 TMT10plex, 2 RNA-seq, 2 CRISPR screens),
+  manifests in the seed template's columns, DIA-NN-like `report.pg_matrix.tsv`, CurveCurator-like `curves.txt`,
+  limma-like `toptable.tsv`, nf-core/rnaseq-like `salmon.merged.gene_counts.tsv`, MAGeCK-like `gene_summary.txt`,
+  compounds `CPD-000001…8`, ADME/physchem properties, target annotations; generated `fixtures/README.md`.
+  `pnpm db:seed` (packages/db `seedDatabase`): validates manifests with `validateManifest`, then in one transaction
+  loads assay types, the seed template + 21 field defs, programs, published experiment versions with samples
+  (characteristics / factors / technical jsonb) and contrasts, file records, compounds, properties, targets and
+  audit rows; stages files to SeaweedFS (`tributary-raw`, ARCHITECTURE §5 layout); prints row counts.
+- Decisions (and why):
+  - Column names verified where possible: CurveCurator 0.6.0 source (Apache-2.0) and its 4PL model
+    (front = low-dose plateau); DIA-NN README confirms pg_matrix exists and omits zeros, but not the header —
+    header recorded as an assumption for the Phase 8 importer's SOURCE.md. limma, MAGeCK and nf-core/rnaseq
+    headers from their documentation, to be re-verified in Phase 9.
+  - Statistics are simulated around known true effects, not fitted: normal-approximation p-values, BH-adjusted;
+    limma `B` and MAGeCK RRA scores are not simulated (B omitted; score = p). Stated in fixtures/README.md.
+  - Real proteins only with public UniProt accessions/HGNC symbols I could state with confidence; everything else
+    uses `SYNP*` / `SYNTH*` / `SYNG*` identifiers that exist in no public database. InChIKeys left empty.
+  - One numpy PCG64 stream per output (seed + crc32 of its name), so adding an output never changes others.
+  - Seed is idempotent by design: skipped when the demo programs exist; all-or-nothing transaction.
+  - Fixed a Phase 1 bug the seed found: the template's `cell_line` ontology is `cellosaurus` but seed terms said
+    `Cellosaurus`, so no cell line resolved. Term index now ignores ontology-prefix case; regression tests added
+    in `packages/contracts/src/ontology.test.ts`.
+  - licence:scan understands SPDX `AND` (every part allowed) and allows Zlib (numpy's licence expression).
+- Dependencies added (approved): numpy 2.5.4 (apps/compute), @aws-sdk/client-s3 3.1156.0 (packages/db).
+- Evidence: `pnpm check` ✓ · `pnpm run test:compute -k SYN_01` ✓ (7) · `pnpm run test:db SYN-01` ✓ (2) ·
+  `pnpm synth` → 36 files, identical on rerun · `pnpm db:seed` on the local stack → app_user 1, assay_type 6,
+  metadata_template 1, metadata_field_def 21, program 2, experiment 12, experiment_version 12, sample 100,
+  contrast 8, file_object 30, compound 8, compound_property 32, target_annotation 34, audit_log 28; second run
+  identical; 30 objects in `tributary-raw` · `pnpm run licence:scan` ✓ (187) · acceptance tests untouched.
+- Gaps and follow-ups: importers (Phase 8) turn the fixture outputs into dataset releases; fixture headers must be
+  checked against each tool's SOURCE.md then. Plan-reviewer / omics-reviewer subagents not run.
+- Commit: (pending)

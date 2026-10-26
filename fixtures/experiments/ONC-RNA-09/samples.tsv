@@ -1,0 +1,7 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+ONC-RNA-09-S01	HeLa culture 1	Homo sapiens	HeLa	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	1	not applicable	not applicable	not applicable	ONC-RNA-09-S01_R1.fastq.gz	ONC-RNA-09_run01
+ONC-RNA-09-S02	HeLa culture 2	Homo sapiens	HeLa	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	2	not applicable	not applicable	not applicable	ONC-RNA-09-S02_R1.fastq.gz	ONC-RNA-09_run02
+ONC-RNA-09-S03	HeLa culture 3	Homo sapiens	HeLa	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	3	not applicable	not applicable	not applicable	ONC-RNA-09-S03_R1.fastq.gz	ONC-RNA-09_run03
+ONC-RNA-09-S04	HeLa culture 4	Homo sapiens	HeLa	CPD-000001	DMSO	1 µM	24 h	CPD-000001@1 µM	CPD-000001@1 µM	1	not applicable	not applicable	not applicable	ONC-RNA-09-S04_R1.fastq.gz	ONC-RNA-09_run04
+ONC-RNA-09-S05	HeLa culture 5	Homo sapiens	HeLa	CPD-000001	DMSO	1 µM	24 h	CPD-000001@1 µM	CPD-000001@1 µM	2	not applicable	not applicable	not applicable	ONC-RNA-09-S05_R1.fastq.gz	ONC-RNA-09_run05
+ONC-RNA-09-S06	HeLa culture 6	Homo sapiens	HeLa	CPD-000001	DMSO	1 µM	24 h	CPD-000001@1 µM	CPD-000001@1 µM	3	not applicable	not applicable	not applicable	ONC-RNA-09-S06_R1.fastq.gz	ONC-RNA-09_run06

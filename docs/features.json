@@ -5,7 +5,7 @@
   {"id": "CON-03", "phase": 1, "parity": "v1 §6", "description": "QuerySpec validation enforces column whitelist and operator x type matrix; OpenAPI and JSON Schema generated", "verify": "pnpm run test:contracts CON-03 && pnpm gen", "passes": true},
   {"id": "DB-01", "phase": "2a", "parity": "new", "description": "Migrations apply up/down/up cleanly on a fresh database", "verify": "pnpm run test:db DB-01", "passes": true},
   {"id": "DB-02", "phase": "2a", "parity": "v1 §4", "description": "Published experiment versions and dataset releases are immutable; audit_log is append-only", "verify": "pnpm run test:db DB-02", "passes": true},
-  {"id": "SYN-01", "phase": "2b", "parity": "new", "description": "Synthetic demo corpus is deterministic for a given seed and covers DIA, TMT, RNA-seq, CRISPR, compounds and ADME", "verify": "pnpm run test:compute -k SYN_01", "passes": false},
+  {"id": "SYN-01", "phase": "2b", "parity": "new", "description": "Synthetic demo corpus is deterministic for a given seed and covers DIA, TMT, RNA-seq, CRISPR, compounds and ADME", "verify": "pnpm run test:compute -k SYN_01", "passes": true},
   {"id": "AUTH-01", "phase": 3, "parity": "v1 §1", "description": "SSO login/logout through OIDC (Keycloak locally) with user name and email in the top bar", "verify": "pnpm e2e AUTH-01", "passes": false},
   {"id": "AUTH-02", "phase": 3, "parity": "new", "description": "Per-program roles enforced on every route; cross-program access denied; PATs scoped and revocable", "verify": "pnpm run test:api AUTH-02", "passes": false},
   {"id": "AUD-01", "phase": 3, "parity": "new", "description": "Every mutation writes an audit row with actor, before/after and reason", "verify": "pnpm run test:api AUD-01", "passes": false},

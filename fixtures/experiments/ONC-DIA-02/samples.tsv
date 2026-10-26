@@ -1,0 +1,13 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+ONC-DIA-02-S01	A-549 culture 1	Homo sapiens	A-549	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	1	ONC-DIA-02-P1	A01	not applicable	ONC-DIA-02_run01.raw	ONC-DIA-02_run01
+ONC-DIA-02-S02	A-549 culture 2	Homo sapiens	A-549	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	2	ONC-DIA-02-P1	A02	not applicable	ONC-DIA-02_run02.raw	ONC-DIA-02_run02
+ONC-DIA-02-S03	A-549 culture 3	Homo sapiens	A-549	CPD-000002	DMSO	1 nM	24 h	CPD-000002@1 nM	CPD-000002@1 nM	1	ONC-DIA-02-P1	A03	not applicable	ONC-DIA-02_run03.raw	ONC-DIA-02_run03
+ONC-DIA-02-S04	A-549 culture 4	Homo sapiens	A-549	CPD-000002	DMSO	1 nM	24 h	CPD-000002@1 nM	CPD-000002@1 nM	2	ONC-DIA-02-P1	A04	not applicable	ONC-DIA-02_run04.raw	ONC-DIA-02_run04
+ONC-DIA-02-S05	A-549 culture 5	Homo sapiens	A-549	CPD-000002	DMSO	10 nM	24 h	CPD-000002@10 nM	CPD-000002@10 nM	1	ONC-DIA-02-P1	A05	not applicable	ONC-DIA-02_run05.raw	ONC-DIA-02_run05
+ONC-DIA-02-S06	A-549 culture 6	Homo sapiens	A-549	CPD-000002	DMSO	10 nM	24 h	CPD-000002@10 nM	CPD-000002@10 nM	2	ONC-DIA-02-P1	A06	not applicable	ONC-DIA-02_run06.raw	ONC-DIA-02_run06
+ONC-DIA-02-S07	A-549 culture 7	Homo sapiens	A-549	CPD-000002	DMSO	100 nM	24 h	CPD-000002@100 nM	CPD-000002@100 nM	1	ONC-DIA-02-P1	A07	not applicable	ONC-DIA-02_run07.raw	ONC-DIA-02_run07
+ONC-DIA-02-S08	A-549 culture 8	Homo sapiens	A-549	CPD-000002	DMSO	100 nM	24 h	CPD-000002@100 nM	CPD-000002@100 nM	2	ONC-DIA-02-P1	A08	not applicable	ONC-DIA-02_run08.raw	ONC-DIA-02_run08
+ONC-DIA-02-S09	A-549 culture 9	Homo sapiens	A-549	CPD-000002	DMSO	1 µM	24 h	CPD-000002@1 µM	CPD-000002@1 µM	1	ONC-DIA-02-P1	A09	not applicable	ONC-DIA-02_run09.raw	ONC-DIA-02_run09
+ONC-DIA-02-S10	A-549 culture 10	Homo sapiens	A-549	CPD-000002	DMSO	1 µM	24 h	CPD-000002@1 µM	CPD-000002@1 µM	2	ONC-DIA-02-P1	A10	not applicable	ONC-DIA-02_run10.raw	ONC-DIA-02_run10
+ONC-DIA-02-S11	A-549 culture 11	Homo sapiens	A-549	CPD-000002	DMSO	10 µM	24 h	CPD-000002@10 µM	CPD-000002@10 µM	1	ONC-DIA-02-P1	A11	not applicable	ONC-DIA-02_run11.raw	ONC-DIA-02_run11
+ONC-DIA-02-S12	A-549 culture 12	Homo sapiens	A-549	CPD-000002	DMSO	10 µM	24 h	CPD-000002@10 µM	CPD-000002@10 µM	2	ONC-DIA-02-P1	A12	not applicable	ONC-DIA-02_run12.raw	ONC-DIA-02_run12
