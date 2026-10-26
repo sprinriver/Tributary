@@ -83,7 +83,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 2a — Database and triggers
-Status: done
+Status: done (6e044cc)
 Goal: Postgres schema with migrations and immutability guarantees, and Kysely types.
 Spec: §4, ARCHITECTURE §5   Features: DB-01, DB-02
 In scope: SQL migrations for all §4 tables + pg-boss schema; indexes (GIN on jsonb and tsvector, HNSW placeholder); triggers: published experiment versions and dataset releases immutable; audit_log append-only via grants; kysely-codegen types; `pnpm db:migrate`.

@@ -113,4 +113,4 @@ Entry template:
   `{ id: string } & Record<string, string>` for noUncheckedIndexedAccess); no assertion changed. Commit 1 line.
 - Gaps and follow-ups: Phase 2b (synth + seed). Embedding dimension fixed in Phase 17 (needs a new migration).
   The API's login user and its grant of `tributary_app` are per-environment (Phase 3 / Terraform).
-- Commit: (pending)
+- Commit: 6e044cc
