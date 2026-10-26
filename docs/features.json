@@ -1,8 +1,8 @@
 [
   {"id": "OPS-01", "phase": 0, "parity": "new", "description": "Monorepo, local stack, CI and guardrails work: pnpm check green, compose healthy, smoke e2e passes", "verify": "pnpm check && pnpm e2e smoke", "passes": true},
-  {"id": "CON-01", "phase": 1, "parity": "v1 §3", "description": "Manifest schema built from a template rejects bad wells, unknown species, unit-less doses, duplicate keys and missing required fields with field-level errors", "verify": "pnpm run test:contracts CON-01", "passes": false},
-  {"id": "CON-02", "phase": 1, "parity": "new", "description": "Quantity parsing normalises dose and time to SI and rejects unknown units", "verify": "pnpm run test:contracts CON-02", "passes": false},
-  {"id": "CON-03", "phase": 1, "parity": "v1 §6", "description": "QuerySpec validation enforces column whitelist and operator x type matrix; OpenAPI and JSON Schema generated", "verify": "pnpm run test:contracts CON-03 && pnpm gen", "passes": false},
+  {"id": "CON-01", "phase": 1, "parity": "v1 §3", "description": "Manifest schema built from a template rejects bad wells, unknown species, unit-less doses, duplicate keys and missing required fields with field-level errors", "verify": "pnpm run test:contracts CON-01", "passes": true},
+  {"id": "CON-02", "phase": 1, "parity": "new", "description": "Quantity parsing normalises dose and time to SI and rejects unknown units", "verify": "pnpm run test:contracts CON-02", "passes": true},
+  {"id": "CON-03", "phase": 1, "parity": "v1 §6", "description": "QuerySpec validation enforces column whitelist and operator x type matrix; OpenAPI and JSON Schema generated", "verify": "pnpm run test:contracts CON-03 && pnpm gen", "passes": true},
   {"id": "DB-01", "phase": 2, "parity": "new", "description": "Migrations apply up/down/up cleanly on a fresh database", "verify": "pnpm run test:db DB-01", "passes": false},
   {"id": "DB-02", "phase": 2, "parity": "v1 §4", "description": "Published experiment versions and dataset releases are immutable; audit_log is append-only", "verify": "pnpm run test:db DB-02", "passes": false},
   {"id": "SYN-01", "phase": 2, "parity": "new", "description": "Synthetic demo corpus is deterministic for a given seed and covers DIA, TMT, RNA-seq, CRISPR, compounds and ADME", "verify": "pnpm run test:compute -k SYN_01", "passes": false},

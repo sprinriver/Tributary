@@ -24,6 +24,8 @@ jobs:
       - uses: astral-sh/setup-uv@v10.3.2
       - run: pnpm run bootstrap
       - run: pnpm check
+      - name: Generated contracts are up to date
+        run: pnpm gen && git diff --exit-code
       - run: pnpm run licence:scan
 
   e2e:

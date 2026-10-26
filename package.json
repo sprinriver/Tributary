@@ -23,13 +23,14 @@
     "e2e": "node scripts/e2e-pattern.mjs",
     "db:migrate": "node -e \"console.log('db:migrate: no migrations yet (Phase 2)')\"",
     "db:seed": "node -e \"console.log('db:seed: nothing to seed yet (Phase 2)')\"",
-    "gen": "node -e \"console.log('gen: no generators yet (Phase 1)')\"",
+    "gen": "node packages/contracts/scripts/gen.ts && pnpm run gen:python",
     "synth": "cd apps/compute && uv run --locked python -m tributary_compute.synth",
     "bench:query": "node -e \"console.log('bench:query: placeholder until Phase 12')\"",
     "compute:sync": "cd apps/compute && uv sync",
     "bootstrap": "pnpm install --frozen-lockfile && cd apps/compute && uv sync --frozen",
     "licence:scan": "node scripts/licence-scan.mjs",
-    "e2e:install-browsers": "playwright install --with-deps chromium"
+    "e2e:install-browsers": "playwright install --with-deps chromium",
+    "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format"
   },
   "devDependencies": {
     "@eslint/js": "10.0.1",

@@ -52,3 +52,34 @@ Entry template:
   is a stub until Phase 2. Plan-reviewer subagent not run (built in a cloud session without `/phase-finish`).
   Open legal question SPEC §12 Q8 (earlier client contract) still needs counsel.
 - Commit: 8545274
+
+## 2026-10-26 — Phase 1: Contracts — done
+- Built: packages/contracts as the zod source of truth — error shape `{code, field, message}` (`issuesToErrors`),
+  UUIDv7/timestamp/URN/ontology-term primitives; all SPEC §4 entities (`entities/registry.ts`, `entities/platform.ts`);
+  quantity parsing to canonical molar / hours (`parseQuantity`); well validation for 96/384 plates; seed proteomics
+  template (SPEC §6.1 columns) and `buildManifestSchema` / `validateManifest` with per-cell errors, reserved SDRF
+  tokens, duplicate keys and custom fields; dataset contracts for all 15 SPEC §6.2 kinds (columns, nullability,
+  join keys, cited quality rules); QuerySpec + RuleGroup schema and `validateQuerySpec` (column whitelist, alias
+  scoping for joins, operator × type matrix, value checks); ChartSpec / ChartDefinition with an empty registry;
+  `pnpm gen` → `packages/contracts/generated/{openapi.json,json-schema/*.json}` and pydantic v2 models in
+  `apps/compute/tributary_compute/contracts/`.
+- Decisions (and why):
+  - zod 4 built-in `z.toJSONSchema` instead of zod-to-openapi (ADR-0015).
+  - Canonical units follow the manifest contract: concentration → M, time → hours (not seconds), as SPEC §6.1
+    stores `dose_molar` and `time_hours`. Units are case-sensitive (mM ≠ MM).
+  - Species/cell-line validation uses an injected `TermIndex`; `SEED_TERMS` (NCBI Taxonomy, Cellosaurus) until the
+    OLS4 cache exists. Cellosaurus CURIEs use the `cellosaurus:` prefix.
+  - Operators are react-querybuilder's names; on list columns (`protein_ids`, `gene_names`) only
+    contains/doesNotContain/null/notNull. Text columns don't allow `<`/`>` (v1 allowed them; no use case).
+  - Generated files are committed and excluded from Prettier, ESLint, ruff and pyright; a contracts test and a CI
+    step (`pnpm gen && git diff --exit-code`) fail on drift. datamodel-codegen runs with `--field-constraints
+    --use-annotated` so pyright strict can type the models.
+- Dependencies added: datamodel-code-generator==0.83.0 (apps/compute dev; MIT; approved by user; newest release
+  older than a month — 0.86.0 was 8 days old).
+- Evidence: `pnpm check` ✓ · `pnpm run test:contracts CON-01` ✓ (9) · `CON-02` ✓ (22) · `CON-03` ✓ (23) ·
+  `pnpm gen` ✓ (38 files; second run leaves no diff) · `pnpm run test:compute -k CON_03` ✓ (3) · acceptance tests
+  unchanged since the test commit.
+- Gaps and follow-ups: OpenAPI has no `paths` until Phase 3. Plan-reviewer subagent not run (no `/phase-finish`).
+  OLS4-backed `TermIndex` in Phase 5. Experiment-scope manifest fields (experiment tab) are typed by the template
+  but not validated by `validateManifest`, which covers sample rows only.
+- Commit: (pending)

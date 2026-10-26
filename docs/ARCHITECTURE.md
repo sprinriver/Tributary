@@ -69,7 +69,7 @@ One deployment per customer AWS account (single-tenant). Four deployables plus s
 | CSV/TSV | Papa Parse | 5.7.0 | Web Worker mode. |
 | UI kit | Celeste's kit if any; else Tailwind + shadcn/ui | verify | Decide in Phase 0. |
 | API | Fastify 5 + fastify-type-provider-zod | 5.12.7 / 7.0.0 | **Pinned:** fastify 5.12.7 (type provider added in Phase 1+). |
-| Schemas | zod 4 + @asteasolutions/zod-to-openapi | 4.6.7 / 9.1.0 | OpenAPI 3.1. **Pinned:** zod 4.6.7. |
+| Schemas | zod 4 + @asteasolutions/zod-to-openapi | 4.6.7 / 9.1.0 | OpenAPI 3.1. **Pinned:** zod 4.6.7. Phase 1 emits OpenAPI components and JSON Schemas with zod 4's built-in `z.toJSONSchema` (ADR-0015); zod-to-openapi is not used. Python models: datamodel-code-generator 0.83.0 (MIT, dev-only). |
 | DB access | Kysely + kysely-codegen | 0.29.7 / 0.20.0 | SQL migrations via Kysely Migrator. |
 | Database | PostgreSQL 17 + pgvector | pgvector 0.8.7 | RDS in prod; `pgvector/pgvector` image locally. |
 | Jobs | pg-boss | 12.38.0 | Cron, retries, dead-letter. No Redis. |
