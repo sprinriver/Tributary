@@ -1,0 +1,7 @@
+# Planning docs and generated data keep their hand-written layout
+docs/
+fixtures/
+artifacts/
+pnpm-lock.yaml
+apps/compute/
+infra/

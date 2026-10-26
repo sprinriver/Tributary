@@ -1,5 +1,9 @@
 # Rebuild proteomics-first inside each customer's cloud
 
+> Repo copy of the research report (26 Oct 2026). Details specific to the earlier client engagement have been
+> generalised; licence and cost lines were corrected after review. Decisions taken from it live in
+> `docs/ARCHITECTURE.md` §14.
+
 No commercial or open-source product reproduces the experiment data application Spring & River built for its biotech client, and that gap is the opportunity. LatchBio, Illumina BioInsight, DNAnexus, Seqera and Code Ocean each cover part of the old app's workflow: a registry, versioned manifests, one-click Nextflow runs, a filter-and-join explorer and twelve Plotly chart types. None is proteomics-first, and the two products that install into a customer's AWS account (Code Ocean and Quilt) lack a serious explorer. The rebuild should keep that feature set nearly intact and replace most of the stack beneath it. Postgres with full-text search, pgvector and lineage tables takes over from OpenSearch and Neptune. Apache Iceberg tables in Amazon S3 Tables, queried by DuckDB from Node, take over from Redshift and lakeFS. ECS Fargate replaces EKS, and a Fastify/TypeScript API with standard OIDC sign-in sits in front of an internal Python/R statistics service. lakeFS must go regardless: **it moved to the Business Source License at v1.87.0 in September 2026, and its README claims that feeding its code to an AI agent violates the licence**. More than a dozen other copyleft, source-available, non-commercial, proprietary or unlicensed components must also stay out of the codebase. The biggest gains are scientific rather than visual: an SDRF-shaped sample manifest validated against ontologies, with typed treatments; data kept at precursor, protein and PTM-site levels; one differential-results schema that records why values are missing; dose-response fits stored as first-class records; and validation at every boundary, which also removes the old app's main class of bugs. AI belongs in the product as governed tools rather than as an autonomous analyst, because **the best agents complete only about a third to two-thirds of realistic omics tasks**. That means named, validated operations exposed in the app and over MCP, run with the signed-in user's permissions and requiring human approval for every write. They should run by default on Amazon Bedrock in the customer's account, even though Anthropic's relaxed biology safeguards are unavailable there. Spring & River can differentiate on proteomics depth, joins between omics hits and compound data, installation in the customer's own account at a price small biotechs can afford, and governance designed for AI agents. Claude Code can build the product in phases sized to one session each, driven by spec, plan and progress files. Hooks and permission rules enforce tests-first work, pinned dependencies and a clean-room boundary around both the client's original code and restrictively licensed sources.
 
 ## Five platforms cover parts of the old app, and none leads with proteomics
@@ -22,7 +26,7 @@ Three gaps stand out. **MS proteomics is a secondary data type almost everywhere
 
 The second gap is that the products that install in the customer's account are infrastructure tools. Code Ocean "installs directly into your AWS account in about 40 minutes" ([Code Ocean](https://codeocean.com/product)), and Quilt runs as a CloudFormation stack at **$2.60 per container-hour for up to five users** ([AWS Marketplace](https://aws.amazon.com/marketplace/pp/B07QF1VXFQ)). Neither offers the old app's filter-join-chart workbench.
 
-Third, the research found **no platform that joins proteomics differential-abundance results to compound, ADME and kinase tables** as the old app does. Chemistry platforms such as CDD Vault, Revvity Signals and Dotmatics remain a separate product family from omics platforms. That conclusion rests on not finding such a product in limited searches, so it is an absence of evidence rather than proof.
+Third, the research found **no platform that joins proteomics differential-abundance results to compound and ADME tables** as the old app does. Chemistry platforms such as CDD Vault, Revvity Signals and Dotmatics remain a separate product family from omics platforms. That conclusion rests on not finding such a product in limited searches, so it is an absence of evidence rather than proof.
 
 Where the leaders overlap, they converge on patterns worth copying:
 
@@ -156,7 +160,7 @@ Proteomics protein groups arrive as semicolon-separated lists of accessions ([qu
 4. Link the contrast's treatment to that compound's known targets. The treatment must always be a compound batch ID, never a free-text label.
 5. Classify each hit as a known target, a known off-target or novel, and show that on the volcano plot and heatmap.
 
-This turns the old app's compound, ADME and hinge-motif joins into a general feature that no competitor was found to offer.
+This turns the old app's compound and ADME joins into a general feature that no competitor was found to offer.
 
 ### Genomics splits into a small interactive tier and a large archive
 
@@ -293,7 +297,7 @@ Bedrock remains the strongest way to keep data in the customer's account. AWS st
 
 Three Anthropic API features are not eligible for zero data retention: code execution (container data is kept for up to 30 days), the Files API and the MCP connector ([Anthropic ZDR](https://platform.claude.com/docs/en/build-with-claude/zero-data-retention)). The MCP connector also needs a public HTTPS endpoint and is not offered on Bedrock ([MCP connector](https://platform.claude.com/docs/en/agents-and-tools/mcp-connector)). Private data inside the customer's network should therefore be reached through tools the platform runs itself.
 
-Prompts about kinase-inhibitor design and target discovery are the likeliest to trip the safeguards. That has not been tested and belongs in an early technical spike.
+Prompts about molecular design and target discovery are the likeliest to trip the safeguards. That has not been tested and belongs in an early technical spike.
 
 ### Pharma buyers expect six controls, and regulation mostly stops short of discovery
 
@@ -322,7 +326,7 @@ The architecture is Node-first, not Node-only. The front end is a single-page ap
 | Old app component | New design | Why |
 |---|---|---|
 | FastAPI microservices for auth, admin, metadata access and data access | One Fastify API, one DuckDB query service, one internal Python/R compute service | Fewer deployables; one set of contracts across UI, API and workers |
-| Okta | OIDC handled by the backend (`openid-client`), project roles enforced with CASL, optional SCIM | Each customer brings Okta, Entra ID, Auth0 or Keycloak |
+| Single-vendor SSO | OIDC handled by the backend (`openid-client`), project roles enforced with CASL, optional SCIM | Each customer brings Okta, Entra ID, Auth0 or Keycloak |
 | Postgres | Postgres on RDS as the system of record, with Kysely 0.29 and SQL migrations | Typed dynamic SQL for the filter builder |
 | OpenSearch | Postgres full-text search plus pgvector HNSW indexes with iterative scans | Removes an OpenSearch Serverless cost floor of about $175–350 a month |
 | Neptune | Lineage node and edge tables shaped like OpenLineage, queried recursively | Lineage graphs are shallow at this scale |
