@@ -51,4 +51,4 @@ Entry template:
 - Gaps and follow-ups: CI not yet run on GitHub (first push). Context7 MCP needs `CONTEXT7_API_KEY`. `pnpm synth`
   is a stub until Phase 2. Plan-reviewer subagent not run (built in a cloud session without `/phase-finish`).
   Open legal question SPEC §12 Q8 (earlier client contract) still needs counsel.
-- Commit: (pending)
+- Commit: 8545274

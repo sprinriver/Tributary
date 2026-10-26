@@ -40,7 +40,7 @@ Definition of done (each item provable by a command or an artifact):
 ---
 
 ## Phase 0 — Scaffold and guardrails
-Status: done
+Status: done (8545274)
 Goal: An empty-but-working monorepo where `pnpm check`, the local stack and a smoke e2e all pass, with Claude Code guardrails active.
 Spec: ARCHITECTURE §2–3, §12   Features: OPS-01
 In scope:
