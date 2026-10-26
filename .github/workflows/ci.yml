@@ -51,8 +51,10 @@ jobs:
       - if: failure()
         run: docker compose logs --no-color
 
+  # Needs Dependency graph + GitHub Advanced Security on the repo (Settings → Code security). Once enabled,
+  # set the repository variable DEPENDENCY_REVIEW=true. Until then licences are enforced by `licence:scan`.
   dependency-review:
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && vars.DEPENDENCY_REVIEW == 'true'
     runs-on: ubuntu-24.04
     permissions:
       contents: read
