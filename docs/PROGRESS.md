@@ -83,3 +83,34 @@ Entry template:
   OLS4-backed `TermIndex` in Phase 5. Experiment-scope manifest fields (experiment tab) are typed by the template
   but not validated by `validateManifest`, which covers sample rows only.
 - Commit: 2d2fbc8
+
+## 2026-10-26 — Phase 2a: Database and triggers — done
+- Built: 7 SQL migrations in `packages/db/migrations` (foundation: pgvector + `uuidv7()` + `assay_type_key` enum;
+  registry; data and reference; access and audit; integrity triggers; app role; pg-boss schema) covering all 25
+  SPEC §4 tables; GIN indexes on jsonb and `search_tsv`, HNSW on a placeholder `embedding vector(1024)`;
+  Kysely migrator over SQL folders (`migrateToLatest`, `migrateDownAll`), `createDb`, `pnpm db:migrate`;
+  `src/generated/db.ts` from kysely-codegen via `pnpm gen`.
+- Decisions (and why):
+  - Phase 2 split into 2a (DB) and 2b (synthetic data + seed), approved by the user.
+  - Immutability by triggers raising SQLSTATE `TR409`: published versions may only move to archived (archived is
+    final); samples, contrasts, custom field defs and sample files of a non-draft version are frozen; published or
+    rejected releases are frozen. `embedding` and `search_tsv` may still be refreshed on published versions.
+  - Soft delete enforced by grants: `tributary_app` has select/insert/update only, and insert/select on
+    audit_log; a trigger also blocks UPDATE/DELETE/TRUNCATE on audit_log for the owner.
+  - URNs are computed by triggers from ids (`urn:tributary:experiment:<id>[:v<n>]`), so callers can't supply a
+    wrong one. Found because the acceptance tests insert placeholder URNs.
+  - `assay_type_key` is a Postgres enum (experiments reference it without seeding rows); audit_log has no
+    updated/deleted columns (rows never change) and a nullable tenant_id.
+  - bigint (`row_count`, `size_bytes`) parsed to a safe JS number (throws above 2^53); codegen maps int8 → number.
+  - `uuidv7()` written in plpgsql (Postgres 17 has none; Postgres 18 does).
+  - pg-boss schema is a pinned SQL migration from pg-boss's own construction plan (BEGIN/COMMIT stripped).
+- Dependencies added (approved): kysely 0.29.7, pg 8.23.1, pg-boss 12.38.0; dev: kysely-codegen 0.20.0,
+  @types/pg 8.23.1, testcontainers + @testcontainers/postgresql 12.2.1. Install scripts denied: cpu-features,
+  protobufjs, ssh2 (pulled in by testcontainers; not needed).
+- Evidence: `pnpm check` ✓ (db: 14 passed) · `pnpm run test:db DB-01` ✓ (3) · `pnpm run test:db DB-02` ✓ (10) ·
+  `pnpm db:migrate` on the local stack applied 0001–0007, second run "already up to date" · `pnpm gen` reproducible.
+- Test change after the test commit: one type-only fix in `immutability.test.ts` (row helper typed
+  `{ id: string } & Record<string, string>` for noUncheckedIndexedAccess); no assertion changed. Commit 1 line.
+- Gaps and follow-ups: Phase 2b (synth + seed). Embedding dimension fixed in Phase 17 (needs a new migration).
+  The API's login user and its grant of `tributary_app` are per-environment (Phase 3 / Terraform).
+- Commit: (pending)

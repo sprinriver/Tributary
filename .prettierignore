@@ -12,3 +12,4 @@ uv.lock
 .venv/
 # Written by `pnpm gen`
 packages/contracts/generated/
+packages/db/src/generated/

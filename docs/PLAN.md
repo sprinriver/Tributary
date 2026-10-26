@@ -83,15 +83,15 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 2a — Database and triggers
-Status: todo
+Status: done
 Goal: Postgres schema with migrations and immutability guarantees, and Kysely types.
 Spec: §4, ARCHITECTURE §5   Features: DB-01, DB-02
 In scope: SQL migrations for all §4 tables + pg-boss schema; indexes (GIN on jsonb and tsvector, HNSW placeholder); triggers: published experiment versions and dataset releases immutable; audit_log append-only via grants; kysely-codegen types; `pnpm db:migrate`.
 Out of scope: synthetic data and seeding (Phase 2b); importing datasets (Phase 8).
 Definition of done:
-- [ ] Migrations up/down/up on a fresh Testcontainers Postgres (integration test)
-- [ ] Updating a published version or release raises (test); audit_log rejects UPDATE/DELETE for the app role (test)
-- [ ] `pnpm check` exits 0
+- [x] Migrations up/down/up on a fresh Testcontainers Postgres (integration test)
+- [x] Updating a published version or release raises (test); audit_log rejects UPDATE/DELETE for the app role (test)
+- [x] `pnpm check` exits 0
 
 ## Phase 2b — Synthetic data and seed
 Status: todo

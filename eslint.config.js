@@ -11,6 +11,7 @@ export default tseslint.config(
       '**/coverage/**',
       'apps/compute/**',
       'packages/contracts/generated/**',
+      'packages/db/src/generated/**',
       'artifacts/**',
       'playwright-report/**',
       'test-results/**',

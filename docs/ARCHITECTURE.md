@@ -70,14 +70,14 @@ One deployment per customer AWS account (single-tenant). Four deployables plus s
 | UI kit | Celeste's kit if any; else Tailwind + shadcn/ui | verify | Decide in Phase 0. |
 | API | Fastify 5 + fastify-type-provider-zod | 5.12.7 / 7.0.0 | **Pinned:** fastify 5.12.7 (type provider added in Phase 1+). |
 | Schemas | zod 4 + @asteasolutions/zod-to-openapi | 4.6.7 / 9.1.0 | OpenAPI 3.1. **Pinned:** zod 4.6.7. Phase 1 emits OpenAPI components and JSON Schemas with zod 4's built-in `z.toJSONSchema` (ADR-0015); zod-to-openapi is not used. Python models: datamodel-code-generator 0.83.0 (MIT, dev-only). |
-| DB access | Kysely + kysely-codegen | 0.29.7 / 0.20.0 | SQL migrations via Kysely Migrator. |
+| DB access | Kysely + kysely-codegen | 0.29.7 / 0.20.0 | SQL migrations via Kysely Migrator. **Pinned:** kysely 0.29.7 (migrator now imported from `kysely/migration`), kysely-codegen 0.20.0, pg 8.23.1. Migrations are `packages/db/migrations/NNNN_name/{up,down}.sql`; `int8` is parsed to a safe JS number. |
 | Database | PostgreSQL 17 + pgvector | pgvector 0.8.7 | RDS in prod; `pgvector/pgvector` image locally. |
-| Jobs | pg-boss | 12.38.0 | Cron, retries, dead-letter. No Redis. |
+| Jobs | pg-boss | 12.38.0 | Cron, retries, dead-letter. No Redis. **Pinned:** 12.38.0; its schema is migration 0007 (from `getConstructionPlans`). |
 | Query engine | DuckDB via `@duckdb/node-api` | 2.0.x LTS | Same DuckDB version in Python. Consider waiting for 2.0.1. **Pinned:** `@duckdb/node-api` 2.0.0-r.1 (Python duckdb to match when added). |
 | Table format | Apache Iceberg in Amazon S3 Tables | Iceberg 1.12 | Local: SeaweedFS Iceberg REST catalog. |
 | Auth | openid-client + jose; CASL | 6.8.8 / 6.2.13; 7.0.2 | BFF sessions. |
 | Python compute | FastAPI, pydantic, scipy, statsmodels, scikit-learn, numpy, pandas/polars, pyarrow, duckdb, sdrf-pipelines (pydeseq2 optional) | 0.162 / 2.14 / 1.18 / 0.15 / 1.9 / 2.5 / 3.1 / 2.0 / 26 / 2.0 / 0.1.6 (0.5.4) | All permissive. No inmoose: it is GPL-3.0-or-later (PyPI, checked 2026-10-26). |
-| Testing | Vitest 5, Testcontainers 12, Playwright 1.64, pytest | 5.0.5 / 12.2.1 / 1.64.1 | **Pinned:** vitest 5.0.5, @playwright/test 1.64.1, @playwright/mcp 0.0.83, pytest 9.1.1, httpx 0.28.1 (ASGI transport for tests), ruff 0.17.2, pyright 1.1.414, fastapi 0.162.0, uvicorn 0.54.0, pip-licenses 5.5.5. Integration tests use real Postgres/SeaweedFS containers, not mocks. |
+| Testing | Vitest 5, Testcontainers 12, Playwright 1.64, pytest | 5.0.5 / 12.2.1 / 1.64.1 | **Pinned:** testcontainers + @testcontainers/postgresql 12.2.1 (install scripts of ssh2, cpu-features, protobufjs denied in pnpm-workspace.yaml), vitest 5.0.5, @playwright/test 1.64.1, @playwright/mcp 0.0.83, pytest 9.1.1, httpx 0.28.1 (ASGI transport for tests), ruff 0.17.2, pyright 1.1.414, fastapi 0.162.0, uvicorn 0.54.0, pip-licenses 5.5.5. Integration tests use real Postgres/SeaweedFS containers, not mocks. |
 | AWS SDK | @aws-sdk/client-* v3 | 3.1156.x | omics, batch, s3, sqs, cloudwatch-logs, s3tables. |
 | AI (optional) | Vercel AI SDK (in-app assistant), MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), Anthropic/Bedrock providers | verify | Claude Agent SDK only for sandboxed batch analysis (later). |
 | Observability | pino, `@fastify/otel`, OpenTelemetry SDK | 0.21.4 / 0.300.0 | `@opentelemetry/instrumentation-fastify` is deprecated. |
