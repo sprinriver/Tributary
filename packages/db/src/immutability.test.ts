@@ -11,7 +11,7 @@ describe('immutability and append-only audit', () => {
   let testDb: TestDatabase;
   const q = (text: string, values: unknown[] = []) => testDb.pool.query(text, values);
   const one = async (text: string, values: unknown[] = []) =>
-    (await q(text, values)).rows[0] as Record<string, string>;
+    (await q(text, values)).rows[0] as { id: string } & Record<string, string>;
 
   /** Runs statements as the application role, the way apps/api connects. */
   async function asApp<T>(fn: (client: pg.PoolClient) => Promise<T>): Promise<T> {
