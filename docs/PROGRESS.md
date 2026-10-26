@@ -148,4 +148,4 @@ Entry template:
   identical; 30 objects in `tributary-raw` · `pnpm run licence:scan` ✓ (187) · acceptance tests untouched.
 - Gaps and follow-ups: importers (Phase 8) turn the fixture outputs into dataset releases; fixture headers must be
   checked against each tool's SOURCE.md then. Plan-reviewer / omics-reviewer subagents not run.
-- Commit: (pending)
+- Commit: 4f389b3

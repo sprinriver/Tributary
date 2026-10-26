@@ -94,7 +94,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 2b — Synthetic data and seed
-Status: done
+Status: done (4f389b3)
 Goal: A deterministic synthetic demo corpus, loaded into the local stack.
 Spec: §4, §6.1–6.2, ARCHITECTURE §5   Features: SYN-01
 In scope: `pnpm synth` in apps/compute writing `fixtures/`: 2 programs, 12 experiments (DIA dose series, TMT, RNA-seq, CRISPR), manifests, a DIA-NN-like `report.pg_matrix.tsv`, limma-like topTable, CurveCurator-like dose-response table, MAGeCK-like gene summary, compound + ADME tables (IDs `CPD-000001`…), target annotations (public gene symbols/UniProt accessions); `pnpm db:seed` loads metadata and stages fixture files into SeaweedFS.
