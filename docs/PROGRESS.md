@@ -221,4 +221,4 @@ Entry template:
 - Evidence: `pnpm check` ✓ · `pnpm e2e "REG-0[78]"` ✓ (3) · full `pnpm e2e` ✓ (6) · axe: zero serious/critical on
   `/experiments` and `/experiments/new` · screenshots in artifacts/phase-5/ · acceptance tests untouched.
 - Gaps: walk-through done from Playwright screenshots, not the Playwright MCP (not reliably connected here).
-- Commit: (pending)
+- Commit: 5b83a57

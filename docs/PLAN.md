@@ -127,7 +127,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 5 — Registry UI
-Status: done
+Status: done (5b83a57)
 Goal: List, create, edit, publish and version experiments in the browser (v1 parity + versions/diff).
 Spec: M1, REFERENCE_V1 §2–4   Features: REG-07, REG-08
 In scope: experiments list (filters row, column chooser, sort, pagination, status chips, actions — *Launch pipeline* disabled with tooltip until Phase 11, *Create version*), experiment page (overview, samples tab placeholder, versions tab with history + diff, custom fields with searchable toggle), create wizard, publish dialog with reason, empty/error states.
