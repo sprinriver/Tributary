@@ -22,11 +22,12 @@ export interface TestApi {
   close(): Promise<void>;
 }
 
-export async function startTestApi(): Promise<TestApi> {
+/** `fetch` replaces outbound HTTP (OLS4, apps/compute) so tests never touch the network. */
+export async function startTestApi(options: { fetch?: typeof fetch } = {}): Promise<TestApi> {
   const testDb = await startTestDatabase();
   const db = createDb(testDb.url);
   await migrateToLatest(db);
-  const app = buildApp({ db, config: testConfig() });
+  const app = buildApp({ db, config: testConfig(), ...(options.fetch ? { fetch: options.fetch } : {}) });
   return {
     testDb,
     db,

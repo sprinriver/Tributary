@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Starts the API and web dev servers itself; the docker compose stack must already be up for later phases.
+// Starts the API, compute and web dev servers itself; the docker compose stack must already be up for later phases.
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -18,6 +18,12 @@ export default defineConfig({
     {
       command: 'node apps/api/src/server.ts',
       url: 'http://127.0.0.1:3000/healthz',
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command:
+        'cd apps/compute && uv run --locked uvicorn tributary_compute.main:app --host 127.0.0.1 --port 8000',
+      url: 'http://127.0.0.1:8000/healthz',
       reuseExistingServer: !process.env.CI,
     },
     {
