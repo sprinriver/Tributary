@@ -2,9 +2,11 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb, listMigrationNames, migrateDownAll, migrateToLatest, type Database } from './index.ts';
 import { startTestDatabase, type TestDatabase } from './testing/postgres.ts';
 
-// Every SPEC §4 entity has a table.
+// Every SPEC §4 entity has a table, plus auth tables added in Phase 3 (sessions, access tokens).
 const TABLES = [
+  'access_token',
   'app_group',
+  'app_session',
   'app_user',
   'assay_type',
   'audit_log',
