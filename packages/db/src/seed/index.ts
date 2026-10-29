@@ -1,4 +1,4 @@
-import { SEED_PROTEOMICS_TEMPLATE, type ManifestRow, type Quantity } from '@tributary/contracts';
+import { manifestRowToSample, SEED_PROTEOMICS_TEMPLATE, type ManifestRow } from '@tributary/contracts';
 import { sql, type Transaction } from 'kysely';
 import type { Database } from '../client.ts';
 import type { DB } from '../generated/db.ts';
@@ -67,6 +67,9 @@ export async function seedDatabase(db: Database, options: SeedOptions): Promise<
   const programs = readPrograms(dir);
   const experiments = readExperiments(dir);
   const manifests = new Map(experiments.map((e) => [e.key, readManifest(dir, e)]));
+  const rawManifests = new Map(
+    experiments.map((e) => [e.key, readTsv(dir, `experiments/${e.key}/${e.manifest}`)]),
+  );
 
   const existing = await db
     .selectFrom('program')
@@ -148,7 +151,15 @@ export async function seedDatabase(db: Database, options: SeedOptions): Promise<
       }
 
       for (const experiment of experiments) {
-        await seedExperiment(trx, base, experiment, manifests.get(experiment.key) ?? [], programIds, audit);
+        await seedExperiment(
+          trx,
+          base,
+          experiment,
+          manifests.get(experiment.key) ?? [],
+          rawManifests.get(experiment.key) ?? [],
+          programIds,
+          audit,
+        );
         await seedFiles(trx, base, dir, experiment, options.staging);
       }
       await seedReference(trx, base, dir, programIds, audit);
@@ -189,6 +200,7 @@ async function seedExperiment(
   base: Base,
   experiment: FixtureExperiment,
   rows: ManifestRow[],
+  rawRows: Record<string, string>[],
   programIds: Map<string, string>,
   audit: Audit,
 ): Promise<void> {
@@ -226,7 +238,13 @@ async function seedExperiment(
   if (rows.length) {
     await trx
       .insertInto('sample')
-      .values(rows.map((row) => ({ ...base, experiment_version_id: version.id, ...sampleColumns(row) })))
+      .values(
+        rows.map((row, i) => ({
+          ...base,
+          experiment_version_id: version.id,
+          ...sampleColumns(row, rawRows[i] ?? {}),
+        })),
+      )
       .execute();
   }
   if (experiment.contrasts.length) {
@@ -263,35 +281,16 @@ async function seedExperiment(
   );
 }
 
-/** Splits a validated manifest row into the Sample jsonb groups (SPEC §4); empty cells are left out. */
-function sampleColumns(row: ManifestRow) {
-  const pick = (keys: string[]) =>
-    Object.fromEntries(keys.filter((k) => row[k] !== null && row[k] !== undefined).map((k) => [k, row[k]]));
-  const quantity = (key: string) =>
-    typeof row[key] === 'object' && row[key] !== null && 'canonical' in row[key]
-      ? (row[key] as Quantity)
-      : undefined;
-  const dose = quantity('dose');
-  const time = quantity('time');
-  const factors = {
-    ...pick([
-      'compound_id',
-      'vehicle',
-      'condition',
-      'replicate_group',
-      'biological_replicate',
-      'technical_replicate',
-    ]),
-    ...(dose ? { dose_molar: dose.canonical, dose_display: `${dose.value} ${dose.unit}` } : {}),
-    ...(row.dose === 'not applicable' || row.dose === 'not available' ? { dose_display: row.dose } : {}),
-    ...(time ? { time_hours: time.canonical, time_display: `${time.value} ${time.unit}` } : {}),
-  };
+function sampleColumns(row: ManifestRow, raw: Record<string, string>) {
+  const sample = manifestRowToSample(row);
   return {
-    sample_key: String(row.sample_key),
-    source_name: typeof row.source_name === 'string' ? row.source_name : null,
-    characteristics: json(pick(['organism', 'cell_line', 'tissue', 'cell_type', 'disease'])),
-    factors: json(factors),
-    technical: json(pick(['plate', 'well', 'fraction', 'label_channel', 'instrument_run', 'raw_file'])),
+    sample_key: sample.sample_key,
+    source_name: sample.source_name,
+    characteristics: json(sample.characteristics),
+    factors: json(sample.factors),
+    technical: json(sample.technical),
+    custom: json(sample.custom),
+    raw: json(raw),
   };
 }
 

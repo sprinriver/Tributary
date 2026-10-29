@@ -23,10 +23,11 @@ export interface RoleBinding {
 /** Program-scoped checks pass `subject(type, { program_id })`; conditions are plain Mongo queries on that object. */
 export type AppAbility = MongoAbility;
 
-/** What each program role may do (SPEC §4 RoleBinding). Higher roles include the lower ones. */
+/** What each program role may do (SPEC §4 RoleBinding). Programs with `requires_approval` also need `approve` to
+ * publish (SPEC M1). Higher roles include the lower ones. */
 export const ROLE_ACTIONS: Record<Exclude<Role, 'system_admin'>, Action[]> = {
   viewer: ['read'],
-  contributor: ['read', 'create', 'update'],
+  contributor: ['read', 'create', 'update', 'publish'],
   approver: ['read', 'create', 'update', 'publish', 'approve'],
   admin: ['manage'],
 };

@@ -1,5 +1,6 @@
 export * from './api/auth.ts';
-export * from './api/experiments.ts';
+export * from './api/registry.ts';
+export * from './api/routes.ts';
 export * from './charts.ts';
 export * from './common.ts';
 export * from './datasets/index.ts';
@@ -13,4 +14,5 @@ export * from './plate.ts';
 export * from './quantity.ts';
 export * from './query-validate.ts';
 export * from './query.ts';
+export * from './sample-mapping.ts';
 export * from './template.ts';

@@ -197,6 +197,7 @@ export interface DatasetRelease {
 }
 
 export interface Experiment {
+  archived_at: Timestamp | null;
   assay_type: AssayTypeKey;
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -216,9 +217,10 @@ export interface ExperimentVersion {
   deleted_at: Timestamp | null;
   description: Generated<string>;
   embedding: string | null;
-  experiment_date: Timestamp | null;
+  experiment_date: string | null;
   experiment_id: string;
   id: Generated<string>;
+  is_latest_published: Generated<boolean>;
   parent_version_id: string | null;
   publish_reason: string | null;
   published_at: Timestamp | null;
@@ -372,6 +374,7 @@ export interface Program {
   description: Generated<string>;
   id: Generated<string>;
   name: string;
+  requires_approval: Generated<boolean>;
   tenant_id: string;
   updated_at: Generated<Timestamp>;
 }
@@ -398,6 +401,8 @@ export interface Sample {
   experiment_version_id: string;
   factors: Generated<Json>;
   id: Generated<string>;
+  position: Generated<number>;
+  raw: Generated<Json>;
   sample_key: string;
   source_name: string | null;
   technical: Generated<Json>;

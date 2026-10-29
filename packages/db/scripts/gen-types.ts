@@ -18,7 +18,7 @@ try {
       `--url=${testDb.url}`,
       '--out-file=src/generated/db.ts',
       '--exclude-pattern={kysely_*,pgboss.*}',
-      '--type-mapping={"int8":"number"}',
+      '--type-mapping={"int8":"number","date":"string"}',
     ],
     { cwd: root, stdio: ['ignore', 'inherit', 'inherit'] },
   );

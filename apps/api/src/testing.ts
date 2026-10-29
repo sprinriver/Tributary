@@ -1,6 +1,6 @@
 import { createDb, DEV_TENANT_ID, migrateToLatest, type Database } from '@tributary/db';
 import { startTestDatabase, type TestDatabase } from '@tributary/db/testing';
-import type { FastifyInstance, InjectOptions } from 'fastify';
+import type { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
 import { buildApp } from './app.ts';
 import { createPersonalAccessToken } from './auth/tokens.ts';
 import { loadConfig, type ApiConfig } from './config.ts';
@@ -18,7 +18,7 @@ export interface TestApi {
   program(code: string, options?: { requiresApproval?: boolean }): Promise<string>;
   /** Creates a user with role bindings and returns a read/write PAT for them. */
   user(name: string, roles: Record<string, string>): Promise<{ id: string; token: string }>;
-  call(token: string, options: InjectOptions): ReturnType<FastifyInstance['inject']>;
+  call(token: string, options: InjectOptions): Promise<LightMyRequestResponse>;
   close(): Promise<void>;
 }
 

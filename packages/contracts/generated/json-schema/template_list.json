@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/TemplateList",
+  "$defs": {
+    "TemplateList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/TemplateRow"
+          }
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "additionalProperties": false
+    },
+    "TemplateRow": {
+      "type": "object",
+      "properties": {
+        "assay_type": {
+          "type": "string",
+          "enum": [
+            "proteomics_dia",
+            "proteomics_dda",
+            "proteomics_tmt",
+            "rnaseq",
+            "crispr_screen",
+            "ngs_raw"
+          ]
+        },
+        "version": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "key_field": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetadataFieldDef"
+          }
+        },
+        "built_in": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "assay_type",
+        "version",
+        "status",
+        "key_field",
+        "fields",
+        "built_in"
+      ],
+      "additionalProperties": false
+    },
+    "MetadataFieldDef": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string",
+          "enum": [
+            "experiment",
+            "sample"
+          ]
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "text",
+            "number",
+            "integer",
+            "boolean",
+            "date",
+            "enum",
+            "ontology_term",
+            "quantity"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "searchable": {
+          "type": "boolean"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "ontology": {
+          "type": "string"
+        },
+        "enumValues": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "quantityKind": {
+          "type": "string",
+          "enum": [
+            "concentration",
+            "time"
+          ]
+        },
+        "validator": {
+          "type": "string",
+          "enum": [
+            "plate_well"
+          ]
+        }
+      },
+      "required": [
+        "scope",
+        "key",
+        "label",
+        "type",
+        "required",
+        "searchable"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

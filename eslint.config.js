@@ -24,6 +24,11 @@ export default tseslint.config(
     rules: {
       // Keep modules small (CLAUDE.md): split before a file passes ~400 lines.
       'max-lines': ['warn', { max: 400, skipBlankLines: true, skipComments: true }],
+      // `_name` marks a value that is deliberately unused, e.g. dropped with rest destructuring.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_', varsIgnorePattern: '^_', ignoreRestSiblings: true },
+      ],
     },
   },
   {

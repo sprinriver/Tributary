@@ -1,12 +1,15 @@
 import { MeResponseSchema, type MeResponse } from '@tributary/contracts';
 import { useQuery } from '@tanstack/react-query';
+import { setCsrfToken } from './api.ts';
 
 /** The signed-in user, or null when signed out (401). */
 export async function fetchMe(fetchImpl: typeof fetch = fetch): Promise<MeResponse | null> {
   const res = await fetchImpl('/api/v1/auth/me');
   if (res.status === 401) return null;
   if (!res.ok) throw new Error(`Could not load the current user (HTTP ${res.status})`);
-  return MeResponseSchema.parse(await res.json());
+  const me = MeResponseSchema.parse(await res.json());
+  setCsrfToken(me.csrf_token);
+  return me;
 }
 
 export function useMe() {

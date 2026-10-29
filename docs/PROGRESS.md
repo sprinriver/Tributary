@@ -175,3 +175,30 @@ Entry template:
 - Gaps and follow-ups: re-auth on publish (`max_age`) is wired in `OidcClient.startLogin` but used in Phase 18;
   helmet and rate limits in Phase 22; Playwright MCP walk-through not done (UI is minimal until Phase 5).
 - Commit: cd4a054
+
+## 2026-10-29 — Phase 4: Registry API — done
+- Built: registry routes per SPEC §8 — `/v1/programs`, `/v1/templates`, `/v1/experiments` (create with first draft,
+  list, get, rename, archive/unarchive, version history), `/v1/versions/:id` (get, patch draft, publish, clone,
+  archive, diff), samples (list, bulk upsert with per-cell errors, delete, validate) and contrasts (list, replace).
+  Migration 0009: `program.requires_approval`, `experiment.archived_at`, `sample.raw` + `sample.position`,
+  `experiment_version.is_latest_published` maintained by a trigger. `API_ROUTES` registry in packages/contracts →
+  OpenAPI `paths` in `pnpm gen` and a typed web client (`apps/web/src/api.ts`); every response is parsed through
+  its contract schema (`respond`), so the API and the published OpenAPI cannot drift.
+- Decisions (and why):
+  - Publish re-validates the stored raw cells against the pinned template + sample custom fields (errors indexed by
+    manifest order), needs ≥ 1 sample and required experiment custom values, and a reason (body or header).
+  - Contributors may publish; programs with `requires_approval` also need the `approve` action (approver/admin).
+  - Diff compares raw cells per sample key (empty = missing) plus version fields, custom values, custom field
+    keys and contrast labels; output sorted for exactness.
+  - Latest-published = highest published version number, kept by a trigger that clears before it sets (the
+    partial unique index never sees two flagged rows).
+  - Samples get an identity `position`: inserts in one transaction share `created_at` and uuidv7 is not monotonic
+    within a millisecond, so order was unstable under load (found by a failing run inside `pnpm check`).
+  - The pg `date` type is returned as `YYYY-MM-DD` (no time-zone shift); codegen maps it to string.
+  - Built-in seed template is used when no template rows exist for an assay type.
+- Dependencies added: none new (zod declared in apps/web).
+- Evidence: `pnpm check` ✓ · `pnpm run test:api REG-0N` ✓ for N = 1…6 (8 tests) · API suite run 3× green ·
+  OpenAPI regenerated (65 generated files) · web client compiles · acceptance tests untouched.
+- Gaps and follow-ups: local dev database seeded before 0009 has empty `sample.raw` — reset with
+  `pnpm db:migrate down && pnpm db:migrate && pnpm db:seed`.
+- Commit: (pending)

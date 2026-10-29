@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
 import { z } from 'zod';
 // Importing the package registers every schema that carries `.meta({ id })` in zod's global registry.
-import '../index.ts';
+import { API_ROUTES, type ApiRoute } from '../index.ts';
 
 export const GENERATED_DIR = resolve(import.meta.dirname, '../../generated');
 
@@ -39,7 +39,7 @@ export function buildArtifacts(): Artifacts {
     openapi: '3.1.0',
     info: { title: 'Tributary API', version: '0.1.0' },
     jsonSchemaDialect: 'https://json-schema.org/draft/2020-12/schema',
-    paths: {},
+    paths: buildPaths(),
     components: { schemas: components },
   };
 
@@ -55,4 +55,77 @@ export function buildArtifacts(): Artifacts {
     files[`json-schema/${snake(id)}.json`] = json(standalone);
   }
   return { openapi, jsonSchemas, files };
+}
+
+/** Schema of a request/response part: a `$ref` when the schema has an id, else inlined. */
+function schemaRef(schema: z.ZodType, io: 'input' | 'output', inlineOnly = false): JsonSchema {
+  const id = z.globalRegistry.get(schema)?.id;
+  if (id && !inlineOnly) return { $ref: `#/components/schemas/${id}` };
+  // Nested schemas with ids stay as local `$defs` of the inlined schema.
+  const inline = z.toJSONSchema(schema, { target: 'draft-2020-12', io }) as JsonSchema;
+  delete inline.$schema;
+  return inline;
+}
+
+const ERROR_RESPONSE = {
+  description: 'Error',
+  content: { 'application/json': { schema: { $ref: '#/components/schemas/ContractError' } } },
+};
+
+function buildPaths(): Record<string, Record<string, unknown>> {
+  const paths: Record<string, Record<string, unknown>> = {};
+  for (const [operationId, route] of Object.entries(API_ROUTES) as [string, ApiRoute][]) {
+    const params = [...route.path.matchAll(/\{(\w+)\}/g)].map((m) => ({
+      name: m[1],
+      in: 'path',
+      required: true,
+      schema: { type: 'string', format: 'uuid' },
+    }));
+    const query = route.query
+      ? Object.entries(
+          (schemaRef(route.query, 'input', true).properties ?? {}) as Record<string, JsonSchema>,
+        ).map(([name, schema]) => ({ name, in: 'query', required: false, schema }))
+      : [];
+    const reason = route.reason
+      ? [
+          {
+            name: 'X-Change-Reason',
+            in: 'header',
+            required: false,
+            schema: { type: 'string' },
+            description: 'Recorded in the audit log',
+          },
+        ]
+      : [];
+    const status = String(route.status ?? 200);
+    paths[route.path] ??= {};
+    paths[route.path]![route.method] = {
+      operationId,
+      summary: route.summary,
+      parameters: [...params, ...query, ...reason],
+      ...(route.body
+        ? {
+            requestBody: {
+              required: true,
+              content: { 'application/json': { schema: schemaRef(route.body, 'input') } },
+            },
+          }
+        : {}),
+      responses: {
+        [status]: route.response
+          ? {
+              description: 'OK',
+              content: { 'application/json': { schema: schemaRef(route.response, 'output') } },
+            }
+          : { description: 'No content' },
+        '400': ERROR_RESPONSE,
+        '401': ERROR_RESPONSE,
+        '403': ERROR_RESPONSE,
+        '404': ERROR_RESPONSE,
+        '409': ERROR_RESPONSE,
+        '422': ERROR_RESPONSE,
+      },
+    };
+  }
+  return paths;
 }

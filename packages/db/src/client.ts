@@ -19,6 +19,9 @@ pg.types.setTypeParser(pg.types.builtins.INT8, (text: string) => {
   return value;
 });
 
+// date columns stay 'YYYY-MM-DD' strings: a JS Date would shift them by the server's time zone.
+pg.types.setTypeParser(pg.types.builtins.DATE, (text: string) => text);
+
 export function createDb(
   connectionString: string = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL,
 ): Database {

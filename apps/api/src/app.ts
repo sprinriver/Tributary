@@ -8,6 +8,9 @@ import { loadConfig, type ApiConfig } from './config.ts';
 import { registerErrorHandler } from './errors.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
 import { registerExperimentRoutes } from './routes/experiments.ts';
+import { registerProgramRoutes } from './routes/programs.ts';
+import { registerSampleRoutes } from './routes/samples.ts';
+import { registerVersionRoutes } from './routes/versions.ts';
 
 export const API_VERSION = '0.0.0';
 
@@ -43,7 +46,10 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     }));
 
     registerAuthRoutes(scoped, db, config, new OidcClient(config));
+    registerProgramRoutes(scoped, db);
     registerExperimentRoutes(scoped, db);
+    registerVersionRoutes(scoped, db);
+    registerSampleRoutes(scoped, db);
   });
   return app;
 }

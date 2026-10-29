@@ -18,7 +18,8 @@ export interface ManifestOptions {
   plateFormat: PlateFormat;
 }
 
-type CellResult = { ok: true; value: CellValue } | { ok: false; code: string; message: string };
+export type CellResult = { ok: true; value: CellValue } | { ok: false; code: string; message: string };
+
 const ok = (value: CellValue): CellResult => ({ ok: true, value });
 const bad = (code: string, message: string): CellResult => ({ ok: false, code, message });
 
@@ -38,7 +39,8 @@ function isCalendarDate(text: string): boolean {
   return !Number.isNaN(date.getTime()) && date.toISOString().startsWith(text);
 }
 
-function parseCell(
+/** Parses one cell for a field: the same rules for manifest cells and experiment-level custom values. */
+export function parseCell(
   field: MetadataFieldDef,
   raw: string,
   isKey: boolean,
