@@ -33,6 +33,7 @@
     "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@eslint/js": "10.0.1",
     "@playwright/test": "1.64.1",
     "@types/node": "24.19.2",
