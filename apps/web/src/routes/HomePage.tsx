@@ -13,7 +13,7 @@ export function HomePage() {
   );
 
   return (
-    <main style={{ fontFamily: 'system-ui, sans-serif', padding: 24 }}>
+    <main style={{ padding: 24 }}>
       <h1>Tributary</h1>
       <p>Experiment data platform for drug discovery.</p>
       <section aria-label="Service health">

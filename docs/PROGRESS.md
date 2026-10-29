@@ -149,3 +149,29 @@ Entry template:
 - Gaps and follow-ups: importers (Phase 8) turn the fixture outputs into dataset releases; fixture headers must be
   checked against each tool's SOURCE.md then. Plan-reviewer / omics-reviewer subagents not run.
 - Commit: 4f389b3
+
+## 2026-10-29 — Phase 3: Auth, roles and audit — done
+- Built: OIDC BFF (`/v1/auth/login|callback|logout|me`, authorization code + PKCE via openid-client, flow state in
+  a signed lax cookie, session in Postgres `app_session` with an httpOnly SameSite=strict cookie + CSRF token);
+  personal access tokens (`/v1/auth/tokens`; `trb_` prefix, sha256-hashed, read/write scopes, expiry, revoke);
+  service-account `kind` on app_user; CASL abilities from role bindings (user or group) plus an IdP group → role
+  mapping (`AUTH_GROUP_ROLE_MAP`; dev default admin/scientist/viewer realm roles); auth plugin (401/403, PAT scope,
+  CSRF); audit helper (`writeAudit`, reason from `X-Change-Reason`, same transaction as the change); minimal
+  experiment create/get/patch to prove enforcement; web sign-in link, user menu, `RequireAuth` guard, 403 page;
+  Keycloak realm `groups` claim mapper + post-logout redirect.
+- Decisions (and why):
+  - Callback answers with a same-site HTML refresh instead of a 302, so the strict session cookie is sent on the
+    next navigation (strict cookies are dropped on redirect chains that start at another site).
+  - Login group memberships are mirrored into app_group/group_member; mapped roles are derived per request, not
+    stored, so changing the mapping takes effect immediately.
+  - Role actions: viewer read; contributor read/create/update; approver + publish/approve; admin manage (program);
+    system_admin manage all.
+  - CI e2e now migrates the database and runs every e2e spec (was smoke only).
+  - DB-01's exact table list gained `access_token` and `app_session` (separate commit; still an exact match).
+- Dependencies added: openid-client 6.8.8, @casl/ability 7.0.2 (7.0.3/7.1.0 were a day old), @fastify/cookie 11.1.3
+  (11.1.4/5 two days old); zod and kysely declared directly in apps/api.
+- Evidence: `pnpm check` ✓ (api 13 tests) · `pnpm run test:api AUTH-02` ✓ · `pnpm run test:api AUD-01` ✓ ·
+  `pnpm e2e "AUTH-01|smoke"` ✓ (3) against local Keycloak · screenshot artifacts/phase-3/signed-in.png.
+- Gaps and follow-ups: re-auth on publish (`max_age`) is wired in `OidcClient.startLogin` but used in Phase 18;
+  helmet and rate limits in Phase 22; Playwright MCP walk-through not done (UI is minimal until Phase 5).
+- Commit: (pending)

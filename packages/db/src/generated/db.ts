@@ -33,6 +33,23 @@ export type JsonValue = JsonArray | JsonObject | JsonPrimitive;
 
 export type Timestamp = ColumnType<Date, Date | string, Date | string>;
 
+export interface AccessToken {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  expires_at: Timestamp;
+  id: Generated<string>;
+  last_used_at: Timestamp | null;
+  name: string;
+  revoked_at: Timestamp | null;
+  scopes: string[];
+  tenant_id: string;
+  token_hash: string;
+  token_prefix: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
 export interface AppGroup {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -43,12 +60,26 @@ export interface AppGroup {
   updated_at: Generated<Timestamp>;
 }
 
+export interface AppSession {
+  auth_time: Generated<Timestamp>;
+  created_at: Generated<Timestamp>;
+  csrf_token: string;
+  expires_at: Timestamp;
+  id: Generated<string>;
+  id_token: string | null;
+  last_seen_at: Generated<Timestamp>;
+  revoked_at: Timestamp | null;
+  token_hash: string;
+  user_id: string;
+}
+
 export interface AppUser {
   created_at: Generated<Timestamp>;
   created_by: string;
   deleted_at: Timestamp | null;
   email: string;
   id: Generated<string>;
+  kind: Generated<string>;
   last_login_at: Timestamp | null;
   name: Generated<string>;
   sub: string;
@@ -418,7 +449,9 @@ export interface TargetAnnotation {
 }
 
 export interface DB {
+  access_token: AccessToken;
   app_group: AppGroup;
+  app_session: AppSession;
   app_user: AppUser;
   assay_type: AssayType;
   audit_log: AuditLog;

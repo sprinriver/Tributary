@@ -40,8 +40,9 @@ jobs:
       - run: pnpm run bootstrap
       - name: Start local stack
         run: docker compose up -d --wait --wait-timeout 300
+      - run: pnpm db:migrate
       - run: pnpm run e2e:install-browsers
-      - run: pnpm e2e smoke
+      - run: pnpm e2e
       - if: always()
         uses: actions/upload-artifact@v7.0.2
         with:

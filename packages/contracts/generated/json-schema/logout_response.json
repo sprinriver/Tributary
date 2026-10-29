@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/LogoutResponse",
+  "$defs": {
+    "LogoutResponse": {
+      "type": "object",
+      "properties": {
+        "logout_url": {
+          "type": "string",
+          "format": "uri"
+        }
+      },
+      "required": [
+        "logout_url"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

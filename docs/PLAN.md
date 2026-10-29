@@ -105,16 +105,16 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 3 — Auth, roles and audit
-Status: todo
+Status: done
 Goal: SSO through Keycloak locally, per-program roles on every route, audit on every mutation.
 Spec: §10, ARCHITECTURE §10   Features: AUTH-01, AUTH-02, AUD-01
 In scope: OIDC BFF (`/v1/auth/login|callback|logout|me`), Postgres session store, CSRF, CASL ability factory from role bindings + group→role mapping config, Fastify authz preHandler, audit plugin (before/after, `X-Change-Reason`), personal access tokens (hashed, scoped, expiring) and service accounts; web login redirect, user menu, route guards, 403 page.
 Definition of done:
-- [ ] e2e: log in as scientist via Keycloak → name shown → logout
-- [ ] API tests: viewer 403 on POST /v1/experiments; contributor 201; cross-program read denied
-- [ ] Audit row has actor, action, before/after, reason for a mutation
-- [ ] PAT works on GET /v1/auth/me; revoked PAT rejected
-- [ ] `pnpm check` exits 0
+- [x] e2e: log in as scientist via Keycloak → name shown → logout
+- [x] API tests: viewer 403 on POST /v1/experiments; contributor 201; cross-program read denied
+- [x] Audit row has actor, action, before/after, reason for a mutation
+- [x] PAT works on GET /v1/auth/me; revoked PAT rejected
+- [x] `pnpm check` exits 0
 
 ## Phase 4 — Registry API
 Status: todo

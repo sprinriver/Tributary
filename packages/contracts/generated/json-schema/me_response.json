@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/MeResponse",
+  "$defs": {
+    "MeResponse": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "name": {
+              "type": "string"
+            },
+            "email": {
+              "type": "string"
+            },
+            "kind": {
+              "type": "string",
+              "enum": [
+                "human",
+                "service"
+              ]
+            }
+          },
+          "required": [
+            "id",
+            "name",
+            "email",
+            "kind"
+          ],
+          "additionalProperties": false
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "program_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "program_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "viewer",
+                  "contributor",
+                  "approver",
+                  "admin",
+                  "system_admin"
+                ]
+              }
+            },
+            "required": [
+              "program_id",
+              "program_code",
+              "role"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "auth": {
+          "type": "string",
+          "enum": [
+            "session",
+            "token"
+          ]
+        },
+        "csrf_token": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "user",
+        "roles",
+        "auth"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
