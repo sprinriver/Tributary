@@ -201,4 +201,4 @@ Entry template:
   OpenAPI regenerated (65 generated files) · web client compiles · acceptance tests untouched.
 - Gaps and follow-ups: local dev database seeded before 0009 has empty `sample.raw` — reset with
   `pnpm db:migrate down && pnpm db:migrate && pnpm db:seed`.
-- Commit: (pending)
+- Commit: 7835182

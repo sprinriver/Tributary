@@ -117,7 +117,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 4 — Registry API
-Status: done
+Status: done (7835182)
 Goal: Experiments and versions with draft/publish/clone/diff semantics, picklists and templates.
 Spec: M1, §8   Features: REG-01 … REG-06
 In scope: endpoints for programs, templates (read), experiments (create/list), versions (get/patch draft/publish/clone/diff/archive), samples (bulk upsert/delete/validate), contrasts; URNs; list filters (assay type, program, date range, name, status, simple text; archived hidden by default) with sort and cursor pagination; publish = full validation + reason (+ approver when the program requires it); `latest_published` maintenance.
