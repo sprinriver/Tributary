@@ -1421,6 +1421,12 @@
                               "type": "null"
                             }
                           ]
+                        },
+                        "publish_reason": {
+                          "type": [
+                            "string",
+                            "null"
+                          ]
                         }
                       },
                       "required": [
@@ -1436,7 +1442,8 @@
                         "is_latest_published",
                         "urn",
                         "created_at",
-                        "published_at"
+                        "published_at",
+                        "publish_reason"
                       ],
                       "additionalProperties": false
                     },
@@ -7336,6 +7343,12 @@
               }
             ]
           },
+          "publish_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "experiment_name": {
             "type": "string"
           },
@@ -7373,12 +7386,6 @@
             "items": {
               "$ref": "#/components/schemas/MetadataFieldDef"
             }
-          },
-          "publish_reason": {
-            "type": [
-              "string",
-              "null"
-            ]
           },
           "published_by": {
             "anyOf": [
@@ -7418,6 +7425,7 @@
           "urn",
           "created_at",
           "published_at",
+          "publish_reason",
           "experiment_name",
           "assay_type",
           "program_id",
@@ -7425,7 +7433,6 @@
           "description",
           "custom",
           "custom_fields",
-          "publish_reason",
           "published_by",
           "sample_count",
           "contrasts"
@@ -7679,6 +7686,12 @@
                 "type": "null"
               }
             ]
+          },
+          "publish_reason": {
+            "type": [
+              "string",
+              "null"
+            ]
           }
         },
         "required": [
@@ -7694,7 +7707,8 @@
           "is_latest_published",
           "urn",
           "created_at",
-          "published_at"
+          "published_at",
+          "publish_reason"
         ],
         "additionalProperties": false
       }

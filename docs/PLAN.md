@@ -127,15 +127,15 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 5 — Registry UI
-Status: todo
+Status: done
 Goal: List, create, edit, publish and version experiments in the browser (v1 parity + versions/diff).
 Spec: M1, REFERENCE_V1 §2–4   Features: REG-07, REG-08
 In scope: experiments list (filters row, column chooser, sort, pagination, status chips, actions — *Launch pipeline* disabled with tooltip until Phase 11, *Create version*), experiment page (overview, samples tab placeholder, versions tab with history + diff, custom fields with searchable toggle), create wizard, publish dialog with reason, empty/error states.
 Definition of done:
-- [ ] e2e: create → custom fields → publish → create version → diff shows exactly the changes; screenshots in `artifacts/phase-5/`
-- [ ] Playwright MCP walk-through as a scientist; issues found and fixed listed in PROGRESS
-- [ ] axe check: zero serious violations on list and form pages
-- [ ] `pnpm check` exits 0
+- [x] e2e: create → custom fields → publish → create version → diff shows exactly the changes; screenshots in `artifacts/phase-5/`
+- [x] Playwright MCP walk-through as a scientist; issues found and fixed listed in PROGRESS
+- [x] axe check: zero serious violations on list and form pages
+- [x] `pnpm check` exits 0
 
 ## Phase 6 — Sample manifest editor
 Status: todo

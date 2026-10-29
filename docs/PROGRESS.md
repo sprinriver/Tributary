@@ -202,3 +202,23 @@ Entry template:
 - Gaps and follow-ups: local dev database seeded before 0009 has empty `sample.raw` — reset with
   `pnpm db:migrate down && pnpm db:migrate && pnpm db:seed`.
 - Commit: 7835182
+
+## 2026-10-29 — Phase 5: Registry UI — done
+- Built: experiments list (filters in the URL: name, text, assay type, program, date range, archived; sortable
+  headers; column chooser; cursor pagination; row actions *Launch pipeline* — disabled with a tooltip until
+  pipelines exist — and *Create version*), 3-step create wizard (details → experiment custom fields with searchable
+  flag → review), experiment page (version picker, status chip, Overview / Samples / Versions tabs), Samples tab
+  with a TSV paste box and per-cell problems (the full grid editor is Phase 6), version history with publish
+  reasons, version diff (fields, custom values, sample rows), publish dialog requiring a reason; design tokens in
+  `apps/web/src/styles.css` (no UI kit: no Celeste repo); shared `Field`, `Dialog` (native `<dialog>`), `Tabs`.
+- Walk-through findings fixed: duplicate "Experiments" link names (back link now "← Experiment list"); status
+  badges inside table rows were live regions, so rows lost "Published" from their accessible name (StatusBadge
+  `live={false}`); action-cell flex layout broke table borders; stacked paragraph spacing; a version page stuck on
+  "Loading…" when the version request failed (errors now shown); API returned 400 for `content-type: application/json`
+  with an empty body (now treated as no body) and 500 for malformed ids (now 400) — new tests in `apps/api/src/http.test.ts`.
+- Decisions: version summaries carry `publish_reason`; CI e2e also runs `pnpm db:seed`.
+- Dependencies added: @axe-core/playwright 4.14.0 (dev, MPL-2.0).
+- Evidence: `pnpm check` ✓ · `pnpm e2e "REG-0[78]"` ✓ (3) · full `pnpm e2e` ✓ (6) · axe: zero serious/critical on
+  `/experiments` and `/experiments/new` · screenshots in artifacts/phase-5/ · acceptance tests untouched.
+- Gaps: walk-through done from Playwright screenshots, not the Playwright MCP (not reliably connected here).
+- Commit: (pending)

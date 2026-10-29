@@ -10,13 +10,15 @@ const toneColour: Record<StatusTone, string> = {
 export interface StatusBadgeProps {
   label: string;
   tone: StatusTone;
+  /** A live status region (default). Use false inside tables and lists, where the text is part of the row. */
+  live?: boolean;
 }
 
 /** Small text badge; the tone is conveyed by text as well as colour. */
-export function StatusBadge({ label, tone }: StatusBadgeProps) {
+export function StatusBadge({ label, tone, live = true }: StatusBadgeProps) {
   return (
     <span
-      role="status"
+      role={live ? 'status' : undefined}
       data-tone={tone}
       style={{
         color: toneColour[tone],

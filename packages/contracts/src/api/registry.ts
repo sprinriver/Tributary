@@ -77,6 +77,7 @@ export const VersionSummarySchema = z
     urn: z.string(),
     created_at: TimestampSchema,
     published_at: TimestampSchema.nullable(),
+    publish_reason: z.string().nullable(),
   })
   .meta({ id: 'VersionSummary' });
 export type VersionSummary = z.infer<typeof VersionSummarySchema>;
@@ -151,7 +152,6 @@ export const VersionDetailSchema = VersionSummarySchema.extend({
   description: z.string(),
   custom: z.record(z.string(), z.unknown()),
   custom_fields: z.array(MetadataFieldDefSchema),
-  publish_reason: z.string().nullable(),
   published_by: z.uuid().nullable(),
   sample_count: z.int(),
   contrasts: z.array(ContrastRowSchema),

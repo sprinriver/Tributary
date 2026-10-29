@@ -41,6 +41,7 @@ jobs:
       - name: Start local stack
         run: docker compose up -d --wait --wait-timeout 300
       - run: pnpm db:migrate
+      - run: pnpm db:seed
       - run: pnpm run e2e:install-browsers
       - run: pnpm e2e
       - if: always()

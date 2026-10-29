@@ -58,6 +58,10 @@ export function registerErrorHandler(app: FastifyInstance): void {
     }
     if (code === '23505')
       return reply.status(409).send({ code: 'conflict', message: 'This already exists.' });
+    // invalid_text_representation, e.g. a malformed id in the path
+    if (code === '22P02') {
+      return reply.status(400).send({ code: 'invalid', message: 'A value in the request is malformed.' });
+    }
     const status = (error as FastifyError).statusCode;
     if (status && status >= 400 && status < 500) {
       return reply.status(status).send({ code: 'bad_request', message: error.message });

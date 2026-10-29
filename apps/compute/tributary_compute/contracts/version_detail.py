@@ -131,6 +131,7 @@ class VersionDetail(BaseModel):
         ),
     ]
     published_at: PublishedAt | None
+    publish_reason: str | None
     experiment_name: str
     assay_type: Literal[
         "proteomics_dia", "proteomics_dda", "proteomics_tmt", "rnaseq", "crispr_screen", "ngs_raw"
@@ -145,7 +146,6 @@ class VersionDetail(BaseModel):
     description: str
     custom: dict[str, Any]
     custom_fields: list[MetadataFieldDef]
-    publish_reason: str | None
     published_by: PublishedBy | None
     sample_count: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     contrasts: list[ContrastRow]

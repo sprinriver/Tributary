@@ -94,6 +94,7 @@ class VersionSummary(BaseModel):
         ),
     ]
     published_at: PublishedAt | None
+    publish_reason: str | None
 
 
 class ExperimentDetail(BaseModel):

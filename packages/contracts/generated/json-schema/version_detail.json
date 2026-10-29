@@ -97,6 +97,12 @@
             }
           ]
         },
+        "publish_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "experiment_name": {
           "type": "string"
         },
@@ -134,12 +140,6 @@
           "items": {
             "$ref": "#/$defs/MetadataFieldDef"
           }
-        },
-        "publish_reason": {
-          "type": [
-            "string",
-            "null"
-          ]
         },
         "published_by": {
           "anyOf": [
@@ -179,6 +179,7 @@
         "urn",
         "created_at",
         "published_at",
+        "publish_reason",
         "experiment_name",
         "assay_type",
         "program_id",
@@ -186,7 +187,6 @@
         "description",
         "custom",
         "custom_fields",
-        "publish_reason",
         "published_by",
         "sample_count",
         "contrasts"

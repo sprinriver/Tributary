@@ -28,6 +28,16 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
   if (!options.db) app.addHook('onClose', () => db.destroy());
 
   registerErrorHandler(app);
+  // Clients often send `content-type: application/json` with no body (e.g. POST …/clone); treat it as no body.
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (_request, body, done) => {
+    const text = typeof body === 'string' ? body : body.toString('utf8');
+    if (text.trim() === '') return done(null, undefined);
+    try {
+      done(null, JSON.parse(text));
+    } catch {
+      done(Object.assign(new Error('The request body is not valid JSON.'), { statusCode: 400 }), undefined);
+    }
+  });
   void app.register(cookie, { secret: config.cookieSecret });
   void app.register(async (scoped) => {
     registerAuth(scoped, db, config);

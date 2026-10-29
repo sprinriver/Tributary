@@ -96,6 +96,12 @@
               "type": "null"
             }
           ]
+        },
+        "publish_reason": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [
@@ -111,7 +117,8 @@
         "is_latest_published",
         "urn",
         "created_at",
-        "published_at"
+        "published_at",
+        "publish_reason"
       ],
       "additionalProperties": false
     },
