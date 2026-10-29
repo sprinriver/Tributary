@@ -174,4 +174,4 @@ Entry template:
   `pnpm e2e "AUTH-01|smoke"` ✓ (3) against local Keycloak · screenshot artifacts/phase-3/signed-in.png.
 - Gaps and follow-ups: re-auth on publish (`max_age`) is wired in `OidcClient.startLogin` but used in Phase 18;
   helmet and rate limits in Phase 22; Playwright MCP walk-through not done (UI is minimal until Phase 5).
-- Commit: (pending)
+- Commit: cd4a054

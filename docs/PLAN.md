@@ -105,7 +105,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 3 — Auth, roles and audit
-Status: done
+Status: done (cd4a054)
 Goal: SSO through Keycloak locally, per-program roles on every route, audit on every mutation.
 Spec: §10, ARCHITECTURE §10   Features: AUTH-01, AUTH-02, AUD-01
 In scope: OIDC BFF (`/v1/auth/login|callback|logout|me`), Postgres session store, CSRF, CASL ability factory from role bindings + group→role mapping config, Fastify authz preHandler, audit plugin (before/after, `X-Change-Reason`), personal access tokens (hashed, scoped, expiring) and service accounts; web login redirect, user menu, route guards, 403 page.
