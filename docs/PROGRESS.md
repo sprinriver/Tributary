@@ -260,4 +260,4 @@ Entry template:
 - Gaps: OLS4 is not reachable from the build container, so the live OLS path is covered by a fake upstream only;
   experiment-level "instrument" has no dedicated field yet (custom field); Playwright MCP walk-through replaced by
   screenshot review (invalid cells had no visible style — fixed).
-- Commit: (pending)
+- Commit: 68fa2e4

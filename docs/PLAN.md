@@ -138,7 +138,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 6 — Sample manifest editor
-Status: done
+Status: done (68fa2e4)
 Goal: Upload or paste, map, validate and edit manifests with ontology-backed cells, plate view, contrasts and SDRF round-trip.
 Spec: M2, §6.1   Features: MAN-01 … MAN-06
 In scope: Web Worker parsing (Papa Parse), column-mapping step + saved presets, AG Grid editing with cell errors, add/delete rows, bulk fill, find/replace, session undo, sample-level custom columns (chips + searchable), quantity cells, OLS4 typeahead through an API proxy with Postgres cache, plate view (96/384), contrasts editor, SDRF export/import via apps/compute (`sdrf-pipelines` validation), server re-validation on save.
