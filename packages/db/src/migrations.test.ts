@@ -3,7 +3,8 @@ import { createDb, listMigrationNames, migrateDownAll, migrateToLatest, type Dat
 import { startTestDatabase, type TestDatabase } from './testing/postgres.ts';
 
 // Every SPEC §4 entity has a table, plus auth tables (Phase 3) and the
-// manifest editor's ontology cache and mapping presets (Phase 6).
+// manifest editor's ontology cache and mapping presets (Phase 6), and QC overrides and lifecycle
+// policies (Phase 7).
 const TABLES = [
   'access_token',
   'app_group',
@@ -20,6 +21,7 @@ const TABLES = [
   'experiment_version',
   'file_object',
   'group_member',
+  'lifecycle_policy',
   'lineage_edge',
   'lineage_node',
   'mapping_preset',
@@ -30,6 +32,7 @@ const TABLES = [
   'pipeline_definition',
   'pipeline_run',
   'program',
+  'qc_override',
   'role_binding',
   'sample',
   'sample_file',
