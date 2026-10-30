@@ -21,6 +21,17 @@ Statistics in result tables are simulated around known true effects, not compute
 | `reference/compounds.tsv` | Registry export | InChIKeys left empty (no toolkit to compute them) |
 | `reference/compound_properties.tsv` | ADME/physchem results | Solubility capped at 200 µM with qualifier `>` |
 | `reference/target_annotations.tsv` | Key/value target annotations | Real proteins only |
+| `tools/samples.tsv` | Manifest for the tool fixtures | 4 runs `TOOLS_run01..04`, 2 DMSO + 2 treated |
+| `tools/diann/report.tsv` | DIA-NN main report columns (TSV; tests convert to Parquet) | Precursor rows, q < 0.01 |
+| `tools/alphadia/precursors.tsv`, `pg.matrix.tsv` | AlphaDIA 2.3 outputs | Columns from `alphadia/constants/keys.py` |
+| `tools/mzqc/runs.mzqc.json` | HUPO-PSI mzQC 1.0.0 | Numeric metrics plus one table-valued metric |
+| `tools/spectronaut/report.tsv` | Spectronaut long report | PG.* columns repeat per fragment row |
+| `tools/maxquant/proteinGroups.txt` | MaxQuant proteinGroups | One `+` reverse and one `+` contaminant row; 0 = not quantified |
+| `tools/fragpipe/combined_protein.tsv` | FragPipe combined_protein.tsv | Experiments named by sample key |
+| `tools/qpx/pg.tsv` | quantms QPX `pg` (TSV; tests convert to Parquet with list columns) | One row per group x run |
+| `tools/msstats/comparison.csv` | MSstats ComparisonResult | One `oneConditionMissing` row (log2FC Inf) |
+| `tools/deqms/deqms.tsv` | DEqMS outputResult | sca.* columns |
+| `tools/deseq2/results.csv` | DESeq2 results via write.csv | Rows with NA for zero counts, outlier, independent filtering |
 
 Header spellings follow each tool's documentation or source as noted in the generator; the importer phases
 (8-9) re-verify them against official docs in each importer's SOURCE.md before relying on them.

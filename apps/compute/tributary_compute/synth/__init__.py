@@ -18,6 +18,7 @@ from tributary_compute.synth.manifests import COLUMNS, build_samples, contrasts
 from tributary_compute.synth.proteomics import dia_contrast, dose_series, tmt_contrast
 from tributary_compute.synth.readme import README
 from tributary_compute.synth.reference import write_reference
+from tributary_compute.synth.tools import write_tools
 
 DEFAULT_SEED = 20261026
 
@@ -72,6 +73,7 @@ def generate(out_dir: Path, seed: int = DEFAULT_SEED) -> dict[str, str]:
     write_json(out_dir / "programs.json", list(PROGRAMS))
     write_json(out_dir / "experiments.json", experiments)
     write_reference(out_dir / "reference", _rng(seed, "reference"))
+    write_tools(out_dir / "tools", proteins, lambda name: _rng(seed, name))
     (out_dir / "README.md").write_text(README.format(seed=seed), encoding="utf-8")
 
     return {
