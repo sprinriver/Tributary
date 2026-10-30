@@ -426,4 +426,4 @@ Entry template:
 - Gaps: no real AWS run (needs a sandbox account; Batch head-job IAM per Nextflow's AWS docs and HealthOmics region
   list to verify then); Batch/HealthOmics `recentLogs` return [] (logs:GetLogEvents IAM in Phase 21); cost
   estimates stay null.
-- Commit: (pending)
+- Commit: cf1fb9b

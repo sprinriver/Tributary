@@ -188,7 +188,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 10 — Pipeline runners and status (backend)
-Status: done
+Status: done (cf1fb9b)
 Goal: One runner interface launches runs locally, on AWS Batch or HealthOmics, and tracks status, logs and outputs reliably.
 Spec: M4, §7.4, ARCHITECTURE §8   Features: PIPE-01 … PIPE-04
 In scope: launch endpoint enforcing the Phase 7 QC gate (rejected while QC failed unless an approver override exists); `PipelineRunner` + adapters `local` (Nextflow in Docker running `pipelines/demo`; a fake runner for unit tests), `aws_batch` (SubmitJob head job, DescribeJobs, TerminateJob), `healthomics` (StartRun with requestId, GetRun, CancelRun, log stream ARNs); SQS consumer for `aws.batch` and `aws.omics` events with idempotent upserts; pg-boss poller for non-terminal runs; outputs → importer jobs → published releases → lineage edges; cost estimate fields; `pipelines/demo` writes fixture outputs (DIA-NN pg_matrix + limma table).
