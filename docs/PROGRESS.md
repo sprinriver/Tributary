@@ -307,3 +307,50 @@ Entry template:
   checks; bucket lifecycle rules are generated, not applied (Terraform, Phase 21); Playwright MCP walk-through
   replaced by e2e screenshots.
 - Commit: 4e52deb
+
+## 2026-10-30 — Phase 8: Dataset releases and first importers — done (Iceberg read pending)
+- Built: `packages/importers` framework — load (delimiter from extension/header, decimal-comma detection),
+  importer `build` → DuckDB SQL (identifiers quoted, values as parameters), contract casts, quality rules compiled
+  from the contracts to SQL assertions (`<col>_not_null`, range/enum/unique, `<col>_numeric` parse checks,
+  importer rules), column stats, transformations and source metadata (original columns, tool version, NA tokens).
+  Importers: `diann_pg_matrix` (melt with `UNPIVOT INCLUDE NULLS`, runs → manifest by instrument_run or raw_file
+  name, ambiguity rejected), `limma_toptable` (explicit contrast, BH default recorded, no-identifier tables refused),
+  `custom_tabular` (mapping + constants, any importable kind), reference presets `reference_compound`,
+  `reference_compound_property`, `reference_target_annotation`, `reference_id_mapping` (versioned by source
+  release). SOURCE.md for both tool importers. apps/query: internal token, `/internal/imports` (download source →
+  run importer → Parquet `COPY` → upload once) and `/internal/releases/read`. API: `POST /v1/imports` (QC-passed
+  files only; staged or rejected release, audited), `GET /v1/datasets`, `/v1/datasets/:id`, `/v1/releases/:id`
+  (contract, stats, validation, source, transformations, lineage stub), `/preview` (DuckDB read), `publish` /
+  `reject` with a reason (approver when the program requires approval; immutable after, DB trigger),
+  `GET /v1/contracts/:kind/odcs` (ODCS v3.0.2 YAML), `GET /v1/importers`, import presets per program. Web:
+  Datasets catalog page, release page (status, publish dialog, quality rules, schema, column stats, provenance,
+  first rows) and an "Import…" dialog on the Files tab. Migration 0012 (release importer/file/validation/reason,
+  dataset identity index, `import_preset`); ADR 0017.
+- Decisions (and why):
+  - Releases are immutable Parquet objects + Postgres catalog (ADR 0017): `extensions.duckdb.org` is denied by
+    this environment's network policy, so DuckDB's iceberg/httpfs extensions cannot be installed. The Iceberg
+    adapter is the follow-up once the host is allowed (CI can download it).
+  - Imports run synchronously API → query (one at a time per query process); a pg-boss job can wrap it in Phase 10.
+  - Failed rules store a `rejected` release with the failures (nothing written to storage), so the rejection is
+    visible in the catalog with its reasons.
+  - Empty DIA-NN cells stay as rows with null intensity; `log2_intensity` only where intensity > 0 (recorded).
+  - Header names with control characters are refused (they cannot be quoted as identifiers); CSV/TSV QC now
+    requires text content (Phase 7 gap found by the API test: a binary `.tsv` passed QC).
+  - Omics review fixes: integer columns never round (non-integral → `<col>_numeric`), raw_file URIs matched by file
+    name, ambiguous run matches rejected (`run_ambiguous`), limma refuses tables without identifiers, the contrast
+    is always chosen explicitly, defaulted `feature_type` recorded plus a warn rule for non-accession IDs.
+    Deferred review nits: decimal-comma detection over all columns (thousands separators), ±Inf in min-only range
+    rules, units/log base for custom_tabular dose and fold-change columns, adj_method validation, CI level,
+    source row-count reconciliation, possible DIA-NN 2.x `N.Sequences` columns (unverified; fail loudly).
+- Test amendments before the test commit was pushed: none to the test commit; the protein-group count in DS-02 was
+  derived from the fixture before committing. Review regression tests were added afterwards (3 new tests).
+  DB-01 gained `import_preset` (separate commit).
+- Dependencies added: @duckdb/node-api 2.0.0-r.1 and zod 4.6.7 to packages/importers; @aws-sdk/client-s3 3.1156.0
+  and zod to apps/query (all already pinned elsewhere).
+- Sources read: DIA-NN README (GitHub, 2.x), limma `man/toptable.Rd` and `R/toptable.R` 3.99.3 (bioc mirror; read
+  only — GPL, nothing copied). SOURCE.md files await the owner's review.
+- Evidence: `pnpm check` ✓ (importers 19, query 4, api 66, db 16, web 17, contracts 58) · `pnpm e2e` ✓ (13, incl.
+  DS-05) · screenshots in artifacts/phase-8/.
+- Gaps: Iceberg/S3 Tables read (blocked host, see above); `datacontract lint` not run (CLI not installed); reference
+  files are uploaded through an experiment version (no program-level upload yet); S3 Tables region check needs AWS.
+- Commit: (pending)

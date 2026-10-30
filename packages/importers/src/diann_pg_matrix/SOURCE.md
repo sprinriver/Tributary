@@ -30,10 +30,13 @@ without stopping, so the importer was built against this file).
 - `is_imputed = false` (DIA-NN does not impute matrix values per the README); `n_precursors` is not in the matrix → null.
 
 ## Runs → samples
-`instrument_run` is matched to the manifest's `instrument_run`, else the run's file name to the manifest's
-`raw_file`. A run that matches no sample fails the `run_in_manifest` rule (the release is rejected).
+`instrument_run` is matched to the manifest's `instrument_run`, else the run's file name to the file name of the
+manifest's `raw_file` (a path or URI). A run that matches no sample fails `run_in_manifest`; a run that matches
+more than one sample fails `run_ambiguous` (the release is rejected either way).
 
 ## Versions
 The matrix carries no DIA-NN version. Header spellings above are the DIA-NN 2.x README's; any extra annotation
 column not listed here is treated as a run and so fails `run_in_manifest` loudly rather than being guessed.
+Unverified: some 2.x builds may add per-group count columns (e.g. `N.Sequences`); the README read on 2026-10-30
+does not list them, so they are not mapped — a real matrix with them fails loudly until they are confirmed.
 The tool version is recorded as given by the caller (`options.tool_version`), else `unknown`.

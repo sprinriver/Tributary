@@ -11,6 +11,8 @@ import { buildApp } from './app.ts';
 import { createPersonalAccessToken } from './auth/tokens.ts';
 import { loadConfig, type ApiConfig } from './config.ts';
 import { MemoryIngestQueue } from './ingest/queue.ts';
+import { buildApp as buildQueryApp } from '@tributary/query/app';
+import { loadQueryConfig } from '@tributary/query/config';
 import { Storage } from './storage.ts';
 
 /** Configuration for API tests: dev defaults, no IdP group mapping. */
@@ -35,7 +37,27 @@ export interface TestApi {
 }
 
 /** `fetch` replaces outbound HTTP (OLS4, apps/compute) so tests never touch the network. */
-export async function startTestApi(options: { fetch?: typeof fetch; s3?: boolean } = {}): Promise<TestApi> {
+/** Routes calls to `config.queryUrl` into an in-process apps/query instance; everything else to `next`. */
+function withQueryService(queryApp: FastifyInstance, queryUrl: string, next: typeof fetch): typeof fetch {
+  return (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = String(input instanceof Request ? input.url : input);
+    if (!url.startsWith(queryUrl)) return next(input, init);
+    const res: LightMyRequestResponse = await queryApp.inject({
+      method: (init?.method ?? 'GET') as NonNullable<InjectOptions['method']>,
+      url: url.slice(queryUrl.length),
+      headers: Object.fromEntries(new Headers(init?.headers).entries()),
+      ...(init?.body ? { payload: String(init.body) } : {}),
+    });
+    return new Response(res.body, {
+      status: res.statusCode,
+      headers: { 'content-type': 'application/json' },
+    });
+  }) as typeof fetch;
+}
+
+export async function startTestApi(
+  options: { fetch?: typeof fetch; s3?: boolean; query?: boolean } = {},
+): Promise<TestApi> {
   const [testDb, testS3] = await Promise.all([
     startTestDatabase(),
     options.s3 ? startTestS3() : Promise.resolve<TestS3 | undefined>(undefined),
@@ -51,15 +73,28 @@ export async function startTestApi(options: { fetch?: typeof fetch; s3?: boolean
       rawBucket: 'test-raw',
     },
   });
+  config.queryUrl = 'http://query.test';
   const storage = new Storage(config.s3);
   if (testS3) await storage.ensureBucket([config.publicUrl]);
   const queue = new MemoryIngestQueue();
+  const queryApp = options.query
+    ? await buildQueryApp({
+        config: loadQueryConfig({
+          NODE_ENV: 'test',
+          S3_ENDPOINT: config.s3.endpoint,
+          S3_ACCESS_KEY_ID: TEST_S3_CREDENTIALS.accessKeyId,
+          S3_SECRET_ACCESS_KEY: TEST_S3_CREDENTIALS.secretAccessKey,
+          QUERY_INTERNAL_TOKEN: config.queryInternalToken,
+        }),
+      })
+    : undefined;
+  const outbound = options.fetch ?? fetch;
   const app = buildApp({
     db,
     config,
     storage,
     ingestQueue: queue,
-    ...(options.fetch ? { fetch: options.fetch } : {}),
+    fetch: queryApp ? withQueryService(queryApp, config.queryUrl, outbound) : outbound,
   });
   return {
     testDb,
@@ -111,6 +146,7 @@ export async function startTestApi(options: { fetch?: typeof fetch; s3?: boolean
     drainIngest: () => queue.drain({ db, storage }),
     async close() {
       await app.close();
+      await queryApp?.close();
       await db.destroy();
       await Promise.all([testDb.stop(), testS3?.stop()]);
     },

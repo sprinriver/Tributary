@@ -1,5 +1,7 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 import { ForbiddenPage, Layout } from './components/Layout.tsx';
+import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
+import { ReleasePage } from './datasets/ReleasePage.tsx';
 import { ExperimentPage } from './routes/ExperimentPage.tsx';
 import { ExperimentsPage, type ExperimentsSearch } from './routes/ExperimentsPage.tsx';
 import { HomePage } from './routes/HomePage.tsx';
@@ -34,6 +36,20 @@ const experimentRoute = createRoute({
     return version ? { version } : {};
   },
 });
+const datasetsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/datasets',
+  component: DatasetsPage,
+  validateSearch: (search: Record<string, unknown>): DatasetsSearch =>
+    Object.fromEntries(
+      ['kind', 'q'].map((k) => [k, str(search[k])]).filter(([, v]) => v !== undefined),
+    ) as DatasetsSearch,
+});
+const releaseRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/releases/$id',
+  component: ReleasePage,
+});
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/forbidden',
@@ -46,6 +62,8 @@ export const router = createRouter({
     experimentsRoute,
     newExperimentRoute,
     experimentRoute,
+    datasetsRoute,
+    releaseRoute,
     forbiddenRoute,
   ]),
 });

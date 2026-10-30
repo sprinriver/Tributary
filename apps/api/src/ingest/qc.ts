@@ -2,6 +2,7 @@ import type { Compression, FileFormat, QcCheck } from '@tributary/contracts';
 import {
   CFB_MAGIC,
   headLines,
+  looksLikeText,
   PAR1,
   SOURCES,
   splitCsv,
@@ -144,6 +145,16 @@ function vcfChecks(input: QcInput): QcCheck[] {
 
 function tableChecks(format: 'csv' | 'tsv', input: QcInput): QcCheck[] {
   const source = SOURCES[format];
+  if (!looksLikeText(input.detection.inner)) {
+    return [
+      check(
+        `${format}.text`,
+        false,
+        'The file is not text (binary content), so it cannot be a table.',
+        source,
+      ),
+    ];
+  }
   const lines = headLines(innerText(input), innerComplete(input)).filter((l) => l !== '');
   if (!lines.length) return [check(`${format}.header`, false, 'The table has no header line.', source)];
   const split = format === 'csv' ? splitCsv : (l: string) => l.split('\t');

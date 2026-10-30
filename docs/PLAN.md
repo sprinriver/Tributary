@@ -167,16 +167,16 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 8 — Dataset releases and first importers
-Status: todo
+Status: done except the Iceberg read (ADR 0017)
 Goal: Tool outputs become validated, immutable dataset releases that DuckDB can query.
 Spec: M5, §6.2–6.3, ARCHITECTURE §5–6   Features: DS-01 … DS-05
 In scope: importer executor in apps/query (DuckDB attached to the SeaweedFS Iceberg catalog locally, S3 Tables in AWS — config switch); release lifecycle staged → published/rejected; quality rules compiled from contracts to SQL assertions; column stats; ODCS YAML export per kind (+ `datacontract lint` in CI if it fits); importers `diann_pg_matrix`, `limma_toptable`, `custom_tabular` (+ mapping presets API); reference imports (compound, compound_property, target_annotation, id_mapping); catalog UI (list, release detail: schema, stats, contract, lineage stub). Check S3 Tables availability in the first customer's region; ADR if a fallback is needed.
 Definition of done:
-- [ ] Golden-file tests per importer (fixture → expected canonical rows hash)
-- [ ] A broken fixture is rejected and names the failing rule
-- [ ] Published release immutable (test); visible in catalog (e2e)
-- [ ] DuckDB reads a published release through the Iceberg catalog (integration test)
-- [ ] `pnpm check` exits 0
+- [x] Golden-file tests per importer (fixture → expected canonical rows hash)
+- [x] A broken fixture is rejected and names the failing rule
+- [x] Published release immutable (test); visible in catalog (e2e)
+- [ ] DuckDB reads a published release through the Iceberg catalog (integration test) — blocked: the session's network policy denies extensions.duckdb.org, so the iceberg/httpfs extensions cannot be installed; releases are Parquet objects read by DuckDB instead (ADR 0017; tested)
+- [x] `pnpm check` exits 0
 
 ## Phase 9 — Remaining importers (fan-out)
 Status: todo

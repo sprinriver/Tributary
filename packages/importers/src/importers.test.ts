@@ -3,10 +3,20 @@ import { readFileSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { canonicalRows, detectImporters, IMPORTERS, rowsHash, runImport, type ImportContext } from './index.ts';
+import {
+  canonicalRows,
+  detectImporters,
+  IMPORTERS,
+  rowsHash,
+  runImport,
+  type ImportContext,
+} from './index.ts';
 
 const FIXTURES = resolve(import.meta.dirname, '../../../fixtures');
-const GOLDEN = JSON.parse(readFileSync(resolve(import.meta.dirname, 'golden.json'), 'utf8')) as Record<string, string>;
+const GOLDEN = JSON.parse(readFileSync(resolve(import.meta.dirname, 'golden.json'), 'utf8')) as Record<
+  string,
+  string
+>;
 const EV = '0190a000-0000-7000-8000-0000000000e1';
 const PROGRAM = '0190a000-0000-7000-8000-0000000000a1';
 const CONTRAST = { id: '0190a000-0000-7000-8000-0000000000c1', label: 'CPD-000005@1 µM vs DMSO' };
@@ -19,7 +29,11 @@ function runsOf(manifest: string): NonNullable<ImportContext['runs']> {
   return lines.map((line) => {
     const cells = line.split('\t');
     const get = (name: string) => cells[cols.indexOf(name)] ?? null;
-    return { sample_key: get('sample_key')!, instrument_run: get('instrument_run'), raw_file: get('raw_file') };
+    return {
+      sample_key: get('sample_key')!,
+      instrument_run: get('instrument_run'),
+      raw_file: get('raw_file'),
+    };
   });
 }
 const write = (name: string, text: string) => {
@@ -84,7 +98,9 @@ describe('DS-02: diann_pg_matrix', () => {
     const missing = rows.filter((r) => r.intensity === null);
     expect(missing.length).toBeGreaterThan(0);
     for (const r of missing) expect(r.log2_intensity).toBeNull();
-    expect(result.transformations.map((t) => t.step)).toEqual(expect.arrayContaining(['melt', 'map_runs', 'split', 'derive']));
+    expect(result.transformations.map((t) => t.step)).toEqual(
+      expect.arrayContaining(['melt', 'map_runs', 'split', 'derive']),
+    );
     expect(result.source.original_columns.slice(0, 4)).toEqual([
       'Protein.Group',
       'Protein.Names',
@@ -116,7 +132,9 @@ describe('DS-02: diann_pg_matrix', () => {
       runs: PG_RUNS.slice(1),
     });
     expect(result.passed).toBe(false);
-    expect(failedRules(result)).toEqual(expect.arrayContaining(['run_in_manifest', 'intensity_non_negative']));
+    expect(failedRules(result)).toEqual(
+      expect.arrayContaining(['run_in_manifest', 'intensity_non_negative']),
+    );
     const run = result.failures.find((f) => f.rule_id === 'run_in_manifest')!;
     expect(run.message).toMatch(/ONC-DIA-01_run01/);
     expect(run.source).toBeTruthy();
@@ -206,14 +224,24 @@ describe('DS-04: custom_tabular and reference imports', () => {
       programId: PROGRAM,
       options: {
         kind: 'protein_quant',
-        columns: { protein_group: 'Accession', sample_key: 'Sample', instrument_run: 'Run', intensity: 'Abundance' },
+        columns: {
+          protein_group: 'Accession',
+          sample_key: 'Sample',
+          instrument_run: 'Run',
+          intensity: 'Abundance',
+        },
         constants: { is_imputed: 'false' },
       },
     });
     expect(failedRules(result)).toEqual([]);
     const rows = await canonicalRows(conn, result);
     expect(rows).toHaveLength(3);
-    expect(rows[0]).toMatchObject({ protein_group: 'P1;P2', protein_ids: ['P1', 'P2'], intensity: 10.5, gene_names: [] });
+    expect(rows[0]).toMatchObject({
+      protein_group: 'P1;P2',
+      protein_ids: ['P1', 'P2'],
+      intensity: 10.5,
+      gene_names: [],
+    });
     expect(result.source.mapping).toMatchObject({ intensity: 'Abundance' });
   });
 
@@ -254,7 +282,10 @@ describe('DS-04: custom_tabular and reference imports', () => {
   });
 
   it('DS-04: a compound property with an unknown qualifier is rejected naming the rule', async () => {
-    const text = readFileSync(join(FIXTURES, 'reference/compound_properties.tsv'), 'utf8').replace('\t=\t', '\t~\t');
+    const text = readFileSync(join(FIXTURES, 'reference/compound_properties.tsv'), 'utf8').replace(
+      '\t=\t',
+      '\t~\t',
+    );
     const result = await runImport(conn, 'reference_compound_property', write('props.tsv', text), {
       programId: PROGRAM,
     });
@@ -267,14 +298,20 @@ describe('DS-04: custom_tabular and reference imports', () => {
       'uniprot_accession\tgene_symbol\tensembl_gene_id\nP04637\tTP53\tENSG00000141510\nP00533\tEGFR\tENSG00000146648\n',
     );
     await expect(
-      runImport(conn, 'reference_id_mapping', path, { programId: PROGRAM, options: { species: 'NCBITaxon:9606' } }),
+      runImport(conn, 'reference_id_mapping', path, {
+        programId: PROGRAM,
+        options: { species: 'NCBITaxon:9606' },
+      }),
     ).rejects.toThrow(/source_release/);
     const result = await runImport(conn, 'reference_id_mapping', path, {
       programId: PROGRAM,
       options: { species: 'NCBITaxon:9606', source: 'UniProt', source_release: '2026_04' },
     });
     expect(failedRules(result)).toEqual([]);
-    expect((await canonicalRows(conn, result))[0]).toMatchObject({ source: 'UniProt', source_release: '2026_04' });
+    expect((await canonicalRows(conn, result))[0]).toMatchObject({
+      source: 'UniProt',
+      source_release: '2026_04',
+    });
   });
 });
 
@@ -289,5 +326,63 @@ describe('DS-01: quality rules and column stats', () => {
     expect(intensity.null_count).toBeGreaterThan(0);
     expect(intensity.min).toBeGreaterThan(0);
     expect(result.column_stats.sample_key!.distinct_count).toBe(12);
+  });
+});
+
+describe('review fixes (omics-reviewer, Phase 8)', () => {
+  it('DS-04: custom_tabular never rounds a non-integral integer value', async () => {
+    const path = write(
+      'charge.csv',
+      'run,precursor,seq,charge,group\nr1,p1,PEPTIDE,2.7,P1\nr1,p2,PEPTIDES,2,P1\n',
+    );
+    const result = await runImport(conn, 'custom_tabular', path, {
+      experimentVersionId: EV,
+      programId: PROGRAM,
+      options: {
+        kind: 'precursor_quant',
+        columns: {
+          instrument_run: 'run',
+          sample_key: 'run',
+          precursor_id: 'precursor',
+          modified_sequence: 'seq',
+          charge: 'charge',
+          protein_group: 'group',
+        },
+      },
+    });
+    expect(failedRules(result)).toContain('charge_numeric');
+  });
+
+  it('DS-02: diann_pg_matrix maps runs by the file name of a raw_file URI and rejects ambiguous runs', async () => {
+    const byUri = PG_RUNS.map((r) => ({
+      ...r,
+      instrument_run: null,
+      raw_file: `s3://raw/ONC-DIA-01/${r.raw_file}`,
+    }));
+    const ok = await runImport(conn, 'diann_pg_matrix', PG, {
+      experimentVersionId: EV,
+      programId: PROGRAM,
+      runs: byUri,
+    });
+    expect(failedRules(ok)).toEqual([]);
+    const twice = [...PG_RUNS, { ...PG_RUNS[0]!, sample_key: 'DUPLICATE' }];
+    const ambiguous = await runImport(conn, 'diann_pg_matrix', PG, {
+      experimentVersionId: EV,
+      programId: PROGRAM,
+      runs: twice,
+    });
+    expect(failedRules(ambiguous)).toContain('run_ambiguous');
+  });
+
+  it('DS-03: limma_toptable refuses a table without identifiers instead of using a statistic as the ID', async () => {
+    const lines = readFileSync(TOPTABLE, 'utf8').trim().split('\n');
+    const noId = lines.map((l) => l.split('\t').slice(2).join('\t')).join('\n');
+    await expect(
+      runImport(conn, 'limma_toptable', write('noid.toptable.tsv', noId), {
+        experimentVersionId: EV,
+        programId: PROGRAM,
+        contrast: CONTRAST,
+      }),
+    ).rejects.toThrow(/identifier/);
   });
 });

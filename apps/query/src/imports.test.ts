@@ -51,10 +51,17 @@ describe('DS-01: importer executor (apps/query)', () => {
     await client.send(new CreateBucketCommand({ Bucket: BUCKET }));
     for (const name of ['report.pg_matrix.tsv']) {
       await client.send(
-        new PutObjectCommand({ Bucket: BUCKET, Key: `in/${name}`, Body: readFileSync(`${FIXTURES}/${name}`) }),
+        new PutObjectCommand({
+          Bucket: BUCKET,
+          Key: `in/${name}`,
+          Body: readFileSync(`${FIXTURES}/${name}`),
+        }),
       );
     }
-    const broken = readFileSync(`${FIXTURES}/report.pg_matrix.tsv`, 'utf8').replace('\t4026427.8\t', '\t-1\t');
+    const broken = readFileSync(`${FIXTURES}/report.pg_matrix.tsv`, 'utf8').replace(
+      '\t4026427.8\t',
+      '\t-1\t',
+    );
     await client.send(new PutObjectCommand({ Bucket: BUCKET, Key: 'in/broken.pg_matrix.tsv', Body: broken }));
     app = await buildApp({ config: config() });
   }, 240_000);
@@ -79,12 +86,19 @@ describe('DS-01: importer executor (apps/query)', () => {
   });
 
   it('DS-01: an import writes a staged Parquet release that DuckDB reads back', async () => {
-    const res = await post('/internal/imports', request('in/report.pg_matrix.tsv', 'releases/protein_quant/r1.parquet'));
+    const res = await post(
+      '/internal/imports',
+      request('in/report.pg_matrix.tsv', 'releases/protein_quant/r1.parquet'),
+    );
     expect(res.statusCode, res.body).toBe(200);
     const result = res.json() as Json;
     expect(result.passed).toBe(true);
     expect(result.kind).toBe('protein_quant');
-    expect(result.output).toMatchObject({ bucket: BUCKET, key: 'releases/protein_quant/r1.parquet', format: 'parquet' });
+    expect(result.output).toMatchObject({
+      bucket: BUCKET,
+      key: 'releases/protein_quant/r1.parquet',
+      format: 'parquet',
+    });
     expect(result.output.sha256).toMatch(/^[0-9a-f]{64}$/);
     await client.send(new HeadObjectCommand({ Bucket: BUCKET, Key: 'releases/protein_quant/r1.parquet' }));
 
@@ -101,7 +115,10 @@ describe('DS-01: importer executor (apps/query)', () => {
   });
 
   it('DS-01: a failing quality rule rejects the import, names the rule, and writes nothing', async () => {
-    const res = await post('/internal/imports', request('in/broken.pg_matrix.tsv', 'releases/protein_quant/r2.parquet'));
+    const res = await post(
+      '/internal/imports',
+      request('in/broken.pg_matrix.tsv', 'releases/protein_quant/r2.parquet'),
+    );
     expect(res.statusCode, res.body).toBe(200);
     const result = res.json() as Json;
     expect(result.passed).toBe(false);

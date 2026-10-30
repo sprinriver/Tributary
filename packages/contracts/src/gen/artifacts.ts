@@ -79,7 +79,7 @@ function buildPaths(): Record<string, Record<string, unknown>> {
       name: m[1],
       in: 'path',
       required: true,
-      schema: { type: 'string', format: 'uuid' },
+      schema: m[1] === 'id' ? { type: 'string', format: 'uuid' } : { type: 'string' },
     }));
     const query = route.query
       ? Object.entries(

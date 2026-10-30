@@ -65,7 +65,12 @@ describe('dataset releases and catalog API', () => {
   }
 
   const importFile = (token: string, payload: Json) =>
-    t.call(token, { method: 'POST', url: '/v1/imports', payload, headers: { 'x-change-reason': 'pipeline output' } });
+    t.call(token, {
+      method: 'POST',
+      url: '/v1/imports',
+      payload,
+      headers: { 'x-change-reason': 'pipeline output' },
+    });
 
   let releaseId: string;
 
@@ -75,7 +80,12 @@ describe('dataset releases and catalog API', () => {
     const res = await importFile(contributor, { file_id: file, importer: 'diann_pg_matrix' });
     expect(res.statusCode, res.body).toBe(201);
     const release = res.json() as Json;
-    expect(release).toMatchObject({ status: 'staged', release_number: 1, kind: 'protein_quant', importer: 'diann_pg_matrix' });
+    expect(release).toMatchObject({
+      status: 'staged',
+      release_number: 1,
+      kind: 'protein_quant',
+      importer: 'diann_pg_matrix',
+    });
     expect(release.row_count).toBeGreaterThan(0);
     expect(release.validation.passed).toBe(true);
     expect(release.column_stats.intensity.null_count).toBeGreaterThan(0);
@@ -119,7 +129,11 @@ describe('dataset releases and catalog API', () => {
   });
 
   it('DS-01: DuckDB reads the published release (preview through apps/query)', async () => {
-    const res = await t.call(viewer, { method: 'GET', url: `/v1/releases/${releaseId}/preview`, query: { limit: '3' } });
+    const res = await t.call(viewer, {
+      method: 'GET',
+      url: `/v1/releases/${releaseId}/preview`,
+      query: { limit: '3' },
+    });
     expect(res.statusCode, res.body).toBe(200);
     const body = res.json() as Json;
     expect(body.rows).toHaveLength(3);
@@ -130,7 +144,11 @@ describe('dataset releases and catalog API', () => {
   it('DS-01: a broken file is rejected with the failing rule named; it cannot be published', async () => {
     const broken = new TextEncoder().encode(MATRIX.toString('utf8').replace('\t4026427.8\t', '\t-7\t'));
     const file = await upload('broken.pg_matrix.tsv', broken);
-    const res = await importFile(contributor, { file_id: file, importer: 'diann_pg_matrix', dataset_name: 'broken' });
+    const res = await importFile(contributor, {
+      file_id: file,
+      importer: 'diann_pg_matrix',
+      dataset_name: 'broken',
+    });
     expect(res.statusCode, res.body).toBe(201);
     const release = res.json() as Json;
     expect(release.status).toBe('rejected');
@@ -151,7 +169,12 @@ describe('dataset releases and catalog API', () => {
       await t.call(contributor, {
         method: 'POST',
         url: '/v1/files/uploads',
-        payload: { experiment_version_id: version, name: 'bad.tsv', size_bytes: bad.length, declared_format: 'tsv' },
+        payload: {
+          experiment_version_id: version,
+          name: 'bad.tsv',
+          size_bytes: bad.length,
+          declared_format: 'tsv',
+        },
       })
     ).json() as Json;
     const put = await fetch(started.parts[0].url, { method: 'PUT', body: bad });
@@ -167,17 +190,27 @@ describe('dataset releases and catalog API', () => {
   });
 
   it('DS-05: the catalog lists datasets with their latest release, scoped to readable programs', async () => {
-    const res = await t.call(viewer, { method: 'GET', url: '/v1/datasets', query: { kind: 'protein_quant' } });
+    const res = await t.call(viewer, {
+      method: 'GET',
+      url: '/v1/datasets',
+      query: { kind: 'protein_quant' },
+    });
     expect(res.statusCode, res.body).toBe(200);
     const items = (res.json() as Json).items as Json[];
     const dataset = items.find((d) => d.latest_release?.id === releaseId)!;
-    expect(dataset).toMatchObject({ kind: 'protein_quant', program_code: 'DSP', experiment_version_id: version });
+    expect(dataset).toMatchObject({
+      kind: 'protein_quant',
+      program_code: 'DSP',
+      experiment_version_id: version,
+    });
     expect(dataset.latest_release.status).toBe('published');
     const hidden = (await t.call(outsider, { method: 'GET', url: '/v1/datasets' })).json() as Json;
     expect(hidden.items).toEqual([]);
     const detail = await t.call(viewer, { method: 'GET', url: `/v1/datasets/${dataset.id}` });
     expect((detail.json() as Json).releases.map((r: Json) => r.id)).toContain(releaseId);
-    expect((await t.call(outsider, { method: 'GET', url: `/v1/releases/${releaseId}` })).statusCode).toBe(403);
+    expect((await t.call(outsider, { method: 'GET', url: `/v1/releases/${releaseId}` })).statusCode).toBe(
+      403,
+    );
   });
 
   it('DS-05: ODCS YAML per kind and the importer list', async () => {
@@ -201,12 +234,19 @@ describe('dataset releases and catalog API', () => {
       payload: {
         name: 'Vendor protein table',
         kind: 'protein_quant',
-        columns: { protein_group: 'Accession', sample_key: 'Sample', instrument_run: 'Run', intensity: 'Abundance' },
+        columns: {
+          protein_group: 'Accession',
+          sample_key: 'Sample',
+          instrument_run: 'Run',
+          intensity: 'Abundance',
+        },
         constants: { is_imputed: 'false' },
       },
     });
     expect(created.statusCode, created.body).toBe(201);
-    const list = (await t.call(viewer, { method: 'GET', url: `/v1/programs/${program}/import-presets` })).json() as Json;
+    const list = (
+      await t.call(viewer, { method: 'GET', url: `/v1/programs/${program}/import-presets` })
+    ).json() as Json;
     expect(list.items.map((p: Json) => p.name)).toEqual(['Vendor protein table']);
 
     const csv = new TextEncoder().encode('Accession,Sample,Run,Abundance\nP1,ONC-DIA-01-S01,r1,5\n');
@@ -218,6 +258,6 @@ describe('dataset releases and catalog API', () => {
       dataset_name: 'vendor',
     });
     expect(res.statusCode, res.body).toBe(201);
-    expect((res.json() as Json)).toMatchObject({ status: 'staged', row_count: 1, kind: 'protein_quant' });
+    expect(res.json() as Json).toMatchObject({ status: 'staged', row_count: 1, kind: 'protein_quant' });
   });
 });

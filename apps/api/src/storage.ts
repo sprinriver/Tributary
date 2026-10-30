@@ -43,12 +43,14 @@ export class Storage {
     return this.config.rawBucket;
   }
 
-  /** Local development: create the bucket and allow browser uploads from the SPA origin (S3 CORS). */
+  /** Local development: create the buckets and allow browser uploads from the SPA origin (S3 CORS). */
   async ensureBucket(corsOrigins: string[]): Promise<void> {
-    try {
-      await this.client.send(new HeadBucketCommand({ Bucket: this.bucket }));
-    } catch {
-      await this.client.send(new CreateBucketCommand({ Bucket: this.bucket }));
+    for (const bucket of [this.bucket, this.config.warehouseBucket]) {
+      try {
+        await this.client.send(new HeadBucketCommand({ Bucket: bucket }));
+      } catch {
+        await this.client.send(new CreateBucketCommand({ Bucket: bucket }));
+      }
     }
     await this.client.send(
       new PutBucketCorsCommand({

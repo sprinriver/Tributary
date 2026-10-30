@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-// Starts the API, compute and web dev servers itself; the docker compose stack must already be up for later phases.
+// Starts the API, query, compute and web dev servers itself; the docker compose stack must already be up for later phases.
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: true,
@@ -18,6 +18,11 @@ export default defineConfig({
     {
       command: 'node apps/api/src/server.ts',
       url: 'http://127.0.0.1:3000/healthz',
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'node apps/query/src/server.ts',
+      url: 'http://127.0.0.1:3100/healthz',
       reuseExistingServer: !process.env.CI,
     },
     {

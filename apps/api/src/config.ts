@@ -18,6 +18,9 @@ export interface ApiConfig {
   cookieSecret: string;
   /** Internal Python service (statistics, SDRF). */
   computeUrl: string;
+  /** Internal DuckDB service (importers, queries) and the token it requires. */
+  queryUrl: string;
+  queryInternalToken: string;
   /** EBI OLS4 or a self-hosted mirror (SPEC M2: configurable base URL). */
   olsUrl: string;
   sessionTtlHours: number;
@@ -32,6 +35,8 @@ export interface S3Config {
   /** Unset on AWS (instance role credentials). */
   credentials: { accessKeyId: string; secretAccessKey: string } | undefined;
   rawBucket: string;
+  /** Dataset release objects (Parquet; ADR 0017). */
+  warehouseBucket: string;
   /** Multipart part size; S3 needs ≥ 5 MiB for every part but the last. */
   partSizeBytes: number;
   /** Lifetime of presigned part URLs. */
@@ -68,6 +73,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     },
     cookieSecret: required('COOKIE_SECRET', 'dev-only-cookie-secret-change-me-0123456789'),
     computeUrl: env.COMPUTE_URL ?? 'http://127.0.0.1:8000',
+    queryUrl: env.QUERY_URL ?? 'http://127.0.0.1:3100',
+    queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 12),
     s3: {
@@ -80,6 +87,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
             ? undefined
             : { accessKeyId: 'tributary-dev', secretAccessKey: 'tributary-dev-secret' },
       rawBucket: env.S3_RAW_BUCKET ?? 'tributary-raw',
+      warehouseBucket: env.S3_WAREHOUSE_BUCKET ?? 'tributary-warehouse',
       partSizeBytes: Number(env.S3_PART_SIZE_MB ?? 16) * 1024 * 1024,
       presignTtlSeconds: Number(env.S3_PRESIGN_TTL_SECONDS ?? 3600),
       linkablePrefixes: (env.S3_LINKABLE_PREFIXES ?? 'incoming/').split(',').filter(Boolean),

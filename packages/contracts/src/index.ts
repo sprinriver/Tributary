@@ -1,4 +1,5 @@
 export * from './api/auth.ts';
+export * from './api/datasets.ts';
 export * from './api/files.ts';
 export * from './api/manifest.ts';
 export * from './api/registry.ts';

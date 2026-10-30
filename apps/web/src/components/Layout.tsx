@@ -21,6 +21,7 @@ export function Layout() {
         </Link>
         <nav aria-label="Main" style={{ display: 'flex', gap: 12, flex: 1 }}>
           <Link to="/experiments">Experiments</Link>
+          <Link to="/datasets">Datasets</Link>
         </nav>
         {me.data ? <UserMenu me={me.data} /> : me.isPending ? null : <a href={loginHref(path)}>Sign in</a>}
       </header>

@@ -220,6 +220,9 @@ importers:
       '@tributary/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@tributary/importers':
+        specifier: workspace:*
+        version: link:../../packages/importers
       fastify:
         specifier: 5.12.7
         version: 5.12.7
@@ -236,6 +239,9 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
     devDependencies:
+      '@tributary/query':
+        specifier: workspace:*
+        version: link:../query
       vitest:
         specifier: 5.0.5
         version: 5.0.5(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.5(@types/node@24.19.2)(yaml@2.9.1))
@@ -244,13 +250,28 @@ importers:
 
   apps/query:
     dependencies:
+      '@aws-sdk/client-s3':
+        specifier: 3.1156.0
+        version: 3.1156.0
       '@duckdb/node-api':
         specifier: 2.0.0-r.1
         version: 2.0.0-r.1
+      '@tributary/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
+      '@tributary/importers':
+        specifier: workspace:*
+        version: link:../../packages/importers
       fastify:
         specifier: 5.12.7
         version: 5.12.7
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
+      '@tributary/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       vitest:
         specifier: 5.0.5
         version: 5.0.5(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.5(@types/node@24.19.2)(yaml@2.9.1))
@@ -352,6 +373,16 @@ importers:
         version: 5.0.5(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.5(@types/node@24.19.2)(yaml@2.9.1))
 
   packages/importers:
+    dependencies:
+      '@duckdb/node-api':
+        specifier: 2.0.0-r.1
+        version: 2.0.0-r.1
+      '@tributary/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      zod:
+        specifier: 4.6.7
+        version: 4.6.7
     devDependencies:
       vitest:
         specifier: 5.0.5

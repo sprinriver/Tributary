@@ -1,5 +1,8 @@
 import { z } from 'zod';
 import { HealthStatusSchema } from '../health.ts';
+import { DATASET_ROUTES } from './routes-datasets.ts';
+import { FILE_ROUTES } from './routes-files.ts';
+import type { ApiRoute } from './route.ts';
 import {
   AccessTokenSchema,
   CreatedTokenSchema,
@@ -7,23 +10,6 @@ import {
   LogoutResponseSchema,
   MeResponseSchema,
 } from './auth.ts';
-import {
-  CompleteUploadBodySchema,
-  FileListSchema,
-  FileSummarySchema,
-  InitiateUploadBodySchema,
-  InitiateUploadResponseSchema,
-  LifecyclePoliciesBodySchema,
-  LifecyclePoliciesSchema,
-  LinkPrefixBodySchema,
-  LinkPrefixResultSchema,
-  QcGateSchema,
-  QcOverrideBodySchema,
-  QcOverrideSchema,
-  SignedPartsSchema,
-  SignPartsBodySchema,
-  UploadedPartsSchema,
-} from './files.ts';
 import {
   MappingPresetBodySchema,
   MappingPresetSchema,
@@ -53,20 +39,6 @@ import {
   VersionDiffSchema,
   VersionSummarySchema,
 } from './registry.ts';
-
-export interface ApiRoute {
-  method: 'get' | 'post' | 'put' | 'patch' | 'delete';
-  /** OpenAPI-style path, e.g. `/v1/versions/{id}`. */
-  path: string;
-  summary: string;
-  body?: z.ZodType;
-  query?: z.ZodType;
-  /** Success response (status `status`, default 200); undefined = no body. */
-  response?: z.ZodType;
-  status?: number;
-  /** Sends `X-Change-Reason` (recorded in the audit log). */
-  reason?: boolean;
-}
 
 /**
  * Every public API operation. The API implements these paths; `pnpm gen` turns them into OpenAPI `paths`; the web
@@ -288,92 +260,10 @@ export const API_ROUTES = {
     response: SampleValidationSchema,
     reason: true,
   },
-  initiateUpload: {
-    method: 'post',
-    path: '/v1/files/uploads',
-    summary: 'Register a file on a draft version and start a presigned multipart upload',
-    body: InitiateUploadBodySchema,
-    response: InitiateUploadResponseSchema,
-    status: 201,
-    reason: true,
-  },
-  listUploadedParts: {
-    method: 'get',
-    path: '/v1/files/{id}/parts',
-    summary: 'Parts already stored for an upload in progress (resume)',
-    response: UploadedPartsSchema,
-  },
-  signUploadParts: {
-    method: 'post',
-    path: '/v1/files/{id}/parts',
-    summary: 'Fresh presigned URLs for parts (retry or resume)',
-    body: SignPartsBodySchema,
-    response: SignedPartsSchema,
-  },
-  completeUpload: {
-    method: 'post',
-    path: '/v1/files/{id}/complete',
-    summary: 'Complete a multipart upload; queues checksum, detection and QC',
-    body: CompleteUploadBodySchema,
-    response: FileSummarySchema,
-    reason: true,
-  },
-  abortUpload: {
-    method: 'post',
-    path: '/v1/files/{id}/abort',
-    summary: 'Abort a multipart upload; the file is rejected',
-    response: FileSummarySchema,
-    reason: true,
-  },
-  getFile: {
-    method: 'get',
-    path: '/v1/files/{id}',
-    summary: 'One file with its QC report',
-    response: FileSummarySchema,
-  },
-  linkFiles: {
-    method: 'post',
-    path: '/v1/files/link',
-    summary: 'Register objects already in storage under a prefix; checksums run asynchronously',
-    body: LinkPrefixBodySchema,
-    response: LinkPrefixResultSchema,
-    status: 201,
-    reason: true,
-  },
-  listVersionFiles: {
-    method: 'get',
-    path: '/v1/versions/{id}/files',
-    summary: 'Files of an experiment version with ingest status',
-    response: FileListSchema,
-  },
-  getQcGate: {
-    method: 'get',
-    path: '/v1/versions/{id}/qc-gate',
-    summary: 'Whether QC allows a pipeline launch for this version',
-    response: QcGateSchema,
-  },
-  overrideQcGate: {
-    method: 'post',
-    path: '/v1/versions/{id}/qc-override',
-    summary: 'Approver override of failed QC (reason required, audited)',
-    body: QcOverrideBodySchema,
-    response: QcOverrideSchema,
-    status: 201,
-  },
-  getLifecyclePolicies: {
-    method: 'get',
-    path: '/v1/admin/lifecycle-policies',
-    summary: 'Storage lifecycle policies per file role, with the S3 rules they generate',
-    response: LifecyclePoliciesSchema,
-  },
-  putLifecyclePolicies: {
-    method: 'put',
-    path: '/v1/admin/lifecycle-policies',
-    summary: 'Replace the storage lifecycle policies (system admin)',
-    body: LifecyclePoliciesBodySchema,
-    response: LifecyclePoliciesSchema,
-    reason: true,
-  },
+  ...FILE_ROUTES,
+  ...DATASET_ROUTES,
 } as const satisfies Record<string, ApiRoute>;
 
 export type ApiOperation = keyof typeof API_ROUTES;
+
+export type { ApiRoute } from './route.ts';

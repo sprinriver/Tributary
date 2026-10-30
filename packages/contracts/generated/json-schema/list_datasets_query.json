@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ListDatasetsQuery",
+  "$defs": {
+    "ListDatasetsQuery": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/DatasetKind"
+        },
+        "program_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "experiment_version_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "q": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "additionalProperties": false
+    },
+    "DatasetKind": {
+      "type": "string",
+      "enum": [
+        "protein_quant",
+        "precursor_quant",
+        "differential_abundance",
+        "dose_response",
+        "qc_metrics",
+        "rnaseq_counts",
+        "crispr_gene_summary",
+        "compound",
+        "compound_property",
+        "target_annotation",
+        "id_mapping",
+        "experiment_version",
+        "sample",
+        "file_object",
+        "pipeline_run"
+      ]
+    }
+  }
+}

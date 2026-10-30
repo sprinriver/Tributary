@@ -8,7 +8,9 @@ import { loadConfig, type ApiConfig } from './config.ts';
 import { registerErrorHandler } from './errors.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
 import { registerExperimentRoutes } from './routes/experiments.ts';
+import { registerDatasetRoutes } from './routes/datasets.ts';
 import { registerFileRoutes } from './routes/files.ts';
+import { registerImportRoutes } from './routes/imports.ts';
 import { registerLifecycleRoutes } from './routes/lifecycle.ts';
 import { registerQcGateRoutes } from './routes/qc-gate.ts';
 import { runIngest } from './ingest/job.ts';
@@ -91,6 +93,8 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerFileRoutes(scoped, db, storage, ingestQueue);
     registerQcGateRoutes(scoped, db);
     registerLifecycleRoutes(scoped, db);
+    registerImportRoutes(scoped, db, config, storage, fetchImpl);
+    registerDatasetRoutes(scoped, db, config, fetchImpl);
   });
   return app;
 }

@@ -1,4 +1,10 @@
-import { FileRoleSchema, INGEST_IN_PROGRESS, type FileRole, type VersionDetail } from '@tributary/contracts';
+import {
+  FileRoleSchema,
+  INGEST_IN_PROGRESS,
+  type FileRole,
+  type FileSummary,
+  type VersionDetail,
+} from '@tributary/contracts';
 import { StatusBadge } from '@tributary/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
@@ -6,6 +12,7 @@ import { api } from '../api.ts';
 import { useMe } from '../auth.ts';
 import { ErrorMessage, Field } from '../components/ui.tsx';
 import { formatBytes, formatLabel, STATUS_LABEL, STATUS_TONE } from './labels.ts';
+import { ImportDialog } from './ImportDialog.tsx';
 import { QcGatePanel } from './QcGatePanel.tsx';
 import { uploadFile } from './uploader.ts';
 
@@ -38,6 +45,8 @@ export function FilesTab({ version, programId }: { version: VersionDetail; progr
   const [chosen, setChosen] = useState<File[]>([]);
   const [fileRole, setFileRole] = useState<FileRole>('raw');
   const [uploads, setUploads] = useState<Upload[]>([]);
+  const [importing, setImporting] = useState<FileSummary | null>(null);
+  const canImport = role !== undefined && role !== 'viewer';
   const busy = uploads.some((u) => u.loaded < u.total && !u.error);
   const files = useVersionFiles(version.id, true);
   const inProgress = files.data?.items.some((f) => INGEST_IN_PROGRESS.includes(f.ingest_status)) ?? false;
@@ -137,6 +146,9 @@ export function FilesTab({ version, programId }: { version: VersionDetail; progr
             <th scope="col">Format</th>
             <th scope="col">Status</th>
             <th scope="col">QC</th>
+            <th scope="col">
+              <span className="sr-only">Actions</span>
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -161,15 +173,30 @@ export function FilesTab({ version, programId }: { version: VersionDetail; progr
                   </div>
                 )}
               </td>
+              <td>
+                {canImport && (f.ingest_status === 'qc_passed' || f.ingest_status === 'published') && (
+                  <button type="button" onClick={() => setImporting(f)}>
+                    Import…
+                  </button>
+                )}
+              </td>
             </tr>
           ))}
           {files.data && !files.data.items.length && (
             <tr>
-              <td colSpan={6}>No files yet.</td>
+              <td colSpan={7}>No files yet.</td>
             </tr>
           )}
         </tbody>
       </table>
+      {importing && (
+        <ImportDialog
+          file={importing}
+          version={version}
+          programId={programId}
+          onClose={() => setImporting(null)}
+        />
+      )}
       <QcGatePanel versionId={version.id} canApprove={canApprove ?? false} poll={inProgress || busy} />
     </section>
   );

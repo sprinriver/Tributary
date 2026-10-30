@@ -184,16 +184,20 @@ export interface DatasetRelease {
   created_by: string;
   dataset_id: string;
   deleted_at: Timestamp | null;
+  file_id: string | null;
   id: Generated<string>;
+  importer: string | null;
   published_at: Timestamp | null;
   release_number: number;
   row_count: Generated<number>;
   source: Json;
   status: Generated<string>;
+  status_reason: string | null;
   storage: Json;
   tenant_id: string;
   transformations: Generated<Json>;
   updated_at: Generated<Timestamp>;
+  validation: Generated<Json>;
 }
 
 export interface Experiment {
@@ -270,6 +274,20 @@ export interface GroupMember {
   tenant_id: string;
   updated_at: Generated<Timestamp>;
   user_id: string;
+}
+
+export interface ImportPreset {
+  columns: Json;
+  constants: Generated<Json>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  kind: string;
+  name: string;
+  program_id: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
 }
 
 export interface LifecyclePolicy {
@@ -529,6 +547,7 @@ export interface DB {
   experiment_version: ExperimentVersion;
   file_object: FileObject;
   group_member: GroupMember;
+  import_preset: ImportPreset;
   lifecycle_policy: LifecyclePolicy;
   lineage_edge: LineageEdge;
   lineage_node: LineageNode;
