@@ -44,6 +44,7 @@ export const deseq2Results: Importer = {
       END`,
       adjMethod: typeof ctx.options?.adj_method === 'string' ? ctx.options.adj_method : 'BH',
       method: 'DESeq2',
+      testLabel: lrt ? 'LRT (full vs reduced model)' : 'Wald (stat = Wald z, stored as t_stat)',
       naTokens: ['NA'],
       transformations: [
         {
@@ -52,7 +53,14 @@ export const deseq2Results: Importer = {
             'NA p-values explained from baseMean / pvalue / padj (DESeq2 vignette, "Note on p-values set to NA")',
         },
         ...(lrt
-          ? [{ step: 'not_imported', detail: 'stat is a deviance difference for the LRT: t_stat null' }]
+          ? [
+              { step: 'not_imported', detail: 'stat is a deviance difference for the LRT: t_stat null' },
+              {
+                step: 'test',
+                detail:
+                  'LRT: pvalue/padj test the full vs the reduced model, not the log2FoldChange contrast shown',
+              },
+            ]
           : []),
       ],
       toolVersion: toolVersion(ctx),

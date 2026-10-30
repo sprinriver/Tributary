@@ -354,3 +354,46 @@ Entry template:
 - Gaps: Iceberg/S3 Tables read (blocked host, see above); `datacontract lint` not run (CLI not installed); reference
   files are uploaded through an experiment version (no program-level upload yet); S3 Tables region check needs AWS.
 - Commit: daddeed
+
+## 2026-10-30 — Phase 9: Remaining importers — done
+- Built: 14 importer keys for the rest of SPEC §6.3 — `diann_report_parquet` (precursor_quant) and
+  `diann_report_qc` (per-run counts → qc_metrics) over one report.parquet, `alphadia_precursors`,
+  `alphadia_pg_matrix`, `mzqc` (JSON), `spectronaut_report`, `maxquant_protein_groups`,
+  `fragpipe_combined_protein`, `quantms_qpx` (Parquet with list columns), `msstats_comparison`, `deqms_result`,
+  `deseq2_results`, `curvecurator`, `mageck_gene_summary` — each with SOURCE.md citing what was read (URL, version,
+  date) and a golden test. Shared builders in `packages/importers/src/shared/` (run → manifest matching, wide
+  matrices, long tables, differential tables). Loader reads Parquet (scalars as text, lists as VARCHAR[]) and JSON.
+  Synthetic tool fixtures in `fixtures/tools/` from `pnpm synth` (Parquet inputs are converted from committed TSV by
+  DuckDB inside the tests, so the fixture drift check stays exact). qc_metrics 1.1.0 adds status `not_assessed`
+  (ADR 0018). API/query pass all registered contrasts and manifest conditions; the import dialog asks for
+  CurveCurator doses exactly as in the TOML.
+- Decisions (and why):
+  - One importer = one kind, so the DIA-NN report has two keys (precursors, QC counts).
+  - MaxQuant / QPX flagged rows (reverse, contaminant, site-only, decoy) are removed only when flagged, recorded and
+    counted in a `flagged_rows_removed` warning; `options.keep_flagged` keeps them. Zeros from MaxQuant/FragPipe are
+    kept as reported; log2 is null for them.
+  - Run matching unions sample_key / instrument_run / raw-file name candidates; ambiguity or two runs per sample fail.
+  - MSstats: log base read from the header (log2FC / log10FC); p is null when no test was possible.
+  - CurveCurator: dose_unit must be M (pEC50 = −log10 EC50 in that unit); top/bottom = Curve Front/Back as named.
+  - Per-file `index.ts` per importer instead of the reference's detect/map/sql/rules split (shared builders hold the
+    SQL); diann_pg_matrix and limma_toptable keep the full split.
+- Omics review (19 findings): fixed the P1s — NaN/"Filtered" intensities now null with log2 guarded by isfinite;
+  CurveCurator unit taken from the TOML; MSstats base from the header; cross-level run ambiguity and
+  sample-with-two-runs rules; DESeq2 LRT recorded as full vs reduced model — and P2s: DEqMS/mzQC refuse
+  inputs without identifiers, MSstats completeMissing reason and percentage range warning, QPX multiplexed labels
+  refused, MaxQuant SILAC columns excluded, AlphaDIA fallback precursor id includes modifications.
+  **Open decision for the owner:** tools report p = 0 on underflow (DESeq2 Wald |z| > 38 is common); the (0, 1]
+  convention (and the Phase 8 DS-03 test) rejects such imports. Options: keep rejecting, clamp to the smallest
+  double with a recorded count, or store null with an na_reason. Deferred P2s: input-row reconciliation, threshold
+  style / LFC shrinkage metadata, FragPipe indistinguishable proteins, AlphaDIA matrix NA semantics, tool versions
+  (always "unknown" until the UI asks), CurveCurator fold-change orientation in the contract.
+- Test amendments: the pushed Phase 9 test "msstats_comparison converts log10 fold changes when log_base is 10"
+  asserted wrong science (it multiplied log2 values); replaced by a test that reads log10FC from the header and
+  refuses a contradicting option. Review regression tests added in `tools-review.test.ts`.
+- CI: e2e failed since Phase 6 — the live OLS4 on CI returned many "Homo sapiens …" options (the e2e API now uses an
+  unreachable OLS_URL, i.e. its built-in terms), and since Phase 8 SeaweedFS ran out of volumes for the second bucket
+  (`-volume.max=200 -master.volumeSizeLimitMB=256`).
+- Evidence: `pnpm check` ✓ · `pnpm run test:importers` ✓ (49) · `pnpm e2e` ✓ (13) · `pnpm run test:compute -k SYN` ✓.
+- Gaps: MaxQuant and Spectronaut official docs unreachable (columns via MSstatsConvert; unverified names listed in
+  SOURCE.md); AlphaDIA retention-time unit undocumented (not imported); SOURCE.md files await the owner's review.
+- Commit: (pending)

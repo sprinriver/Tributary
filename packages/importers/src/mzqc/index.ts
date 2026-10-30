@@ -44,7 +44,13 @@ export const mzqc: Importer = {
       qualityMetrics?: CvParam[];
     }[]) {
       const file = rq.metadata?.inputFiles?.[0]?.name;
-      const key = typeof file === 'string' ? stem(file) : 'unknown';
+      if (typeof file !== 'string') {
+        throw new ImportError(
+          'no_input_file',
+          'An mzQC runQuality has no inputFiles name, so its run cannot be identified.',
+        );
+      }
+      const key = stem(file);
       for (const m of rq.qualityMetrics ?? []) {
         if (typeof m.value !== 'number' || !Number.isFinite(m.value)) {
           skipped++;

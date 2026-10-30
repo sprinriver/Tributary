@@ -1,4 +1,5 @@
 import { ImportError } from '../errors.ts';
+import { na, num } from '../sql.ts';
 import { removedRowsRule } from '../shared/runs.ts';
 import { buildLong, hasAll } from '../shared/long.ts';
 import { toolVersion } from '../shared/wide.ts';
@@ -6,6 +7,7 @@ import type { Importer } from '../types.ts';
 
 // quantms QPX pg structure (SOURCE.md; qpx/core/data/schemas/pg.yaml).
 const REQUIRED = ['pg_accessions', 'grouped_runs', 'intensity'];
+const NA_TOKENS = ['nan', 'NaN'];
 
 export const quantmsQpx: Importer = {
   key: 'quantms_qpx',
@@ -26,6 +28,8 @@ export const quantmsQpx: Importer = {
     const flags = ['is_decoy', 'contaminant'].filter((c) => source.columns.includes(c));
     const flagged = flags.map((f) => `coalesce(TRY_CAST("${f}" AS BOOLEAN), false)`).join(' OR ') || 'false';
     const from = `SELECT * FROM ${source.table}${keep ? '' : ` WHERE NOT (${flagged})`}`;
+    // Parquet float NaN arrives as the text "nan": treated as missing.
+    const q = num(na('s."intensity"', NA_TOKENS), source.decimal);
     const genes = source.columns.includes('gg_names') ? 's."gg_names"' : '[]::VARCHAR[]';
     const built = buildLong(source, ctx, prefix, {
       from,
@@ -36,15 +40,25 @@ export const quantmsQpx: Importer = {
         gene_names: { sql: `coalesce(${genes}, []::VARCHAR[])` },
         intensity: { column: 'intensity', type: 'double' },
         log2_intensity: {
-          sql: `CASE WHEN TRY_CAST(s."intensity" AS DOUBLE) > 0 THEN log2(TRY_CAST(s."intensity" AS DOUBLE)) END`,
+          sql: `CASE WHEN isfinite(${q}) AND ${q} > 0 THEN log2(${q}) END`,
         },
         q_value: { column: 'pg_qvalue', type: 'double' },
         n_precursors: { sql: 'NULL::INTEGER' },
         is_imputed: { sql: 'false' },
         normalisation: { sql: 'NULL::VARCHAR' },
       },
-      naTokens: [],
+      naTokens: NA_TOKENS,
       rules: [
+        {
+          id: 'label_free_only',
+          severity: 'error',
+          source:
+            'QPX pg.yaml label: one row per label; multiplexed labels need run + label → sample (not supported yet)',
+          sql: source.columns.includes('label')
+            ? `SELECT DISTINCT "label" AS example FROM ${source.table} WHERE "label" IS NOT NULL AND upper("label") NOT IN ('LFQ', 'LABEL FREE SAMPLE')`
+            : 'SELECT NULL AS example WHERE false',
+          message: (n, ex) => `Multiplexed labels are not supported yet: ${ex.join(', ')}.`,
+        },
         {
           id: 'single_run_unit',
           severity: 'error',

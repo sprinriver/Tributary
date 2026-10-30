@@ -276,25 +276,20 @@ describe('DS-06: differential tables', () => {
     );
     expect(errors(result)).toContain('contrast_in_registry');
   });
-  it('DS-06: msstats_comparison converts log10 fold changes when log_base is 10', async () => {
+  it('DS-06: msstats_comparison reads the log base from the header (log10FC) and rejects a contradicting option', async () => {
+    const path = join(TOOLS, 'msstats/comparison.csv');
     const base2 = await canonicalRows(
       conn,
-      await runImport(
-        conn,
-        'msstats_comparison',
-        join(TOOLS, 'msstats/comparison.csv'),
-        ctx({ contrasts: [CONTRAST] }),
-      ),
+      await runImport(conn, 'msstats_comparison', path, ctx({ contrasts: [CONTRAST] })),
     );
-    const result = await runImport(
-      conn,
-      'msstats_comparison',
-      join(TOOLS, 'msstats/comparison.csv'),
-      ctx({ contrasts: [CONTRAST], options: { log_base: 10 } }),
-    );
+    const log10 = write('log10.csv', readFileSync(path, 'utf8').replace('"log2FC"', '"log10FC"'));
+    const result = await runImport(conn, 'msstats_comparison', log10, ctx({ contrasts: [CONTRAST] }));
     const base10 = await canonicalRows(conn, result);
     expect(base10[0]!.log2_fc as number).toBeCloseTo((base2[0]!.log2_fc as number) * Math.log2(10), 9);
     expect(result.transformations.map((t) => t.step)).toContain('log_base');
+    await expect(
+      runImport(conn, 'msstats_comparison', path, ctx({ contrasts: [CONTRAST], options: { log_base: 10 } })),
+    ).rejects.toThrow(/contradicts/);
   });
   it('DS-06: deqms_result golden — sca.* statistics', async () => {
     const result = await runImport(

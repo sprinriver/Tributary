@@ -34,7 +34,9 @@ export const alphadiaPrecursors: Importer = {
       : 'NULL';
     const id = source.columns.includes('precursor.mod_seq_charge_hash')
       ? { column: 'precursor.mod_seq_charge_hash', type: 'text' as const }
-      : { sql: `s."precursor.sequence" || '_' || s."precursor.charge"` };
+      : {
+          sql: `s."precursor.sequence" || coalesce('[' || ${mods} || '@' || coalesce(${sites}, '') || ']', '') || '_' || s."precursor.charge"`,
+        };
     return buildLong(source, ctx, prefix, {
       runSql: 's."raw.name"',
       columns: {

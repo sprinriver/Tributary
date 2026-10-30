@@ -63,7 +63,7 @@ export function buildWide(
         ${split('long.genes')} AS gene_names,
         ${intensity} AS intensity,
         ${value} AS __raw_intensity,
-        CASE WHEN ${intensity} > 0 THEN log2(${intensity}) END AS log2_intensity,
+        CASE WHEN isfinite(${intensity}) AND ${intensity} > 0 THEN log2(${intensity}) END AS log2_intensity,
         ${num('long.q', source.decimal)} AS q_value,
         NULL::INTEGER AS n_precursors,
         false AS is_imputed,

@@ -18,7 +18,13 @@ export const deqmsResult: Importer = {
   build(source, ctx) {
     if (!hasAll(source.columns, ...REQUIRED))
       throw new ImportError('wrong_format', `Not DEqMS output: expected ${REQUIRED.join(', ')}.`);
-    const feature = source.columns.includes('gene') ? 'gene' : source.columns[0]!;
+    if (!source.columns.includes('gene')) {
+      throw new ImportError(
+        'no_identifier',
+        'DEqMS output has no gene column (outputResult adds it from the row names).',
+      );
+    }
+    const feature = 'gene';
     const p = numericOf(source, ['NA'])('sca.P.Value');
     return buildDifferential(source, ctx, {
       featureColumn: feature,

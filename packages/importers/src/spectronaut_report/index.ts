@@ -1,11 +1,13 @@
 import { ImportError } from '../errors.ts';
-import { num } from '../sql.ts';
+import { na, num } from '../sql.ts';
 import { buildLong, hasAll } from '../shared/long.ts';
 import { toolVersion } from '../shared/wide.ts';
 import type { Importer } from '../types.ts';
 
 // Spectronaut long report (SOURCE.md; columns via MSstatsConvert SpectronauttoMSstatsFormat; PG.Quantity unverified).
 const REQUIRED = ['R.FileName', 'PG.ProteinGroups', 'PG.Quantity'];
+// "Filtered" = removed by Spectronaut's q-value filter; recorded as a transformation, stored as null.
+const NA_TOKENS = ['', 'NaN', 'Filtered'];
 
 export const spectronautReport: Importer = {
   key: 'spectronaut_report',
@@ -30,6 +32,7 @@ export const spectronautReport: Importer = {
     // The report repeats PG.* columns on every fragment row: one row per distinct group × run values.
     const from = `SELECT DISTINCT ${keep.map((c) => `"${c}"`).join(', ')} FROM ${source.table}`;
     const condition = source.columns.includes('R.Condition');
+    const q = num(na('s."PG.Quantity"', NA_TOKENS), source.decimal);
     return buildLong(source, ctx, prefix, {
       from,
       runSql: 's."R.FileName"',
@@ -39,14 +42,14 @@ export const spectronautReport: Importer = {
         gene_names: { column: 'PG.Genes', type: 'text[]' },
         intensity: { column: 'PG.Quantity', type: 'double' },
         log2_intensity: {
-          sql: `CASE WHEN ${num('s."PG.Quantity"', source.decimal)} > 0 THEN log2(${num('s."PG.Quantity"', source.decimal)}) END`,
+          sql: `CASE WHEN isfinite(${q}) AND ${q} > 0 THEN log2(${q}) END`,
         },
         q_value: { column: 'PG.Qvalue', type: 'double' },
         n_precursors: { sql: 'NULL::INTEGER' },
         is_imputed: { sql: 'false' },
         normalisation: { sql: 'NULL::VARCHAR' },
       },
-      naTokens: ['', 'NaN', 'Filtered'],
+      naTokens: NA_TOKENS,
       rules: condition
         ? [
             {
@@ -66,7 +69,8 @@ export const spectronautReport: Importer = {
           step: 'deduplicate',
           detail: `Distinct (${keep.join(', ')}) rows: PG.* values repeat on every fragment row`,
         },
-        { step: 'derive', detail: 'log2_intensity = log2(PG.Quantity) where > 0' },
+        { step: 'derive', detail: 'log2_intensity = log2(PG.Quantity) where finite and > 0' },
+        { step: 'na_tokens', detail: 'PG.Quantity "Filtered" (Spectronaut q-value filter) and "NaN" → null' },
         { step: 'split', detail: 'protein_ids = PG.ProteinGroups and gene_names = PG.Genes split on ";"' },
       ],
       toolVersion: toolVersion(ctx),

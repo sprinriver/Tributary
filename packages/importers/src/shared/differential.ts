@@ -16,6 +16,8 @@ export interface DifferentialSpec {
   issueSql?: string | undefined;
   adjMethod: string;
   method: string;
+  /** Test used, recorded in the transformations (e.g. DESeq2 Wald vs LRT). */
+  testLabel?: string;
   /** Extra per-column transforms on the parsed value, e.g. percentage scaling. */
   scale?: Record<string, string>;
   naTokens: string[];
@@ -99,9 +101,10 @@ export function buildDifferential(
       method_version: spec.toolVersion,
       source_columns: JSON.stringify(mapping),
     },
-    rules: spec.rules ?? [],
+    rules: [...(spec.rules ?? [])],
     transformations: [
       { step: 'rename', detail: `${spec.method} columns → differential_abundance (see source.mapping)` },
+      ...(spec.testLabel ? [{ step: 'test', detail: spec.testLabel }] : []),
       ...spec.transformations,
     ],
     naTokens: spec.naTokens,

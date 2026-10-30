@@ -31,8 +31,6 @@ export function runMatching(prefix: string, namesSql: string, ctx: ImportContext
       return `($ms${i}, $mi${i}, $mr${i}, $mc${i})`;
     })
     .join(', ');
-  const pick = (where: string) =>
-    `nullif((SELECT list_distinct(list(m.sample_key)) FROM ${manifest} m WHERE ${where}), [])`;
   return {
     setup: [
       {
@@ -44,10 +42,9 @@ export function runMatching(prefix: string, namesSql: string, ctx: ImportContext
           WITH names AS (${namesSql}),
           s AS (SELECT name, ${STEM_SQL('name')} AS stem FROM names WHERE name IS NOT NULL),
           k AS (
-            SELECT name, stem, coalesce(
-              ${pick('m.sample_key = s.name OR m.sample_key = s.stem')},
-              ${pick('m.instrument_run = s.stem')},
-              ${pick('m.raw_base = s.stem')},
+            -- Candidates from every level together: a name that is one sample's key and another's run is ambiguous.
+            SELECT name, stem, coalesce(nullif((SELECT list_distinct(list(m.sample_key)) FROM ${manifest} m
+              WHERE m.sample_key = s.name OR m.sample_key = s.stem OR m.instrument_run = s.stem OR m.raw_base = s.stem), []),
               []::VARCHAR[]) AS keys
             FROM s
           )
@@ -73,6 +70,13 @@ export function runMatching(prefix: string, namesSql: string, ctx: ImportContext
         source: 'SPEC §6.3: each run maps to exactly one manifest sample',
         sql: `SELECT run_col AS example FROM ${table} WHERE candidates > 1`,
         message: (n, ex) => `${n} run(s) match more than one manifest sample: ${ex.join(', ')}.`,
+      },
+      {
+        id: 'sample_multiple_runs',
+        severity: 'error',
+        source: 'SPEC §6.3: one run per manifest sample (fractions are not merged)',
+        sql: `SELECT sample_key || ': ' || string_agg(run_col, ', ') AS example FROM ${table} WHERE sample_key IS NOT NULL GROUP BY sample_key HAVING count(*) > 1`,
+        message: (n, ex) => `${n} sample(s) are matched by more than one run: ${ex.join('; ')}.`,
       },
     ],
     table,

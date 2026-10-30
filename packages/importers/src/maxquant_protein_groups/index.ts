@@ -21,7 +21,8 @@ export const maxquantProteinGroups: Importer = {
   build(source, ctx, prefix) {
     const lfq = source.columns.filter((c) => c.startsWith('LFQ intensity '));
     const plain = source.columns.filter(
-      (c) => c.startsWith('Intensity ') && !c.startsWith('Intensity L ') && !c.startsWith('Intensity H '),
+      // Label-free only: SILAC channel columns (Intensity L/M/H …) are not samples.
+      (c) => c.startsWith('Intensity ') && !/^Intensity [LMH]( |$)/.test(c),
     );
     const quant = lfq.length ? lfq : plain;
     if (!source.columns.includes('Protein IDs') || !quant.length) {

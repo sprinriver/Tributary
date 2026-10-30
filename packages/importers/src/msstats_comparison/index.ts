@@ -6,7 +6,10 @@ import { toolVersion } from '../shared/wide.ts';
 import type { Importer } from '../types.ts';
 
 // MSstats groupComparison ComparisonResult (SOURCE.md; man/groupComparison.Rd 4.21.1).
-const REQUIRED = ['Protein', 'Label', 'log2FC', 'pvalue', 'adj.pvalue'];
+const REQUIRED = ['Protein', 'Label', 'pvalue', 'adj.pvalue'];
+/** The fold-change column is named after its log base (log2FC or log10FC; groupComparison log_base). */
+const fcColumn = (columns: string[]) => columns.find((c) => c === 'log2FC' || c === 'log10FC');
+const ISSUE = na('s."issue"', ['NA']);
 
 export const msstatsComparison: Importer = {
   key: 'msstats_comparison',
@@ -15,10 +18,22 @@ export const msstatsComparison: Importer = {
   tool: 'MSstats',
   version: '1.0.0',
   formats: ['csv', 'tsv', 'text'],
-  detect: (c) => hasAll(c, ...REQUIRED),
+  detect: (c) => hasAll(c, ...REQUIRED) && !!fcColumn(c),
   build(source, ctx, prefix) {
-    if (!hasAll(source.columns, ...REQUIRED))
-      throw new ImportError('wrong_format', `Not MSstats output: expected ${REQUIRED.join(', ')}.`);
+    const fc = fcColumn(source.columns);
+    if (!hasAll(source.columns, ...REQUIRED) || !fc) {
+      throw new ImportError(
+        'wrong_format',
+        `Not MSstats output: expected log2FC or log10FC and ${REQUIRED.join(', ')}.`,
+      );
+    }
+    const base = fc === 'log10FC' ? 10 : 2;
+    if (ctx.options?.log_base !== undefined && Number(ctx.options.log_base) !== base) {
+      throw new ImportError(
+        'bad_option',
+        `log_base ${String(ctx.options.log_base)} contradicts the ${fc} column.`,
+      );
+    }
     const labels = `${prefix}_labels`;
     const map = (ctx.options?.label_map ?? {}) as Record<string, string>;
     const contrasts = ctx.contrasts ?? (ctx.contrast ? [ctx.contrast] : []);
@@ -35,16 +50,17 @@ export const msstatsComparison: Importer = {
         return `($lf${i}, $li${i}, $ll${i})`;
       })
       .join(', ');
-    const base = Number(ctx.options?.log_base ?? 2);
-    if (![2, 10, Math.E].includes(base)) throw new ImportError('bad_option', 'log_base must be 2, 10 or e.');
     const value = numericOf(source, ['NA']);
     const label = `(SELECT l.label FROM ${labels} l WHERE l.file_label = s."Label")`;
-    const factor = base === 2 ? '' : ` * ${Math.log2(base)}`;
+    // No test is possible when a condition (or everything) is missing; a p reported for such rows is not a result.
+    const noTest = source.columns.includes('issue')
+      ? `${ISSUE} IN ('oneConditionMissing', 'completeMissing')`
+      : 'false';
     return buildDifferential(source, ctx, {
       featureColumn: 'Protein',
       featureType: featureTypeOf(ctx),
       numeric: {
-        log2_fc: 'log2FC',
+        log2_fc: fc,
         se: 'SE',
         t_stat: 'Tvalue',
         p_value: 'pvalue',
@@ -55,7 +71,9 @@ export const msstatsComparison: Importer = {
       scale: {
         missing_pct: '({v} * 100)',
         imputed_pct: '({v} * 100)',
-        ...(factor ? { log2_fc: `({v}${factor})` } : {}),
+        p_value: `(CASE WHEN ${noTest} THEN NULL ELSE {v} END)`,
+        adj_p_value: `(CASE WHEN ${noTest} THEN NULL ELSE {v} END)`,
+        ...(base === 10 ? { log2_fc: `({v} * ${Math.log2(10)})` } : {}),
       },
       contrastSql: {
         id: `(SELECT l.id FROM ${labels} l WHERE l.file_label = s."Label")::UUID`,
@@ -68,7 +86,8 @@ export const msstatsComparison: Importer = {
         },
       ],
       naReasonSql: `CASE
-        WHEN ${na('s."issue"', ['NA'])} = 'oneConditionMissing' THEN 'MSstats: one condition missing'
+        WHEN ${source.columns.includes('issue') ? `${ISSUE} = 'oneConditionMissing'` : 'false'} THEN 'MSstats: one condition missing'
+        WHEN ${source.columns.includes('issue') ? `${ISSUE} = 'completeMissing'` : 'false'} THEN 'MSstats: all measurements missing'
         WHEN ${value('DF')} = 0 THEN 'MSstats: too few observations (DF = 0)'
         WHEN ${value('pvalue')} IS NULL AND ${value('SE')} IS NULL THEN 'MSstats: variance not estimable'
         WHEN ${value('pvalue')} IS NULL THEN 'NA in MSstats output'
@@ -87,25 +106,32 @@ export const msstatsComparison: Importer = {
           message: (n, ex) =>
             `Label(s) not matched to a registered contrast (use options.label_map): ${ex.join(', ')}.`,
         },
+        {
+          id: 'missing_pct_range',
+          severity: 'warn',
+          source: 'MSstats man/groupComparison.Rd: MissingPercentage is a fraction between 0 and 1',
+          sql: `SELECT s."Protein" AS example FROM ${source.table} s WHERE ${value('MissingPercentage')} > 1 OR ${value('ImputationPercentage')} > 1`,
+          message: (n, ex) =>
+            `${n} row(s) have Missing/ImputationPercentage above 1 (already percent?): ${ex.join(', ')}.`,
+        },
       ],
       transformations: [
         {
           step: 'assign_contrast',
-          detail: 'Label → registered contrast by exact label (or options.label_map)',
+          detail:
+            'Label → registered contrast by exact label (or options.label_map); orientation is asserted by the registry, not the file',
         },
         {
           step: 'scale',
           detail:
             'MissingPercentage / ImputationPercentage (fractions 0–1) × 100 → missing_pct / imputed_pct',
         },
-        ...(factor
-          ? [
-              {
-                step: 'log_base',
-                detail: `log2FC was log base ${base === Math.E ? 'e' : base}: multiplied by log2(${base === Math.E ? 'e' : base})`,
-              },
-            ]
-          : []),
+        {
+          step: 'no_test',
+          detail:
+            'p and adjusted p are null for issue oneConditionMissing / completeMissing (no test possible)',
+        },
+        ...(base === 10 ? [{ step: 'log_base', detail: 'log10FC × log2(10) → log2_fc' }] : []),
       ],
       toolVersion: toolVersion(ctx),
     });

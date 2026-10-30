@@ -51,7 +51,7 @@ export function ImportDialog({
   const [contrastId, setContrastId] = useState('');
   const [presetId, setPresetId] = useState('');
   const [reference, setReference] = useState({ species: '', source: '', source_release: '' });
-  const [curve, setCurve] = useState({ compound_id: '', doses: '', dose_scale: '1e-9' });
+  const [curve, setCurve] = useState({ compound_id: '', doses: '', dose_scale: '1e-9', dose_unit: 'M' });
   const info = importers.data?.items.find((i) => i.key === importer);
   const needs = new Set(info?.needs ?? []);
 
@@ -74,7 +74,7 @@ export function ImportDialog({
                     .filter(Boolean)
                     .map(Number),
                   dose_scale: Number(curve.dose_scale),
-                  dose_unit: 'M',
+                  dose_unit: curve.dose_unit,
                 },
               }
             : {}),
@@ -176,12 +176,24 @@ export function ImportDialog({
                 />
               )}
             </Field>
-            <Field label="Dose scale (to molar)" hint="e.g. 1e-9 when doses are in nM">
+            <Field label="Dose scale (TOML dose_scale)" hint="Exactly as in the CurveCurator TOML, e.g. 1e-9">
               {(id) => (
                 <input
                   id={id}
                   value={curve.dose_scale}
                   onChange={(e) => setCurve((c) => ({ ...c, dose_scale: e.target.value }))}
+                />
+              )}
+            </Field>
+            <Field
+              label="Dose unit (TOML dose_unit)"
+              hint="Only M (molar) is accepted: pEC50 is −log10(EC50 in this unit)"
+            >
+              {(id) => (
+                <input
+                  id={id}
+                  value={curve.dose_unit}
+                  onChange={(e) => setCurve((c) => ({ ...c, dose_unit: e.target.value }))}
                 />
               )}
             </Field>

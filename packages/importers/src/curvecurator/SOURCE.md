@@ -10,7 +10,7 @@ CurveCurator README and source (kusterlab/curve_curator main, 0.6.0, Apache-2.0,
 
 ## Mapping
 - Doses are not in the output: options.doses (TOML order, control = 0), options.dose_scale, options.dose_unit
-  ("M" required). doses_molar = doses × dose_scale; n_doses = distinct non-zero doses.
+  ("M" required), both exactly as written in the TOML. doses_molar = doses × dose_scale; n_doses = distinct non-zero doses.
 - responses = Ratio 1..N (in order). pEC50 is −log10(EC50) in dose_unit after dose_scale (quantification.py builds
   log concentrations from doses × dose_scale), so with dose_unit M: pec50 = pEC50, ec50_molar = 10^−pEC50 (recorded).
 - hill_slope = Curve Slope; top = Curve Front (response at the low-dose plateau); bottom = Curve Back (high-dose
