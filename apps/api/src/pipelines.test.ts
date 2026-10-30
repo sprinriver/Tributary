@@ -224,6 +224,19 @@ describe('pipeline runs', () => {
     expect((await run(created.id)).status).toBe('cancelled');
   });
 
+  it('PIPE-05: notifications — my recent runs, newest first, only the ones I launched', async () => {
+    const version = await publishedVersion('PIPE-05 notifications');
+    await publish(version);
+    const mine = (await launch(contributor, version)).json() as Json;
+    const theirs = (await launch(approver, version)).json() as Json;
+    const res = await t.call(contributor, { method: 'GET', url: '/v1/me/runs' });
+    expect(res.statusCode, res.body).toBe(200);
+    const ids = ((res.json() as Json).items as Json[]).map((r) => r.id);
+    expect(ids).toContain(mine.id);
+    expect(ids).not.toContain(theirs.id);
+    expect((res.json() as Json).items[0]).toMatchObject({ experiment_name: 'PIPE-05 notifications' });
+  });
+
   it('PIPE-04: outputs of a succeeded run become published releases with lineage edges', async () => {
     const version = await publishedVersion('PIPE-04 outputs');
     await publish(version);
