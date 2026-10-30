@@ -4,7 +4,7 @@ import { startTestDatabase, type TestDatabase } from './testing/postgres.ts';
 
 // Every SPEC §4 entity has a table, plus auth tables (Phase 3) and the
 // manifest editor's ontology cache and mapping presets (Phase 6), and QC overrides and lifecycle
-// policies (Phase 7), and import presets (Phase 8).
+// policies (Phase 7), import presets (Phase 8) and pipeline run events (Phase 10).
 const TABLES = [
   'access_token',
   'app_group',
@@ -32,6 +32,7 @@ const TABLES = [
   'ontology_term_cache',
   'pipeline_definition',
   'pipeline_run',
+  'pipeline_run_event',
   'program',
   'qc_override',
   'role_binding',
