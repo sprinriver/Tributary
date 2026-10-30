@@ -19,6 +19,8 @@ export default defineConfig({
       command: 'node apps/api/src/server.ts',
       url: 'http://127.0.0.1:3000/healthz',
       reuseExistingServer: !process.env.CI,
+      // Hermetic e2e: no live OLS4 (results change over time); the API falls back to its built-in terms.
+      env: { OLS_URL: process.env.E2E_OLS_URL ?? 'http://127.0.0.1:9' },
     },
     {
       command: 'node apps/query/src/server.ts',

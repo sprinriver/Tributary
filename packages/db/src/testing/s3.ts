@@ -23,7 +23,16 @@ export interface TestS3 {
 
 export async function startTestS3(): Promise<TestS3> {
   const container = await new GenericContainer(SEAWEEDFS_IMAGE)
-    .withCommand(['server', '-dir=/data', '-s3', '-s3.port=8333', '-s3.config=/etc/seaweedfs/s3.json'])
+    // Same volume limits as docker-compose.yml: every bucket is a collection that needs its own volumes.
+    .withCommand([
+      'server',
+      '-dir=/data',
+      '-volume.max=200',
+      '-master.volumeSizeLimitMB=256',
+      '-s3',
+      '-s3.port=8333',
+      '-s3.config=/etc/seaweedfs/s3.json',
+    ])
     .withCopyContentToContainer([{ content: S3_CONFIG, target: '/etc/seaweedfs/s3.json' }])
     .withExposedPorts(8333)
     .withWaitStrategy(Wait.forHttp('/healthz', 8333).forStatusCode(200))
