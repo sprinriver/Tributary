@@ -56,14 +56,14 @@ export async function runIngest(
 ): Promise<IngestStatus | undefined> {
   const file = await db
     .selectFrom('file_object')
-    .select(['id', 'tenant_id', 'key', 'role', 'declared_format', 'size_bytes', 'ingest_status'])
+    .select(['id', 'tenant_id', 'bucket', 'key', 'role', 'declared_format', 'size_bytes', 'ingest_status'])
     .where('id', '=', fileId)
     .where('deleted_at', 'is', null)
     .executeTakeFirst();
   if (!file || !RUNNABLE.includes(file.ingest_status as IngestStatus))
     return file?.ingest_status as IngestStatus;
 
-  const inspection = await inspectObject(await storage.read(file.key), file.key);
+  const inspection = await inspectObject(await storage.read(file.key, file.bucket), file.key);
   const contract = contractChecks(file, inspection.format, inspection.size_bytes);
   const contractOk = contract.every((c) => c.passed);
   const checks = [...contract, ...inspection.checks];
@@ -78,7 +78,7 @@ export async function runIngest(
     checked_at: new Date().toISOString(),
   };
   const { tag, tags } = await lifecycleTags(db, file.tenant_id, file.role);
-  await storage.tag(file.key, tags);
+  await storage.tag(file.key, tags, file.bucket);
 
   const actor = await serviceActor(db, file.tenant_id, 'ingest');
   const final: IngestStatus = report.passed ? 'qc_passed' : 'qc_failed';

@@ -188,19 +188,19 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 10 — Pipeline runners and status (backend)
-Status: todo
+Status: done
 Goal: One runner interface launches runs locally, on AWS Batch or HealthOmics, and tracks status, logs and outputs reliably.
 Spec: M4, §7.4, ARCHITECTURE §8   Features: PIPE-01 … PIPE-04
 In scope: launch endpoint enforcing the Phase 7 QC gate (rejected while QC failed unless an approver override exists); `PipelineRunner` + adapters `local` (Nextflow in Docker running `pipelines/demo`; a fake runner for unit tests), `aws_batch` (SubmitJob head job, DescribeJobs, TerminateJob), `healthomics` (StartRun with requestId, GetRun, CancelRun, log stream ARNs); SQS consumer for `aws.batch` and `aws.omics` events with idempotent upserts; pg-boss poller for non-terminal runs; outputs → importer jobs → published releases → lineage edges; cost estimate fields; `pipelines/demo` writes fixture outputs (DIA-NN pg_matrix + limma table).
 Risks: Batch head-job IAM specifics (verify against Nextflow's AWS docs); HealthOmics region list.
 **Suggested split:** 10a = interface, local + fake runners, SQS consumer, poller, outputs → releases → lineage · 10b = AWS Batch and HealthOmics adapters.
 Definition of done:
-- [ ] Adapter unit tests with mocked AWS SDK clients (start/status/cancel/logs mapping)
-- [ ] Launch rejected (422) while QC failed; accepted after an approver override (API test)
-- [ ] SQS consumer handles duplicate and out-of-order events (test)
-- [ ] Local: demo pipeline → succeeded → 2 releases published → lineage edges exist (integration test)
-- [ ] Only if I provide a sandbox AWS account: one small real nf-core run through the Batch adapter with every status change recorded (I run the infra; you run the app)
-- [ ] `pnpm check` exits 0
+- [x] Adapter unit tests with mocked AWS SDK clients (start/status/cancel/logs mapping)
+- [x] Launch rejected (422) while QC failed; accepted after an approver override (API test)
+- [x] SQS consumer handles duplicate and out-of-order events (test)
+- [x] Local: demo pipeline → succeeded → 2 releases published → lineage edges exist (integration test)
+- [ ] Only if I provide a sandbox AWS account: one small real nf-core run through the Batch adapter with every status change recorded (I run the infra; you run the app) — waiting for a sandbox account
+- [x] `pnpm check` exits 0
 
 ## Phase 11 — Pipelines UI
 Status: todo

@@ -55,7 +55,7 @@ class PipelineDefinition(BaseModel):
     name: Annotated[str, Field(min_length=1)]
     repo: Annotated[str, Field(min_length=1)]
     revision: Annotated[str, Field(min_length=1)]
-    runner_types: Annotated[list[Literal["local", "aws_batch", "healthomics"]], Field(min_length=1)]
+    runner_types: Annotated[list[Literal["local", "aws_batch", "healthomics", "fake"]], Field(min_length=1)]
     assay_types: Annotated[
         list[
             Literal[

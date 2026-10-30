@@ -14,6 +14,13 @@ import { MemoryIngestQueue } from './ingest/queue.ts';
 import { buildApp as buildQueryApp } from '@tributary/query/app';
 import { loadQueryConfig } from '@tributary/query/config';
 import { Storage } from './storage.ts';
+import { LocalDockerRunner } from './pipelines/local.ts';
+import type { Runners } from './pipelines/runner.ts';
+import { handleRunEvent, pollRuns } from './pipelines/service.ts';
+import type { RunnerKind } from '@tributary/contracts';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve } from 'node:path';
 
 /** Configuration for API tests: dev defaults, no IdP group mapping. */
 export function testConfig(overrides: Partial<ApiConfig> = {}): ApiConfig {
@@ -33,6 +40,8 @@ export interface TestApi {
   s3: { client: Storage['client']; bucket: string };
   /** Runs the ingest jobs queued so far; returns how many ran. */
   drainIngest(): Promise<number>;
+  /** Pipeline status: one poll of every non-terminal run, or one EventBridge event as from SQS. */
+  pipelines: { poll(): Promise<number>; event(message: object, runner?: RunnerKind): Promise<boolean> };
   close(): Promise<void>;
 }
 
@@ -56,7 +65,7 @@ function withQueryService(queryApp: FastifyInstance, queryUrl: string, next: typ
 }
 
 export async function startTestApi(
-  options: { fetch?: typeof fetch; s3?: boolean; query?: boolean } = {},
+  options: { fetch?: typeof fetch; s3?: boolean; query?: boolean; runners?: Runners } = {},
 ): Promise<TestApi> {
   const [testDb, testS3] = await Promise.all([
     startTestDatabase(),
@@ -89,13 +98,22 @@ export async function startTestApi(
       })
     : undefined;
   const outbound = options.fetch ?? fetch;
-  const app = buildApp({
-    db,
-    config,
-    storage,
-    ingestQueue: queue,
-    fetch: queryApp ? withQueryService(queryApp, config.queryUrl, outbound) : outbound,
-  });
+  const fetchImpl = queryApp ? withQueryService(queryApp, config.queryUrl, outbound) : outbound;
+  const repoRoot = resolve(import.meta.dirname, '../../..');
+  const runners: Runners = {
+    local: new LocalDockerRunner(
+      {
+        image: 'nextflow/nextflow:25.10.0',
+        repoRoot,
+        fixturesDir: join(repoRoot, 'fixtures'),
+        workRoot: mkdtempSync(join(tmpdir(), 'trb-runs-')),
+      },
+      storage,
+    ),
+    ...options.runners,
+  };
+  const app = buildApp({ db, config, storage, ingestQueue: queue, fetch: fetchImpl, runners });
+  const pipelineDeps = { db, config, storage, fetch: fetchImpl, runners };
   return {
     testDb,
     db,
@@ -144,6 +162,10 @@ export async function startTestApi(
     },
     s3: { client: storage.client, bucket: storage.bucket },
     drainIngest: () => queue.drain({ db, storage }),
+    pipelines: {
+      poll: () => pollRuns(pipelineDeps),
+      event: (message, runner) => handleRunEvent(pipelineDeps, message, runner),
+    },
     async close() {
       await app.close();
       await queryApp?.close();

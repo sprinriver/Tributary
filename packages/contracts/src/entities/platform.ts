@@ -82,7 +82,8 @@ export const DatasetReleaseSchema = z
   })
   .meta({ id: 'DatasetRelease' });
 
-export const RunnerSchema = z.enum(['local', 'aws_batch', 'healthomics']);
+/** `fake` is the in-process test runner (apps/api tests). */
+export const RunnerSchema = z.enum(['local', 'aws_batch', 'healthomics', 'fake']);
 /** SPEC §7.4. */
 export const RunStatusSchema = z.enum([
   'submitted',

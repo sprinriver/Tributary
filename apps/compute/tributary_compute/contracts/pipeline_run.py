@@ -93,7 +93,7 @@ class PipelineRun(BaseModel):
             pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
         ),
     ]
-    runner: Literal["local", "aws_batch", "healthomics"]
+    runner: Literal["local", "aws_batch", "healthomics", "fake"]
     external_id: str | None
     status: Literal[
         "submitted", "pending", "starting", "running", "stopping", "succeeded", "failed", "cancelled"

@@ -9,6 +9,7 @@ import {
   ListObjectsV2Command,
   ListPartsCommand,
   PutBucketCorsCommand,
+  PutObjectCommand,
   PutObjectTaggingCommand,
   S3Client,
   UploadPartCommand,
@@ -45,7 +46,7 @@ export class Storage {
 
   /** Local development: create the buckets and allow browser uploads from the SPA origin (S3 CORS). */
   async ensureBucket(corsOrigins: string[]): Promise<void> {
-    for (const bucket of [this.bucket, this.config.warehouseBucket]) {
+    for (const bucket of [this.bucket, this.config.warehouseBucket, this.config.workBucket]) {
       try {
         await this.client.send(new HeadBucketCommand({ Bucket: bucket }));
       } catch {
@@ -121,23 +122,38 @@ export class Storage {
     );
   }
 
-  async size(key: string): Promise<number> {
-    const res = await this.client.send(new HeadObjectCommand({ Bucket: this.bucket, Key: key }));
+  async size(key: string, bucket = this.bucket): Promise<number> {
+    const res = await this.client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
     return res.ContentLength ?? 0;
   }
 
-  async read(key: string): Promise<AsyncIterable<Uint8Array>> {
-    const res = await this.client.send(new GetObjectCommand({ Bucket: this.bucket, Key: key }));
+  async read(key: string, bucket = this.bucket): Promise<AsyncIterable<Uint8Array>> {
+    const res = await this.client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
     if (!res.Body) throw new Error(`Object ${key} has no body`);
     return res.Body as AsyncIterable<Uint8Array>;
   }
 
-  async list(prefix: string): Promise<{ key: string; size: number; versionId: string | null }[]> {
+  /** Uploads a local file (pipeline outputs of the local runner). */
+  async putFile(
+    bucket: string,
+    key: string,
+    body: Uint8Array | ReadableStream | import('node:stream').Readable,
+    length: number,
+  ): Promise<void> {
+    await this.client.send(
+      new PutObjectCommand({ Bucket: bucket, Key: key, Body: body, ContentLength: length }),
+    );
+  }
+
+  async list(
+    prefix: string,
+    bucket = this.bucket,
+  ): Promise<{ key: string; size: number; versionId: string | null }[]> {
     const objects: { key: string; size: number; versionId: string | null }[] = [];
     let token: string | undefined;
     do {
       const res = await this.client.send(
-        new ListObjectsV2Command({ Bucket: this.bucket, Prefix: prefix, ContinuationToken: token }),
+        new ListObjectsV2Command({ Bucket: bucket, Prefix: prefix, ContinuationToken: token }),
       );
       for (const o of res.Contents ?? []) {
         if (o.Key && !o.Key.endsWith('/')) objects.push({ key: o.Key, size: o.Size ?? 0, versionId: null });
@@ -147,10 +163,10 @@ export class Storage {
     return objects;
   }
 
-  async tag(key: string, tags: Record<string, string>): Promise<void> {
+  async tag(key: string, tags: Record<string, string>, bucket = this.bucket): Promise<void> {
     await this.client.send(
       new PutObjectTaggingCommand({
-        Bucket: this.bucket,
+        Bucket: bucket,
         Key: key,
         Tagging: { TagSet: Object.entries(tags).map(([Key, Value]) => ({ Key, Value })) },
       }),

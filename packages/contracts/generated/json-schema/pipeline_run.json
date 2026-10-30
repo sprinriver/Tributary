@@ -57,7 +57,8 @@
           "enum": [
             "local",
             "aws_batch",
-            "healthomics"
+            "healthomics",
+            "fake"
           ]
         },
         "external_id": {

@@ -397,3 +397,33 @@ Entry template:
 - Gaps: MaxQuant and Spectronaut official docs unreachable (columns via MSstatsConvert; unverified names listed in
   SOURCE.md); AlphaDIA retention-time unit undocumented (not imported); SOURCE.md files await the owner's review.
 - Commit: cd59ffb
+
+## 2026-10-30 — Phase 10: Pipeline runners and status (backend) — done (real AWS run pending a sandbox)
+- Built: `PipelineRunner` (SPEC §7.4) with adapters `local` (Nextflow `nextflow/nextflow:25.10.0` in Docker,
+  offline, `pipelines/demo`; status from `docker inspect`, lines from `docker logs`, outputs uploaded to
+  `s3://<work>/runs/<id>/output/`), `aws_batch` (SubmitJob head job, DescribeJobs, TerminateJob, CloudWatch links),
+  `healthomics` (StartRun with requestId = run id, GetRun, CancelRun, WorkflowLog stream links) and `fake` (tests).
+  API: `GET /v1/pipelines`, `POST /v1/admin/pipelines`, `POST /v1/runs` (published version only; QC gate → 422
+  `qc_gate` until an approver override; audited), `GET /v1/runs/:id` (status history, outputs),
+  `GET /v1/versions/:id/runs`, `POST /v1/runs/:id/cancel`, `GET /v1/runs/:id/logs`. Status: `applyRunStatus`
+  records every observation idempotently per (run, external status, time), applies only newer ones, terminal is
+  final, audits each change; EventBridge handler for aws.batch / aws.omics; SQS consumer (delete only after
+  success); pg-boss `runs-poll` every minute. Succeeded runs: `output_importers` files → file objects of the run →
+  ingest QC → import → release published by the `pipelines` service account; lineage version → run → file →
+  release. `pipelines/demo` (DIA-NN pg_matrix + limma table from fixtures). Migration 0013 (run events, run
+  outputs as files, `fake` runner, status_at / outputs_processed_at).
+- Decisions (and why):
+  - Pipelines run on published versions only (outputs must describe an immutable manifest).
+  - A launch records the contrast in params when the version has exactly one; pipeline imports use that contrast
+    (its orientation is the pipeline's input), unlike manual imports, which always ask.
+  - Releases from pipeline outputs are auto-published by the service account with a reason naming the run
+    (DoD: "2 releases published"); a release that fails its rules stays rejected and visible.
+  - AWS clients are injected `{ send }` objects: adapter tests stub them, no aws-sdk-client-mock dependency.
+  - `importFile` extracted from the import route and shared with run outputs.
+- Dependencies added: @aws-sdk/client-batch, client-omics, client-sqs, client-cloudwatch-logs 3.1156.0 (Apache-2.0).
+- Evidence: `pnpm check` ✓ (api 76) · `pnpm run test:api PIPE` ✓ (10, incl. the demo pipeline in Docker →
+  succeeded → 2 published releases → lineage) · `pnpm e2e` ✓ (13).
+- Gaps: no real AWS run (needs a sandbox account; Batch head-job IAM per Nextflow's AWS docs and HealthOmics region
+  list to verify then); Batch/HealthOmics `recentLogs` return [] (logs:GetLogEvents IAM in Phase 21); cost
+  estimates stay null.
+- Commit: (pending)

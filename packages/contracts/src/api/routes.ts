@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { HealthStatusSchema } from '../health.ts';
 import { DATASET_ROUTES } from './routes-datasets.ts';
 import { FILE_ROUTES } from './routes-files.ts';
+import { PIPELINE_ROUTES } from './routes-pipelines.ts';
 import type { ApiRoute } from './route.ts';
 import {
   AccessTokenSchema,
@@ -262,6 +263,7 @@ export const API_ROUTES = {
   },
   ...FILE_ROUTES,
   ...DATASET_ROUTES,
+  ...PIPELINE_ROUTES,
 } as const satisfies Record<string, ApiRoute>;
 
 export type ApiOperation = keyof typeof API_ROUTES;

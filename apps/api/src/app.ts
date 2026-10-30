@@ -13,6 +13,8 @@ import { registerFileRoutes } from './routes/files.ts';
 import { registerImportRoutes } from './routes/imports.ts';
 import { registerLifecycleRoutes } from './routes/lifecycle.ts';
 import { registerQcGateRoutes } from './routes/qc-gate.ts';
+import { registerPipelineRoutes } from './routes/pipelines.ts';
+import type { Runners } from './pipelines/runner.ts';
 import { runIngest } from './ingest/job.ts';
 import type { IngestQueue } from './ingest/queue.ts';
 import { Storage } from './storage.ts';
@@ -35,6 +37,8 @@ export interface AppOptions {
   storage?: Storage;
   /** Where completed uploads go for ingest. server.ts passes pg-boss; the default runs jobs in-process. */
   ingestQueue?: IngestQueue;
+  /** Pipeline runners by kind (server.ts builds them from config; tests pass a fake). */
+  runners?: Runners;
 }
 
 export function buildApp(options: AppOptions = {}): FastifyInstance {
@@ -95,6 +99,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerLifecycleRoutes(scoped, db);
     registerImportRoutes(scoped, db, config, storage, fetchImpl);
     registerDatasetRoutes(scoped, db, config, fetchImpl);
+    registerPipelineRoutes(scoped, { db, config, storage, fetch: fetchImpl, runners: options.runners ?? {} });
   });
   return app;
 }

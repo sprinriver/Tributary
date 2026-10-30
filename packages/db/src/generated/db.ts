@@ -254,6 +254,7 @@ export interface FileObject {
   key: string;
   lifecycle_tag: string | null;
   name: string;
+  pipeline_run_id: string | null;
   qc_report: Json | null;
   role: Generated<string>;
   s3_version_id: string | null;
@@ -421,15 +422,34 @@ export interface PipelineRun {
   id: Generated<string>;
   log_links: Generated<Json>;
   output_uri: string | null;
+  outputs_processed_at: Timestamp | null;
   params: Generated<Json>;
   pipeline_definition_id: string;
   runner: string;
   started_at: Timestamp | null;
   status: Generated<string>;
+  status_at: Timestamp | null;
+  status_reason: string | null;
   tenant_id: string;
   triggered_by: string;
   updated_at: Generated<Timestamp>;
   work_dir: string | null;
+}
+
+export interface PipelineRunEvent {
+  applied: boolean;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  event_time: Timestamp;
+  external_status: string;
+  id: Generated<string>;
+  pipeline_run_id: string;
+  reason: string | null;
+  source: string;
+  status: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
 }
 
 export interface Program {
@@ -558,6 +578,7 @@ export interface DB {
   ontology_term_cache: OntologyTermCache;
   pipeline_definition: PipelineDefinition;
   pipeline_run: PipelineRun;
+  pipeline_run_event: PipelineRunEvent;
   program: Program;
   qc_override: QcOverride;
   role_binding: RoleBinding;

@@ -37,6 +37,8 @@ export interface S3Config {
   rawBucket: string;
   /** Dataset release objects (Parquet; ADR 0017). */
   warehouseBucket: string;
+  /** Pipeline work and output prefixes (ARCHITECTURE §5: runs/<run-id>/work|output/). */
+  workBucket: string;
   /** Multipart part size; S3 needs ≥ 5 MiB for every part but the last. */
   partSizeBytes: number;
   /** Lifetime of presigned part URLs. */
@@ -88,6 +90,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
             : { accessKeyId: 'tributary-dev', secretAccessKey: 'tributary-dev-secret' },
       rawBucket: env.S3_RAW_BUCKET ?? 'tributary-raw',
       warehouseBucket: env.S3_WAREHOUSE_BUCKET ?? 'tributary-warehouse',
+      workBucket: env.S3_WORK_BUCKET ?? 'tributary-work',
       partSizeBytes: Number(env.S3_PART_SIZE_MB ?? 16) * 1024 * 1024,
       presignTtlSeconds: Number(env.S3_PRESIGN_TTL_SECONDS ?? 3600),
       linkablePrefixes: (env.S3_LINKABLE_PREFIXES ?? 'incoming/').split(',').filter(Boolean),
