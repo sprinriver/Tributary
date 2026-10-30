@@ -63,10 +63,10 @@ One deployment per customer AWS account (single-tenant). Four deployables plus s
 | Language | TypeScript (strict) | 6.0.3 | Not 7.x yet: TS 7.0.2 (native) ships no tsserver (needed by the LSP plugin) and typescript-eslint 8.72 supports `<6.1`. Revisit when both support 7. **Pinned:** 6.0.3; typescript-eslint 8.72.0, ESLint 10.13.0, Prettier 3.9.10. |
 | Web | React 19 + Vite 8 | 19.3.1 / 8.3.5 | SPA, no SSR. **Pinned:** 19.3.1 / 8.3.5, @vitejs/plugin-react 6.1.2. |
 | Routing / data | TanStack Router / Query | 1.170.x / 5.104.x | **Pinned:** 1.170.46 (code-based routes, no router plugin) / 5.104.5. |
-| Grid | AG Grid Community (MIT) | 36.2.0 | Enterprise features not used. |
+| Grid | AG Grid Community (MIT) | 36.2.0 | Enterprise features not used. **Pinned:** ag-grid-community / ag-grid-react 36.2.0 (`AllCommunityModule`; rows render under `.ag-grid-scrolling-container`, not v32's `.ag-center-cols-container`). |
 | Charts | Plotly.js 4 + react-plotly.js | 4.1.2 / 4.1.0 | Custom partial bundle, lazy-loaded. |
 | Query builder | react-querybuilder | 8.25.0 | JSON rules → server compiler. |
-| CSV/TSV | Papa Parse | 5.7.0 | Web Worker mode. |
+| CSV/TSV | Papa Parse | 5.7.0 | Web Worker mode. **Pinned:** papaparse 5.7.0 (+ @types/papaparse 5.5.2), run inside our own module worker. |
 | UI kit | Celeste's kit if any; else Tailwind + shadcn/ui | verify | Decide in Phase 0. |
 | API | Fastify 5 + fastify-type-provider-zod | 5.12.7 / 7.0.0 | **Pinned:** fastify 5.12.7 (type provider added in Phase 1+). |
 | Schemas | zod 4 + @asteasolutions/zod-to-openapi | 4.6.7 / 9.1.0 | OpenAPI 3.1. **Pinned:** zod 4.6.7. Phase 1 emits OpenAPI components and JSON Schemas with zod 4's built-in `z.toJSONSchema` (ADR-0015); zod-to-openapi is not used. Python models: datamodel-code-generator 0.83.0 (MIT, dev-only). |
@@ -76,7 +76,7 @@ One deployment per customer AWS account (single-tenant). Four deployables plus s
 | Query engine | DuckDB via `@duckdb/node-api` | 2.0.x LTS | Same DuckDB version in Python. Consider waiting for 2.0.1. **Pinned:** `@duckdb/node-api` 2.0.0-r.1 (Python duckdb to match when added). |
 | Table format | Apache Iceberg in Amazon S3 Tables | Iceberg 1.12 | Local: SeaweedFS Iceberg REST catalog. |
 | Auth | openid-client + jose; CASL | 6.8.8 / 6.2.13; 7.0.2 | BFF sessions. **Pinned:** openid-client 6.8.8, @casl/ability 7.0.2, @fastify/cookie 11.1.3 (jose not needed: openid-client validates ID tokens). |
-| Python compute | FastAPI, pydantic, scipy, statsmodels, scikit-learn, numpy, pandas/polars, pyarrow, duckdb, sdrf-pipelines (pydeseq2 optional) | 0.162 / 2.14 / 1.18 / 0.15 / 1.9 / 2.5 / 3.1 / 2.0 / 26 / 2.0 / 0.1.6 (0.5.4) | All permissive. **Pinned so far:** numpy 2.5.4 (`pnpm synth`). No inmoose: it is GPL-3.0-or-later (PyPI, checked 2026-10-26). |
+| Python compute | FastAPI, pydantic, scipy, statsmodels, scikit-learn, numpy, pandas/polars, pyarrow, duckdb, sdrf-pipelines (pydeseq2 optional) | 0.162 / 2.14 / 1.18 / 0.15 / 1.9 / 2.5 / 3.1 / 2.0 / 26 / 2.0 / 0.1.6 (0.5.4) | All permissive. **Pinned so far:** numpy 2.5.4 (`pnpm synth`), sdrf-pipelines 0.1.6 (SDRF export validation; pulls pandas 3.1, pydantic, defusedxml). No inmoose: it is GPL-3.0-or-later (PyPI, checked 2026-10-26). |
 | Testing | Vitest 5, Testcontainers 12, Playwright 1.64, pytest | 5.0.5 / 12.2.1 / 1.64.1 | **Pinned:** testcontainers + @testcontainers/postgresql 12.2.1 (install scripts of ssh2, cpu-features, protobufjs denied in pnpm-workspace.yaml), vitest 5.0.5, @playwright/test 1.64.1, @playwright/mcp 0.0.83, pytest 9.1.1, httpx 0.28.1 (ASGI transport for tests), ruff 0.17.2, pyright 1.1.414, fastapi 0.162.0, uvicorn 0.54.0, pip-licenses 5.5.5. Integration tests use real Postgres/SeaweedFS containers, not mocks. |
 | AWS SDK | @aws-sdk/client-* v3 | 3.1156.x | omics, batch, s3, sqs, cloudwatch-logs, s3tables. **Pinned:** @aws-sdk/client-s3 3.1156.0 (packages/db seed staging). |
 | AI (optional) | Vercel AI SDK (in-app assistant), MCP TypeScript SDK v2 (`@modelcontextprotocol/server`), Anthropic/Bedrock providers | verify | Claude Agent SDK only for sandboxed batch analysis (later). |

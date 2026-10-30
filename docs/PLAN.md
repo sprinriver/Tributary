@@ -138,7 +138,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 6 — Sample manifest editor
-Status: todo
+Status: done
 Goal: Upload or paste, map, validate and edit manifests with ontology-backed cells, plate view, contrasts and SDRF round-trip.
 Spec: M2, §6.1   Features: MAN-01 … MAN-06
 In scope: Web Worker parsing (Papa Parse), column-mapping step + saved presets, AG Grid editing with cell errors, add/delete rows, bulk fill, find/replace, session undo, sample-level custom columns (chips + searchable), quantity cells, OLS4 typeahead through an API proxy with Postgres cache, plate view (96/384), contrasts editor, SDRF export/import via apps/compute (`sdrf-pipelines` validation), server re-validation on save.
@@ -146,11 +146,11 @@ Risks: AG Grid Community lacks clipboard range paste → the Paste TSV dialog is
 **Suggested split:** 6a = parsing, mapping presets, grid editing, validation, custom columns, Paste TSV ·
 6b = ontology typeahead + cache, quantity cells polish, plate view, contrasts, SDRF import/export.
 Definition of done:
-- [ ] e2e: SPEC M2 check (96-row TSV, 5 errors, inline fix, publish); screenshots
-- [ ] e2e: Paste TSV dialog maps and applies 20 rows
-- [ ] Exported SDRF passes `sdrf-pipelines` (pytest) and downloads in e2e
-- [ ] Second identical OLS lookup is served from cache (test)
-- [ ] `pnpm check` exits 0
+- [x] e2e: SPEC M2 check (96-row TSV, 5 errors, inline fix, publish); screenshots
+- [x] e2e: Paste TSV dialog maps and applies 20 rows
+- [x] Exported SDRF passes `sdrf-pipelines` (pytest) and downloads in e2e
+- [x] Second identical OLS lookup is served from cache (test)
+- [x] `pnpm check` exits 0
 
 ## Phase 7 — Files and ingest
 Status: todo

@@ -6,6 +6,7 @@ requires-python = ">=3.12"
 dependencies = [
     "fastapi==0.162.0",
     "numpy==2.5.4",
+    "sdrf-pipelines==0.1.6",
     "uvicorn==0.54.0",
 ]
 
@@ -46,5 +47,7 @@ include = ["tributary_compute", "tests"]
 exclude = ["tributary_compute/contracts"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
+# sdrf-pipelines ships no stubs or py.typed; its call sites still type-check as Unknown under strict mode.
+reportMissingTypeStubs = false
 venvPath = "."
 venv = ".venv"

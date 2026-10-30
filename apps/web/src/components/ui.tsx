@@ -35,7 +35,8 @@ export function VersionStatus({ status, live = true }: { status: string; live?: 
   return <StatusBadge label={label(status)} tone={STATUS_TONE[status] ?? 'pending'} live={live} />;
 }
 
-/** Modal dialog on the native <dialog> element (focus trap and Escape handling come from the browser). */
+/** Modal dialog on the native <dialog> element (focus trap and Escape come from the browser). Rendered only while
+ * open, so a closed dialog never shares names with the page. */
 export function Dialog({
   title,
   open,
@@ -47,14 +48,29 @@ export function Dialog({
   onClose: () => void;
   children: ReactNode;
 }) {
+  if (!open) return null;
+  return (
+    <OpenDialog title={title} onClose={onClose}>
+      {children}
+    </OpenDialog>
+  );
+}
+
+function OpenDialog({
+  title,
+  onClose,
+  children,
+}: {
+  title: string;
+  onClose: () => void;
+  children: ReactNode;
+}) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   useEffect(() => {
     const dialog = ref.current;
-    if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-  }, [open]);
+    if (dialog && !dialog.open) dialog.showModal();
+  }, []);
   return (
     <dialog ref={ref} aria-labelledby={titleId} onClose={onClose}>
       <h2 id={titleId}>{title}</h2>

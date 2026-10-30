@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/OntologySearchQuery",
+  "$defs": {
+    "OntologySearchQuery": {
+      "type": "object",
+      "properties": {
+        "ontology": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "q": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        }
+      },
+      "required": [
+        "ontology",
+        "q"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

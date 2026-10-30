@@ -51,6 +51,66 @@ function validateBatch(
   return { errors, prepared };
 }
 
+/**
+ * Validates and stores rows for a draft version (insert new sample keys, update existing ones); invalid rows are
+ * kept with their per-cell errors. Shared by the samples API and SDRF import. Audited as `samples.upsert`.
+ */
+export async function upsertSamples(
+  db: Database,
+  request: FastifyRequest,
+  versionId: string,
+  rows: Record<string, string>[],
+) {
+  const version = await loadVersion(db, versionId);
+  const principal = authorize(request, 'update', 'Sample', version.program_id);
+  requireDraft(version);
+  const template = await pinnedTemplate(db, version.assay_type, version.template_version);
+  const sampleFields = (await customFieldsOf(db, version.id)).filter((f) => f.scope === 'sample');
+  const { errors, prepared } = validateBatch(template, sampleFields, rows);
+  const existing = new Map((await samplesOf(db, version.id)).map((s) => [s.sample_key, s.id]));
+
+  const saved = await db.transaction().execute(async (trx) => {
+    let count = 0;
+    const seen = new Set<string>();
+    for (const row of prepared) {
+      if (!row.key || seen.has(row.key)) continue; // unkeyed or duplicate rows are reported, not stored
+      seen.add(row.key);
+      const values = {
+        source_name: row.typed?.source_name ?? (row.raw.source_name?.trim() || null),
+        raw: json(row.raw),
+        characteristics: json(row.typed?.characteristics ?? {}),
+        factors: json(row.typed?.factors ?? {}),
+        technical: json(row.typed?.technical ?? {}),
+        custom: json(row.typed?.custom ?? {}),
+        validation_errors: json(row.cellErrors),
+      };
+      const id = existing.get(row.key);
+      if (id) await trx.updateTable('sample').set(values).where('id', '=', id).execute();
+      else {
+        await trx
+          .insertInto('sample')
+          .values({
+            ...values,
+            tenant_id: principal.tenantId,
+            created_by: principal.userId,
+            experiment_version_id: version.id,
+            sample_key: row.key,
+          })
+          .execute();
+      }
+      count += 1;
+    }
+    await writeAudit(trx, request, {
+      action: 'samples.upsert',
+      entityType: 'experiment_version',
+      entityId: version.id,
+      after: { sample_keys: [...seen], errors: errors.length },
+    });
+    return count;
+  });
+  return { saved, errors };
+}
+
 export function registerSampleRoutes(app: FastifyInstance, db: Database): void {
   const context = async (id: string) => {
     const version = await loadVersion(db, id);
@@ -76,53 +136,8 @@ export function registerSampleRoutes(app: FastifyInstance, db: Database): void {
   });
 
   app.put('/v1/versions/:id/samples', async (request: IdParams) => {
-    const { version, template, sampleFields } = await context(request.params.id);
-    const principal = authorize(request, 'update', 'Sample', version.program_id);
-    requireDraft(version);
     const body = parse(UpsertSamplesBodySchema, request.body);
-    const { errors, prepared } = validateBatch(template, sampleFields, body.rows);
-    const existing = new Map((await samplesOf(db, version.id)).map((s) => [s.sample_key, s.id]));
-
-    const saved = await db.transaction().execute(async (trx) => {
-      let count = 0;
-      const seen = new Set<string>();
-      for (const row of prepared) {
-        if (!row.key || seen.has(row.key)) continue; // unkeyed or duplicate rows are reported, not stored
-        seen.add(row.key);
-        const values = {
-          source_name: row.typed?.source_name ?? (row.raw.source_name?.trim() || null),
-          raw: json(row.raw),
-          characteristics: json(row.typed?.characteristics ?? {}),
-          factors: json(row.typed?.factors ?? {}),
-          technical: json(row.typed?.technical ?? {}),
-          custom: json(row.typed?.custom ?? {}),
-          validation_errors: json(row.cellErrors),
-        };
-        const id = existing.get(row.key);
-        if (id) await trx.updateTable('sample').set(values).where('id', '=', id).execute();
-        else {
-          await trx
-            .insertInto('sample')
-            .values({
-              ...values,
-              tenant_id: principal.tenantId,
-              created_by: principal.userId,
-              experiment_version_id: version.id,
-              sample_key: row.key,
-            })
-            .execute();
-        }
-        count += 1;
-      }
-      await writeAudit(trx, request, {
-        action: 'samples.upsert',
-        entityType: 'experiment_version',
-        entityId: version.id,
-        after: { sample_keys: [...seen], errors: errors.length },
-      });
-      return count;
-    });
-    return respond(SampleValidationSchema, { saved, errors });
+    return respond(SampleValidationSchema, await upsertSamples(db, request, request.params.id, body.rows));
   });
 
   app.delete('/v1/versions/:id/samples', async (request: IdParams, reply) => {

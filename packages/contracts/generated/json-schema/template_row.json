@@ -20,7 +20,12 @@
           "type": "string"
         },
         "status": {
-          "type": "string"
+          "type": "string",
+          "enum": [
+            "draft",
+            "published",
+            "retired"
+          ]
         },
         "key_field": {
           "type": "string"

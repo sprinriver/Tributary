@@ -24,6 +24,7 @@ const ALLOWED = new Set([
   'Zlib',
   'Python-2.0',
   'PSF-2.0',
+  'Python Software Foundation License',
   // Weak, file-level copyleft: fine to depend on unmodified; never copy its source into ours.
   'MPL-2.0',
   'Mozilla Public License 2.0 (MPL 2.0)',

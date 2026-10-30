@@ -8,8 +8,10 @@ import { loadConfig, type ApiConfig } from './config.ts';
 import { registerErrorHandler } from './errors.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
 import { registerExperimentRoutes } from './routes/experiments.ts';
-import { registerProgramRoutes } from './routes/programs.ts';
+import { registerOntologyRoutes } from './routes/ontology.ts';
+import { registerPresetRoutes, registerProgramRoutes } from './routes/programs.ts';
 import { registerSampleRoutes } from './routes/samples.ts';
+import { registerSdrfRoutes } from './routes/sdrf.ts';
 import { registerVersionRoutes } from './routes/versions.ts';
 
 export const API_VERSION = '0.0.0';
@@ -18,12 +20,15 @@ export interface AppOptions {
   /** Defaults to a pool on `config.databaseUrl`, closed with the app. */
   db?: Database;
   config?: ApiConfig;
+  /** Outbound HTTP (OLS4, apps/compute); tests pass a fake. */
+  fetch?: typeof fetch;
   server?: FastifyServerOptions;
 }
 
 export function buildApp(options: AppOptions = {}): FastifyInstance {
   const config = options.config ?? loadConfig();
   const db = options.db ?? createDb(config.databaseUrl);
+  const fetchImpl = options.fetch ?? fetch;
   const app = Fastify({ ...options.server, genReqId: () => crypto.randomUUID() });
   if (!options.db) app.addHook('onClose', () => db.destroy());
 
@@ -60,6 +65,9 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerExperimentRoutes(scoped, db);
     registerVersionRoutes(scoped, db);
     registerSampleRoutes(scoped, db);
+    registerPresetRoutes(scoped, db);
+    registerOntologyRoutes(scoped, db, config, fetchImpl);
+    registerSdrfRoutes(scoped, db, config, fetchImpl);
   });
   return app;
 }

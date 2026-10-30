@@ -290,6 +290,18 @@ export interface LineageNode {
   updated_at: Generated<Timestamp>;
 }
 
+export interface MappingPreset {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  mapping: Json;
+  name: string;
+  program_id: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface MetadataFieldDef {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -324,6 +336,23 @@ export interface MetadataTemplate {
   tenant_id: string;
   updated_at: Generated<Timestamp>;
   version: string;
+}
+
+export interface OntologyQueryCache {
+  fetched_at: Generated<Timestamp>;
+  id: Generated<string>;
+  ontology: string;
+  query: string;
+  term_ids: string[];
+}
+
+export interface OntologyTermCache {
+  fetched_at: Generated<Timestamp>;
+  id: Generated<string>;
+  label: string;
+  ontology: string;
+  synonyms: Generated<string[]>;
+  term_id: string;
 }
 
 export interface PipelineDefinition {
@@ -471,8 +500,11 @@ export interface DB {
   group_member: GroupMember;
   lineage_edge: LineageEdge;
   lineage_node: LineageNode;
+  mapping_preset: MappingPreset;
   metadata_field_def: MetadataFieldDef;
   metadata_template: MetadataTemplate;
+  ontology_query_cache: OntologyQueryCache;
+  ontology_term_cache: OntologyTermCache;
   pipeline_definition: PipelineDefinition;
   pipeline_run: PipelineRun;
   program: Program;

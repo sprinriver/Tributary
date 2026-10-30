@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ListTemplatesQuery",
+  "$defs": {
+    "ListTemplatesQuery": {
+      "type": "object",
+      "properties": {
+        "assay_type": {
+          "type": "string",
+          "enum": [
+            "proteomics_dia",
+            "proteomics_dda",
+            "proteomics_tmt",
+            "rnaseq",
+            "crispr_screen",
+            "ngs_raw"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

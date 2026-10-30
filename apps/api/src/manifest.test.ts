@@ -116,6 +116,15 @@ describe('manifest editor API', () => {
       payload: body,
     });
     expect(denied.statusCode).toBe(403);
+    const renamed = { ...body, mapping: { ...body.mapping, Position: 'plate' } };
+    const updated = await t.call(contributor, {
+      method: 'POST',
+      url: `/v1/programs/${program}/mapping-presets`,
+      payload: renamed,
+    });
+    expect(updated.statusCode).toBe(200);
+    const relisted = await t.call(viewer, { method: 'GET', url: `/v1/programs/${program}/mapping-presets` });
+    expect((relisted.json() as Json).items).toMatchObject([renamed]);
     const bad = await t.call(contributor, {
       method: 'POST',
       url: `/v1/programs/${program}/mapping-presets`,

@@ -7,12 +7,14 @@ import { useMe } from '../auth.ts';
 import { RequireAuth } from '../components/Layout.tsx';
 import { ASSAY_LABELS, Dialog, ErrorMessage, Field, Tabs, VersionStatus } from '../components/ui.tsx';
 import { useCloneVersion, useExperiment, useRegistryInvalidation, useVersion } from '../registry/queries.ts';
-import { SamplesTab } from '../registry/SamplesTab.tsx';
+import { ManifestEditor } from '../manifest/ManifestEditor.tsx';
+import { ContrastsTab } from '../registry/ContrastsTab.tsx';
 import { VersionsTab } from '../registry/VersionsTab.tsx';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'samples', label: 'Samples' },
+  { id: 'contrasts', label: 'Contrasts' },
   { id: 'versions', label: 'Versions' },
 ] as const;
 type TabId = (typeof TABS)[number]['id'];
@@ -74,7 +76,20 @@ function ExperimentView() {
       <Tabs tabs={TABS} value={tab} onChange={setTab} />
       <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
         {tab === 'overview' && <Overview experiment={experiment.data} version={version.data} />}
-        {tab === 'samples' && <SamplesTab version={version.data} canEdit={version.data.status === 'draft'} />}
+        {tab === 'samples' && (
+          <ManifestEditor
+            key={version.data.id}
+            version={version.data}
+            readOnly={version.data.status !== 'draft'}
+          />
+        )}
+        {tab === 'contrasts' && (
+          <ContrastsTab
+            key={version.data.id}
+            version={version.data}
+            canEdit={version.data.status === 'draft'}
+          />
+        )}
         {tab === 'versions' && <VersionsTab experiment={experiment.data} currentId={version.data.id} />}
       </div>
     </main>

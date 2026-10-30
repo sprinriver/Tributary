@@ -29,9 +29,7 @@ async function openSamples(page: Page, ids: { experiment: string }) {
 }
 
 const cell = (page: Page, rowText: string, column: string): Locator =>
-  page
-    .locator('.ag-row', { hasText: rowText })
-    .locator(`.ag-cell[col-id="${column}"]`);
+  page.locator('.ag-row', { hasText: rowText }).locator(`.ag-cell[col-id="${column}"]`);
 
 async function editCell(target: Locator, value: string) {
   await target.dblclick();

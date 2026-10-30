@@ -223,12 +223,16 @@ export const TemplateSchema = z
   .object({
     assay_type: AssayTypeKeySchema,
     version: z.string(),
-    status: z.string(),
+    status: z.enum(['draft', 'published', 'retired']),
     key_field: z.string(),
     fields: z.array(MetadataFieldDefSchema),
     built_in: z.boolean(),
   })
   .meta({ id: 'TemplateRow' });
+export const ListTemplatesQuerySchema = z
+  .strictObject({ assay_type: AssayTypeKeySchema.optional() })
+  .meta({ id: 'ListTemplatesQuery' });
+
 export const TemplateListSchema = z.object({ items: z.array(TemplateSchema) }).meta({ id: 'TemplateList' });
 
 export const ItemsSchema = <T extends z.ZodType>(item: T) => z.object({ items: z.array(item) });

@@ -16,6 +16,10 @@ export interface ApiConfig {
   publicUrl: string;
   oidc: { issuer: string; clientId: string; clientSecret: string; groupsClaim: string };
   cookieSecret: string;
+  /** Internal Python service (statistics, SDRF). */
+  computeUrl: string;
+  /** EBI OLS4 or a self-hosted mirror (SPEC M2: configurable base URL). */
+  olsUrl: string;
   sessionTtlHours: number;
   groupRoleMap: GroupRoleMapping[];
 }
@@ -47,6 +51,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
       groupsClaim: env.OIDC_GROUPS_CLAIM ?? 'groups',
     },
     cookieSecret: required('COOKIE_SECRET', 'dev-only-cookie-secret-change-me-0123456789'),
+    computeUrl: env.COMPUTE_URL ?? 'http://127.0.0.1:8000',
+    olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 12),
     groupRoleMap: env.AUTH_GROUP_ROLE_MAP
       ? (JSON.parse(env.AUTH_GROUP_ROLE_MAP) as GroupRoleMapping[])

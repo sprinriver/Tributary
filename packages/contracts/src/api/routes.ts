@@ -8,6 +8,13 @@ import {
   MeResponseSchema,
 } from './auth.ts';
 import {
+  MappingPresetBodySchema,
+  MappingPresetSchema,
+  OntologySearchQuerySchema,
+  OntologySearchResultSchema,
+  SdrfImportBodySchema,
+} from './manifest.ts';
+import {
   CreateExperimentBodySchema,
   DeleteSamplesBodySchema,
   ExperimentDetailSchema,
@@ -20,6 +27,7 @@ import {
   SampleListSchema,
   SampleValidationSchema,
   ContrastRowSchema,
+  ListTemplatesQuerySchema,
   TemplateListSchema,
   UpdateExperimentBodySchema,
   UpdateVersionBodySchema,
@@ -91,6 +99,7 @@ export const API_ROUTES = {
     method: 'get',
     path: '/v1/templates',
     summary: 'Metadata templates',
+    query: ListTemplatesQuerySchema,
     response: TemplateListSchema,
   },
   listExperiments: {
@@ -226,6 +235,40 @@ export const API_ROUTES = {
     summary: 'Replace the contrasts of a draft',
     body: ReplaceContrastsBodySchema,
     response: ItemsSchema(ContrastRowSchema),
+    reason: true,
+  },
+  searchOntology: {
+    method: 'get',
+    path: '/v1/ontology/search',
+    summary: 'Ontology term typeahead (OLS4, cached in Postgres)',
+    query: OntologySearchQuerySchema,
+    response: OntologySearchResultSchema,
+  },
+  listMappingPresets: {
+    method: 'get',
+    path: '/v1/programs/{id}/mapping-presets',
+    summary: 'Column-mapping presets of a program',
+    response: ItemsSchema(MappingPresetSchema),
+  },
+  createMappingPreset: {
+    method: 'post',
+    path: '/v1/programs/{id}/mapping-presets',
+    summary: 'Save a column-mapping preset',
+    body: MappingPresetBodySchema,
+    response: MappingPresetSchema,
+    status: 201,
+  },
+  exportSdrf: {
+    method: 'get',
+    path: '/v1/versions/{id}/sdrf',
+    summary: 'Download the manifest as SDRF-Proteomics (validated with sdrf-pipelines)',
+  },
+  importSdrf: {
+    method: 'post',
+    path: '/v1/versions/{id}/sdrf',
+    summary: 'Import an SDRF file into a draft (rows upserted by sample key)',
+    body: SdrfImportBodySchema,
+    response: SampleValidationSchema,
     reason: true,
   },
 } as const satisfies Record<string, ApiRoute>;

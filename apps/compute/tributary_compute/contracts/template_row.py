@@ -35,7 +35,7 @@ class TemplateRow(BaseModel):
         "proteomics_dia", "proteomics_dda", "proteomics_tmt", "rnaseq", "crispr_screen", "ngs_raw"
     ]
     version: str
-    status: str
+    status: Literal["draft", "published", "retired"]
     key_field: str
     fields: list[MetadataFieldDef]
     built_in: bool

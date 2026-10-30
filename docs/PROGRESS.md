@@ -222,3 +222,42 @@ Entry template:
   `/experiments` and `/experiments/new` · screenshots in artifacts/phase-5/ · acceptance tests untouched.
 - Gaps: walk-through done from Playwright screenshots, not the Playwright MCP (not reliably connected here).
 - Commit: 5b83a57
+
+## 2026-10-30 — Phase 6: Sample manifest editor — done
+- Built: manifest editor on the Samples tab (AG Grid Community): file upload parsed in a Web Worker (Papa Parse,
+  delimiter auto-detect) → preview (row count, delimiter, first rows) → column mapping (exact-name auto-map,
+  program presets, "Save mapping as preset") → apply; "Paste TSV block" dialog with the same mapping step; add /
+  edit / delete rows; sample-level custom columns (dialog + chips with searchable flag, saved as version custom
+  fields); live per-cell validation with the same `validateManifest` schema as the API (red cells, tooltip
+  messages, "N problems", "Only rows with problems" filter); ontology typeahead cell editor → `/v1/ontology/search`
+  (OLS4 `/api/search`, Postgres cache tables `ontology_term_cache` / `ontology_query_cache`, local fallback when
+  offline); quantity cells show canonical values ("1000 nM (1e-6 M)"); plate view (96/384, colour by factor,
+  Okabe–Ito palette, click a well to focus its row); contrasts tab; SDRF export/import through apps/compute
+  (`/sdrf/export|import`, validated with sdrf-pipelines `ms-proteomics` 1.1.0, ontology checks off).
+  API: `/v1/ontology/search`, `/v1/programs/:id/mapping-presets`, `/v1/versions/:id/sdrf` (GET download, POST
+  import); outbound HTTP injectable (`buildApp({ fetch })`); migration 0010.
+- Decisions (and why):
+  - SDRF `comment[instrument]` comes from the experiment's `instrument` custom field; export fails with a
+    field-level error when it is missing — sdrf-pipelines rejects "not available" and we never invent an instrument.
+    Other unfilled SDRF columns use SDRF reserved values or documented defaults (trypsin, label free, replicate 1).
+  - Upload/paste merge by sample key only against rows that existed before the import; duplicates inside one
+    upload stay separate rows so validation flags them (found by the SPEC M2 e2e).
+  - Saving a preset under an existing name updates it (200) instead of failing (409).
+  - Grid rows keep their ids across reloads (by sample key) and row animation is off, so a save never shows rows
+    twice; `Dialog` renders only while open (no name collisions with closed dialogs).
+  - pyright `reportMissingTypeStubs` off for apps/compute (sdrf-pipelines ships no stubs); licence allowlist adds
+    the PSF free-text name (defusedxml).
+- Test amendments before the test commit was pushed (all in `e2e/manifest.spec.ts` / `tests/test_sdrf.py`, folded into
+  the unpushed test commit): SDRF tests supply an instrument and a new test requires it; error cells checked by
+  class `cell-invalid` (AG Grid cannot put attributes on cells); new-row key `N1` → `NEW1` (case-insensitive text
+  match also hit `run1.raw`); row selector `.ag-row` (AG Grid 36 renamed the row container). DB-01 table list gained
+  the three Phase 6 tables (separate commit).
+- Dependencies added: ag-grid-community / ag-grid-react 36.2.0, papaparse 5.7.0, @types/papaparse 5.5.2 (web);
+  sdrf-pipelines 0.1.6 (compute; Apache-2.0).
+- Evidence: `pnpm check` ✓ · `pnpm e2e "MAN-0"` ✓ (5, incl. the SPEC M2 96-row check and SDRF download) · full
+  `pnpm e2e` ✓ (11) · `pnpm run test:api MAN` ✓ (6, incl. second OLS lookup served from cache) · `pnpm run
+  test:compute -k MAN_06` ✓ (7) · `pnpm run licence:scan` ✓ (195) · screenshots in artifacts/phase-6/.
+- Gaps: OLS4 is not reachable from the build container, so the live OLS path is covered by a fake upstream only;
+  experiment-level "instrument" has no dedicated field yet (custom field); Playwright MCP walk-through replaced by
+  screenshot review (invalid cells had no visible style — fixed).
+- Commit: (pending)
