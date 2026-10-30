@@ -2,7 +2,8 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb, listMigrationNames, migrateDownAll, migrateToLatest, type Database } from './index.ts';
 import { startTestDatabase, type TestDatabase } from './testing/postgres.ts';
 
-// Every SPEC §4 entity has a table, plus auth tables added in Phase 3 (sessions, access tokens).
+// Every SPEC §4 entity has a table, plus auth tables (Phase 3) and the
+// manifest editor's ontology cache and mapping presets (Phase 6).
 const TABLES = [
   'access_token',
   'app_group',
@@ -21,8 +22,11 @@ const TABLES = [
   'group_member',
   'lineage_edge',
   'lineage_node',
+  'mapping_preset',
   'metadata_field_def',
   'metadata_template',
+  'ontology_query_cache',
+  'ontology_term_cache',
   'pipeline_definition',
   'pipeline_run',
   'program',
