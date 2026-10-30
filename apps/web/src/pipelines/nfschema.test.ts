@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formFields, validateParams } from './nfschema.ts';
+import { experimentPrefill, formFields, validateParams } from './nfschema.ts';
 
 // nf-core pipeline schema (nf-schema plugin, JSON Schema draft 2020-12 with $defs groups) — abbreviated.
 const SCHEMA = {
@@ -123,5 +123,26 @@ describe('PIPE-06: launch form from nf-schema', () => {
     });
     expect(formFields({})).toEqual([]);
     expect(validateParams([], {})).toEqual({ ok: true, values: {} });
+  });
+});
+
+describe('experiment prefill', () => {
+  const fields = [
+    { name: 'organism', type: 'string' as const },
+    { name: 'contrasts', type: 'string' as const },
+    { name: 'fdr', type: 'number' as const },
+  ].map((f) => ({ ...f, required: false }));
+  const version = {
+    species: { id: 'NCBITaxon:9606', label: 'Homo sapiens' },
+    contrasts: [
+      { label: 'A vs B', numerator: 'A', denominator: 'B' },
+      { label: 'C vs B', numerator: 'C', denominator: 'B' },
+    ],
+  };
+
+  it('PIPE-05: species and contrasts fill matching schema fields; nothing else is invented', () => {
+    expect(experimentPrefill(fields, version)).toEqual({ organism: 'Homo sapiens', contrasts: 'A vs B;C vs B' });
+    expect(experimentPrefill(fields, { species: null, contrasts: [] })).toEqual({});
+    expect(experimentPrefill([], version)).toEqual({});
   });
 });
