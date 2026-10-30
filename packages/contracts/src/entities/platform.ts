@@ -23,16 +23,25 @@ export const IngestStatusSchema = z.enum([
 export const FileObjectSchema = z
   .object({
     ...BaseEntityShape,
+    experiment_version_id: UuidV7Schema.nullable(),
+    name: z.string().min(1),
+    role: z.enum(['raw', 'processed', 'metadata', 'other']),
     bucket: z.string().min(1),
     key: z.string().min(1),
     s3_version_id: z.string().nullable(),
-    sha256: z.string().regex(/^[0-9a-f]{64}$/),
+    upload_id: z.string().nullable(),
+    /** Null until the ingest job has read the whole object (ADR 0016). */
+    sha256: z
+      .string()
+      .regex(/^[0-9a-f]{64}$/)
+      .nullable(),
     size_bytes: z.int().nonnegative(),
     format: z.string().nullable(),
     declared_format: z.string().nullable(),
     storage_class: z.string(),
     ingest_status: IngestStatusSchema,
     qc_report: JsonObjectSchema.nullable(),
+    lifecycle_tag: z.string().nullable(),
   })
   .meta({ id: 'FileObject' });
 

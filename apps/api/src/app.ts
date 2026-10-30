@@ -8,6 +8,12 @@ import { loadConfig, type ApiConfig } from './config.ts';
 import { registerErrorHandler } from './errors.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
 import { registerExperimentRoutes } from './routes/experiments.ts';
+import { registerFileRoutes } from './routes/files.ts';
+import { registerLifecycleRoutes } from './routes/lifecycle.ts';
+import { registerQcGateRoutes } from './routes/qc-gate.ts';
+import { runIngest } from './ingest/job.ts';
+import type { IngestQueue } from './ingest/queue.ts';
+import { Storage } from './storage.ts';
 import { registerOntologyRoutes } from './routes/ontology.ts';
 import { registerPresetRoutes, registerProgramRoutes } from './routes/programs.ts';
 import { registerSampleRoutes } from './routes/samples.ts';
@@ -23,13 +29,27 @@ export interface AppOptions {
   /** Outbound HTTP (OLS4, apps/compute); tests pass a fake. */
   fetch?: typeof fetch;
   server?: FastifyServerOptions;
+  /** Object storage; defaults to `config.s3`. */
+  storage?: Storage;
+  /** Where completed uploads go for ingest. server.ts passes pg-boss; the default runs jobs in-process. */
+  ingestQueue?: IngestQueue;
 }
 
 export function buildApp(options: AppOptions = {}): FastifyInstance {
   const config = options.config ?? loadConfig();
   const db = options.db ?? createDb(config.databaseUrl);
   const fetchImpl = options.fetch ?? fetch;
+  const storage = options.storage ?? new Storage(config.s3);
   const app = Fastify({ ...options.server, genReqId: () => crypto.randomUUID() });
+  const ingestQueue: IngestQueue = options.ingestQueue ?? {
+    async enqueue(fileId) {
+      setImmediate(() => {
+        runIngest({ db, storage }, fileId).catch((error: unknown) =>
+          app.log.error({ error, fileId }, 'ingest failed'),
+        );
+      });
+    },
+  };
   if (!options.db) app.addHook('onClose', () => db.destroy());
 
   registerErrorHandler(app);
@@ -68,6 +88,9 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerPresetRoutes(scoped, db);
     registerOntologyRoutes(scoped, db, config, fetchImpl);
     registerSdrfRoutes(scoped, db, config, fetchImpl);
+    registerFileRoutes(scoped, db, storage, ingestQueue);
+    registerQcGateRoutes(scoped, db);
+    registerLifecycleRoutes(scoped, db);
   });
   return app;
 }

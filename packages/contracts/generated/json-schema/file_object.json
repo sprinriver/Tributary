@@ -42,6 +42,31 @@
             }
           ]
         },
+        "experiment_version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "raw",
+            "processed",
+            "metadata",
+            "other"
+          ]
+        },
         "bucket": {
           "type": "string",
           "minLength": 1
@@ -56,9 +81,22 @@
             "null"
           ]
         },
+        "upload_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "sha256": {
-          "type": "string",
-          "pattern": "^[0-9a-f]{64}$"
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[0-9a-f]{64}$"
+            },
+            {
+              "type": "null"
+            }
+          ]
         },
         "size_bytes": {
           "type": "integer",
@@ -107,6 +145,12 @@
               "type": "null"
             }
           ]
+        },
+        "lifecycle_tag": {
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [
@@ -116,16 +160,21 @@
         "created_by",
         "updated_at",
         "deleted_at",
+        "experiment_version_id",
+        "name",
+        "role",
         "bucket",
         "key",
         "s3_version_id",
+        "upload_id",
         "sha256",
         "size_bytes",
         "format",
         "declared_format",
         "storage_class",
         "ingest_status",
-        "qc_report"
+        "qc_report",
+        "lifecycle_tag"
       ],
       "additionalProperties": false
     }

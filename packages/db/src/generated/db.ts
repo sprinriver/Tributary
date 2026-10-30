@@ -243,17 +243,22 @@ export interface FileObject {
   created_by: string;
   declared_format: string | null;
   deleted_at: Timestamp | null;
+  experiment_version_id: string | null;
   format: string | null;
   id: Generated<string>;
   ingest_status: Generated<string>;
   key: string;
+  lifecycle_tag: string | null;
+  name: string;
   qc_report: Json | null;
+  role: Generated<string>;
   s3_version_id: string | null;
-  sha256: string;
+  sha256: string | null;
   size_bytes: number;
   storage_class: Generated<string>;
   tenant_id: string;
   updated_at: Generated<Timestamp>;
+  upload_id: string | null;
 }
 
 export interface GroupMember {
@@ -265,6 +270,20 @@ export interface GroupMember {
   tenant_id: string;
   updated_at: Generated<Timestamp>;
   user_id: string;
+}
+
+export interface LifecyclePolicy {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  expiration_days: number | null;
+  id: Generated<string>;
+  role: string;
+  storage_class: string | null;
+  tag: string;
+  tenant_id: string;
+  transition_days: number | null;
+  updated_at: Generated<Timestamp>;
 }
 
 export interface LineageEdge {
@@ -408,6 +427,18 @@ export interface Program {
   updated_at: Generated<Timestamp>;
 }
 
+export interface QcOverride {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  experiment_version_id: string;
+  file_ids: string[];
+  id: Generated<string>;
+  reason: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface RoleBinding {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -498,6 +529,7 @@ export interface DB {
   experiment_version: ExperimentVersion;
   file_object: FileObject;
   group_member: GroupMember;
+  lifecycle_policy: LifecyclePolicy;
   lineage_edge: LineageEdge;
   lineage_node: LineageNode;
   mapping_preset: MappingPreset;
@@ -508,6 +540,7 @@ export interface DB {
   pipeline_definition: PipelineDefinition;
   pipeline_run: PipelineRun;
   program: Program;
+  qc_override: QcOverride;
   role_binding: RoleBinding;
   sample: Sample;
   sample_file: SampleFile;

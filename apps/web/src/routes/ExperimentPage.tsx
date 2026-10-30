@@ -8,6 +8,7 @@ import { RequireAuth } from '../components/Layout.tsx';
 import { ASSAY_LABELS, Dialog, ErrorMessage, Field, Tabs, VersionStatus } from '../components/ui.tsx';
 import { useCloneVersion, useExperiment, useRegistryInvalidation, useVersion } from '../registry/queries.ts';
 import { ManifestEditor } from '../manifest/ManifestEditor.tsx';
+import { FilesTab } from '../files/FilesTab.tsx';
 import { ContrastsTab } from '../registry/ContrastsTab.tsx';
 import { VersionsTab } from '../registry/VersionsTab.tsx';
 
@@ -15,6 +16,7 @@ const TABS = [
   { id: 'overview', label: 'Overview' },
   { id: 'samples', label: 'Samples' },
   { id: 'contrasts', label: 'Contrasts' },
+  { id: 'files', label: 'Files' },
   { id: 'versions', label: 'Versions' },
 ] as const;
 type TabId = (typeof TABS)[number]['id'];
@@ -89,6 +91,9 @@ function ExperimentView() {
             version={version.data}
             canEdit={version.data.status === 'draft'}
           />
+        )}
+        {tab === 'files' && (
+          <FilesTab key={version.data.id} version={version.data} programId={experiment.data.program_id} />
         )}
         {tab === 'versions' && <VersionsTab experiment={experiment.data} currentId={version.data.id} />}
       </div>

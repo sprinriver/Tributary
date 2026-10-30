@@ -1,0 +1,107 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/QcReport",
+  "$defs": {
+    "QcReport": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "$ref": "#/$defs/FileFormat"
+        },
+        "compression": {
+          "type": "string",
+          "enum": [
+            "none",
+            "gzip",
+            "bgzf"
+          ]
+        },
+        "detected_by": {
+          "type": "string",
+          "enum": [
+            "signature",
+            "structure",
+            "extension",
+            "fallback"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "passed": {
+                "type": "boolean"
+              },
+              "message": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "passed",
+              "message",
+              "source"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "passed": {
+          "type": "boolean"
+        },
+        "checked_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        }
+      },
+      "required": [
+        "format",
+        "compression",
+        "detected_by",
+        "sha256",
+        "size_bytes",
+        "checks",
+        "passed",
+        "checked_at"
+      ],
+      "additionalProperties": false
+    },
+    "FileFormat": {
+      "type": "string",
+      "enum": [
+        "fastq",
+        "vcf",
+        "bam",
+        "csv",
+        "tsv",
+        "parquet",
+        "zip",
+        "mzml",
+        "thermo_raw",
+        "bruker_tdf",
+        "bruker_tdf_bin",
+        "bruker_baf",
+        "sciex_wiff",
+        "sciex_wiff_scan",
+        "text",
+        "binary"
+      ]
+    }
+  }
+}

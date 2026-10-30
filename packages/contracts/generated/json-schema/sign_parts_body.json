@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/SignPartsBody",
+  "$defs": {
+    "SignPartsBody": {
+      "type": "object",
+      "properties": {
+        "part_numbers": {
+          "minItems": 1,
+          "maxItems": 1000,
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          }
+        }
+      },
+      "required": [
+        "part_numbers"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -89,3 +89,10 @@ export function readablePrograms(principal: Principal): string[] | null {
   if (principal.bindings.some((b) => b.role === 'system_admin')) return null;
   return [...new Set(principal.bindings.map((b) => b.program_id).filter((id): id is string => id !== null))];
 }
+
+/** Throws 403 unless the caller holds the global system_admin role (program admins do not qualify). */
+export function requireSystemAdmin(request: FastifyRequest): Principal {
+  const principal = requirePrincipal(request);
+  if (!principal.bindings.some((b) => b.role === 'system_admin')) throw forbidden();
+  return principal;
+}

@@ -309,6 +309,8 @@ async function seedFiles(
       .insertInto('file_object')
       .values({
         ...base,
+        name,
+        role: name === experiment.manifest ? 'metadata' : 'processed',
         bucket: staging?.bucket ?? 'tributary-raw',
         key,
         s3_version_id: versionId,

@@ -1,0 +1,179 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/LifecyclePolicies",
+  "$defs": {
+    "LifecyclePolicies": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LifecyclePolicy"
+          }
+        },
+        "s3_rules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ID": {
+                "type": "string"
+              },
+              "Status": {
+                "type": "string",
+                "const": "Enabled"
+              },
+              "Filter": {
+                "type": "object",
+                "properties": {
+                  "Tag": {
+                    "type": "object",
+                    "properties": {
+                      "Key": {
+                        "type": "string"
+                      },
+                      "Value": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "Key",
+                      "Value"
+                    ],
+                    "additionalProperties": false
+                  }
+                },
+                "required": [
+                  "Tag"
+                ],
+                "additionalProperties": false
+              },
+              "Transitions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "Days": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "StorageClass": {
+                      "type": "string",
+                      "enum": [
+                        "STANDARD_IA",
+                        "INTELLIGENT_TIERING",
+                        "GLACIER_IR",
+                        "GLACIER",
+                        "DEEP_ARCHIVE"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "Days",
+                    "StorageClass"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "Expiration": {
+                "type": "object",
+                "properties": {
+                  "Days": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "Days"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "ID",
+              "Status",
+              "Filter"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "items",
+        "s3_rules"
+      ],
+      "additionalProperties": false
+    },
+    "LifecyclePolicy": {
+      "type": "object",
+      "properties": {
+        "role": {
+          "type": "string",
+          "enum": [
+            "raw",
+            "processed",
+            "metadata",
+            "other",
+            "work",
+            "export"
+          ]
+        },
+        "tag": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9-]{0,62}$"
+        },
+        "transition_days": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 36500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "storage_class": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "STANDARD_IA",
+                "INTELLIGENT_TIERING",
+                "GLACIER_IR",
+                "GLACIER",
+                "DEEP_ARCHIVE"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "expiration_days": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 36500
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "role",
+        "tag",
+        "transition_days",
+        "storage_class",
+        "expiration_days"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -261,3 +261,49 @@ Entry template:
   experiment-level "instrument" has no dedicated field yet (custom field); Playwright MCP walk-through replaced by
   screenshot review (invalid cells had no visible style — fixed).
 - Commit: 68fa2e4
+
+## 2026-10-30 — Phase 7: Files and ingest — done
+- Built: browser → S3 presigned multipart upload (`POST /v1/files/uploads`, re-sign `POST /v1/files/:id/parts`, resume
+  `GET /v1/files/:id/parts` via ListParts, `…/complete`, `…/abort`; 16 MiB parts, 1 h URLs); web uploader with 4
+  parallel parts, per-part retry with a fresh URL and backoff, resume after reload (localStorage → ListParts), XHR
+  progress; Files tab (upload, role, status badges, format, QC reason, sha256) and a "Pipeline launch" gate panel
+  with the approver override dialog. Link existing objects by prefix (`POST /v1/files/link`, only under configured
+  landing prefixes, default `incoming/`; idempotent). Ingest job (`runIngest`) on pg-boss (`file-ingest` queue,
+  worker in the API process; schema from migration 0007, client never migrates): one streaming pass computes
+  sha256 + size, sniffs the head, fully decompresses gzip/BGZF, keeps a 64 KiB tail; contract checks (declared
+  format, registered size) and per-format QC with a cited source per check; stores the QC report. State machine
+  `INGEST_TRANSITIONS` (contracts) with `transitionFile` (row lock, 409 `illegal_transition`, audit row per
+  transition; job transitions run as an `ingest` service account). QC gate `canLaunch(db, versionId)` +
+  `GET /v1/versions/:id/qc-gate`; approver override `POST /v1/versions/:id/qc-override` (reason ≥ 10 chars,
+  covers the files failed at that moment, audited `qc.override`). Lifecycle: per-role policies (defaults: raw →
+  STANDARD_IA after 30 d, work expire 30 d, exports expire 7 d), admin `GET/PUT /v1/admin/lifecycle-policies`
+  (system_admin only, audited) returning the S3 lifecycle rules for Terraform; objects tagged `tributary-role` /
+  `tributary-lifecycle` at ingest. Migration 0011; ADR 0016.
+- Decisions (and why):
+  - sha256 is computed server-side after upload (ADR 0016): multipart ETags are not content hashes, linked
+    objects need the job anyway, and browsers have no streaming sha256.
+  - Custom sniffers instead of `file-type` (SPEC M3 suggested it): gzip/BGZF are 3–4 byte signatures, `file-type`
+    cannot tell BGZF from gzip nor recognise FASTQ/VCF/CSV/TSV/vendor MS formats, so it would add a dependency for
+    little. Vendor formats without a public signature (.wiff.scan, .tdf_bin, .baf) are recognised by extension and
+    say so in the report (`detected_by: extension`).
+  - Files are added to drafts only (DB trigger, TR409); ingest status changes continue after publish.
+  - Re-uploading a name whose previous file failed QC rejects the old file (audited); a live duplicate is 409.
+  - Gate blocks while files are still ingesting; an override covers only the files failed when it was made.
+  - Admin endpoints check the global `system_admin` binding, not CASL `can('manage','all')` (which would also
+    match program admins).
+  - Lifecycle STANDARD_IA transitions need ≥ 30 days (S3 constraint), validated in the contract.
+- Test amendments before push (folded into the unpushed test commit): e2e corrupted-gzip fixture now damages the
+  middle of the stream (the repetitive FASTQ compresses to 392 bytes, so bytes 400–520 changed nothing);
+  prettier formatting of the API test. Uploader unit tests (`apps/web/src/files/uploader.test.ts`, ING-01) were
+  written with the implementation, not in the test commit. DB-01 table list gained `qc_override`,
+  `lifecycle_policy` (separate commit).
+- Dependencies added: @aws-sdk/client-s3 3.1156.0, @aws-sdk/s3-request-presigner 3.1156.0 (Apache-2.0), pg-boss
+  12.38.0 (MIT) to apps/api (already pinned elsewhere / ARCHITECTURE §3).
+- Evidence: `pnpm check` ✓ (api 58 tests incl. 7 ING integration tests vs a SeaweedFS container and 22 sniffer
+  tests) · `pnpm run test:web ING-01` ✓ (3) · `pnpm e2e ING-04` ✓ · full `pnpm e2e` ✓ (12) · `pnpm run
+  licence:scan` ✓ · screenshots in artifacts/phase-7/.
+- Gaps: multipart tested to 200 MB locally (SPEC says tested to 50 GB — needs real S3); link-by-prefix reads only
+  the raw bucket (other customer buckets need IAM + config, Phase 21); QC for compressed mzML/zip skips tail
+  checks; bucket lifecycle rules are generated, not applied (Terraform, Phase 21); Playwright MCP walk-through
+  replaced by e2e screenshots.
+- Commit: (pending)

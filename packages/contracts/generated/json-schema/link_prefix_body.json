@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/LinkPrefixBody",
+  "$defs": {
+    "LinkPrefixBody": {
+      "type": "object",
+      "properties": {
+        "experiment_version_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "prefix": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "role": {
+          "default": "raw",
+          "$ref": "#/$defs/FileRole"
+        }
+      },
+      "required": [
+        "experiment_version_id",
+        "prefix",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "FileRole": {
+      "type": "string",
+      "enum": [
+        "raw",
+        "processed",
+        "metadata",
+        "other"
+      ]
+    }
+  }
+}

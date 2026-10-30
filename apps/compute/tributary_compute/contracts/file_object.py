@@ -16,6 +16,19 @@ class DeletedAt(RootModel[AwareDatetime]):
     ]
 
 
+class ExperimentVersionId(RootModel[UUID]):
+    root: Annotated[
+        UUID,
+        Field(
+            pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+        ),
+    ]
+
+
+class Sha256(RootModel[str]):
+    root: Annotated[str, Field(pattern="^[0-9a-f]{64}$")]
+
+
 class FileObject(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -51,10 +64,14 @@ class FileObject(BaseModel):
         ),
     ]
     deleted_at: DeletedAt | None
+    experiment_version_id: ExperimentVersionId | None
+    name: Annotated[str, Field(min_length=1)]
+    role: Literal["raw", "processed", "metadata", "other"]
     bucket: Annotated[str, Field(min_length=1)]
     key: Annotated[str, Field(min_length=1)]
     s3_version_id: str | None
-    sha256: Annotated[str, Field(pattern="^[0-9a-f]{64}$")]
+    upload_id: str | None
+    sha256: Sha256 | None
     size_bytes: Annotated[int, Field(ge=0, le=9007199254740991)]
     format: str | None
     declared_format: str | None
@@ -71,6 +88,7 @@ class FileObject(BaseModel):
         "rejected",
     ]
     qc_report: dict[str, Any] | None
+    lifecycle_tag: str | None
 
 
 class Model(RootModel[FileObject]):

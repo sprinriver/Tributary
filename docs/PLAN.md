@@ -153,18 +153,18 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 7 — Files and ingest
-Status: todo
+Status: done
 Goal: Files go straight to object storage and move through a typed, checked, audited ingest state machine.
 Spec: M3, §7.3   Features: ING-01 … ING-05
 In scope: multipart initiate/complete/abort endpoints; browser uploader (resumable, parallel parts, progress); link-existing-prefix job; streaming sha256 job; sniffers (FASTQ, VCF, BAM/BGZF, CSV/TSV, Parquet, gzip/zip, vendor MS raw by extension/structure); state machine on pg-boss with audit; QC rules per format with a stored QC report; the QC gate as a function (`canLaunch(experimentVersion)`) plus the approver-override record — enforced at launch in Phase 10 (API) and shown in Phase 11 (UI); lifecycle tags per file role + admin policy table.
 **Suggested split:** 7a = multipart upload, uploader UI, link-prefix, checksums · 7b = sniffers, state machine, QC rules, gate function and override record, lifecycle tags.
 Definition of done:
-- [ ] Integration test vs SeaweedFS: 200 MB multipart upload with one retried part
-- [ ] Sniffer tests per format incl. corrupted gzip
-- [ ] State machine tests: legal transitions audited; illegal transitions rejected; QC report stored
-- [ ] Gate function tests: `qc_failed` blocks, approver override (with reason, audited) unblocks
-- [ ] e2e: upload two files, statuses update; corrupted file shows `qc_failed` with reason
-- [ ] `pnpm check` exits 0
+- [x] Integration test vs SeaweedFS: 200 MB multipart upload with one retried part
+- [x] Sniffer tests per format incl. corrupted gzip
+- [x] State machine tests: legal transitions audited; illegal transitions rejected; QC report stored
+- [x] Gate function tests: `qc_failed` blocks, approver override (with reason, audited) unblocks
+- [x] e2e: upload two files, statuses update; corrupted file shows `qc_failed` with reason
+- [x] `pnpm check` exits 0
 
 ## Phase 8 — Dataset releases and first importers
 Status: todo
