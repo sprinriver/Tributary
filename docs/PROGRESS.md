@@ -306,4 +306,4 @@ Entry template:
   the raw bucket (other customer buckets need IAM + config, Phase 21); QC for compressed mzML/zip skips tail
   checks; bucket lifecycle rules are generated, not applied (Terraform, Phase 21); Playwright MCP walk-through
   replaced by e2e screenshots.
-- Commit: (pending)
+- Commit: 4e52deb

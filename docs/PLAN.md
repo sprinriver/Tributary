@@ -153,7 +153,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 7 — Files and ingest
-Status: done
+Status: done (4e52deb)
 Goal: Files go straight to object storage and move through a typed, checked, audited ingest state machine.
 Spec: M3, §7.3   Features: ING-01 … ING-05
 In scope: multipart initiate/complete/abort endpoints; browser uploader (resumable, parallel parts, progress); link-existing-prefix job; streaming sha256 job; sniffers (FASTQ, VCF, BAM/BGZF, CSV/TSV, Parquet, gzip/zip, vendor MS raw by extension/structure); state machine on pg-boss with audit; QC rules per format with a stored QC report; the QC gate as a function (`canLaunch(experimentVersion)`) plus the approver-override record — enforced at launch in Phase 10 (API) and shown in Phase 11 (UI); lifecycle tags per file role + admin policy table.
