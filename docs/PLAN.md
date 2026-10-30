@@ -167,7 +167,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 8 — Dataset releases and first importers
-Status: done except the Iceberg read (ADR 0017)
+Status: done (daddeed) except the Iceberg read (ADR 0017)
 Goal: Tool outputs become validated, immutable dataset releases that DuckDB can query.
 Spec: M5, §6.2–6.3, ARCHITECTURE §5–6   Features: DS-01 … DS-05
 In scope: importer executor in apps/query (DuckDB attached to the SeaweedFS Iceberg catalog locally, S3 Tables in AWS — config switch); release lifecycle staged → published/rejected; quality rules compiled from contracts to SQL assertions; column stats; ODCS YAML export per kind (+ `datacontract lint` in CI if it fits); importers `diann_pg_matrix`, `limma_toptable`, `custom_tabular` (+ mapping presets API); reference imports (compound, compound_property, target_annotation, id_mapping); catalog UI (list, release detail: schema, stats, contract, lineage stub). Check S3 Tables availability in the first customer's region; ADR if a fallback is needed.

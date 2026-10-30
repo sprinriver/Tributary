@@ -353,4 +353,4 @@ Entry template:
   DS-05) · screenshots in artifacts/phase-8/.
 - Gaps: Iceberg/S3 Tables read (blocked host, see above); `datacontract lint` not run (CLI not installed); reference
   files are uploaded through an experiment version (no program-level upload yet); S3 Tables region check needs AWS.
-- Commit: (pending)
+- Commit: daddeed
