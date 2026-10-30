@@ -396,4 +396,4 @@ Entry template:
 - Evidence: `pnpm check` ✓ · `pnpm run test:importers` ✓ (49) · `pnpm e2e` ✓ (13) · `pnpm run test:compute -k SYN` ✓.
 - Gaps: MaxQuant and Spectronaut official docs unreachable (columns via MSstatsConvert; unverified names listed in
   SOURCE.md); AlphaDIA retention-time unit undocumented (not imported); SOURCE.md files await the owner's review.
-- Commit: (pending)
+- Commit: cd59ffb

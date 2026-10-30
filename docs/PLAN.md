@@ -179,7 +179,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 9 — Remaining importers (fan-out)
-Status: done
+Status: done (cd59ffb)
 Goal: Every importer in §6.3 exists and follows the reference importer pattern.
 Spec: §6.3   Features: DS-06
 In scope: `diann_report_parquet` (→ precursor_quant + qc_metrics), `alphadia_output`, `mzqc`, `spectronaut_report`, `maxquant_protein_groups`, `fragpipe_combined_protein`, `quantms_qpx`, `msstats_comparison`, `deqms_result`, `deseq2_results` (with `na_reason` mapping), `curvecurator`, `mageck_gene_summary`. Importers must tolerate engine-version column renames and decimal-comma exports (SPEC §6.3). First verify each tool's exact output columns from official docs for a pinned tool version and record them in `packages/importers/<key>/SOURCE.md` (link + version). Extend `pnpm synth` with a fixture per format. Use the `add-importer` skill and `/batch` (see PROMPTS.md).
