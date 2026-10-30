@@ -33,7 +33,10 @@ function importerInfo(key: string): ImporterInfo {
   const needs: ImporterInfo['needs'] = [];
   if (key === 'custom_tabular') needs.push('mapping');
   else if (DATASET_CONTRACTS[i.kind].category === 'experiment') needs.push('experiment_version');
-  if (i.kind === 'differential_abundance' && key !== 'custom_tabular') needs.push('contrast');
+  // MSstats tables carry their own comparison labels, matched to every registered contrast.
+  if (key === 'msstats_comparison') needs.push('contrasts');
+  else if (i.kind === 'differential_abundance' && key !== 'custom_tabular') needs.push('contrast');
+  if (key === 'curvecurator') needs.push('doses');
   if (key === 'reference_id_mapping') needs.push('source_release');
   return {
     key,
@@ -95,7 +98,14 @@ export function registerImportRoutes(
     const versionId = category === 'experiment' ? file.experiment_version_id : null;
 
     let contrast: { id: string; label: string } | undefined;
-    if (versionId && (body.contrast_id || kind === 'differential_abundance')) {
+    const allContrasts = versionId
+      ? (await contrastsOf(db, versionId)).map((c) => ({ id: c.id, label: c.label }))
+      : [];
+    if (
+      versionId &&
+      body.importer !== 'msstats_comparison' &&
+      (body.contrast_id || kind === 'differential_abundance')
+    ) {
       const contrasts = await contrastsOf(db, versionId);
       // Always chosen explicitly: the label fixes the sign of log2 fold change (numerator vs denominator).
       const chosen = body.contrast_id ? contrasts.find((c) => c.id === body.contrast_id) : undefined;
@@ -116,6 +126,7 @@ export function registerImportRoutes(
             sample_key: s.sample_key,
             instrument_run: text(raw.instrument_run),
             raw_file: text(raw.raw_file),
+            condition: text(raw.condition),
           };
         })
       : undefined;
@@ -130,6 +141,7 @@ export function registerImportRoutes(
         program_id: file.program_id,
         ...(runs ? { runs } : {}),
         ...(contrast ? { contrast } : {}),
+        ...(allContrasts.length ? { contrasts: allContrasts } : {}),
         options,
       },
       output: { bucket: storage.config.warehouseBucket, key: outputKey },

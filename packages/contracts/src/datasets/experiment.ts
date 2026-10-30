@@ -157,7 +157,7 @@ export const doseResponse: DatasetContract = {
 
 export const qcMetrics: DatasetContract = {
   kind: 'qc_metrics',
-  version: '1.0.0',
+  version: '1.1.0',
   category: 'experiment',
   description: 'QC metrics per run, sample or experiment.',
   columns: [
@@ -168,12 +168,15 @@ export const qcMetrics: DatasetContract = {
     opt('value', 'double'),
     opt('unit', 'text'),
     opt('threshold', 'double'),
-    col('status', 'text'),
+    col('status', 'text', {
+      description: 'pass | warn | fail against threshold; not_assessed when no threshold',
+    }),
   ],
   joinKeys: ['experiment_version_id'],
   qualityRules: [
     enumRule('scope', ['run', 'sample', 'experiment']),
-    enumRule('status', ['pass', 'warn', 'fail']),
+    // not_assessed (1.1.0): tools such as mzQC report metrics without thresholds (ADR 0018).
+    enumRule('status', ['pass', 'warn', 'fail', 'not_assessed']),
   ],
 };
 

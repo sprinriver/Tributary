@@ -5,9 +5,18 @@ export interface ImportContext {
   experimentVersionId?: string | undefined;
   programId: string;
   /** Manifest rows used to map instrument runs to samples. */
-  runs?: { sample_key: string; instrument_run: string | null; raw_file: string | null }[] | undefined;
+  runs?:
+    | {
+        sample_key: string;
+        instrument_run: string | null;
+        raw_file: string | null;
+        condition?: string | null | undefined;
+      }[]
+    | undefined;
   /** The contrast a differential table belongs to; label reads "numerator vs denominator". */
   contrast?: { id: string; label: string } | undefined;
+  /** Every registered contrast of the version (tables that hold several comparisons, e.g. MSstats). */
+  contrasts?: { id: string; label: string }[] | undefined;
   /** Importer-specific options (e.g. custom_tabular mapping, tool_version). */
   options?: Record<string, unknown> | undefined;
 }
@@ -19,6 +28,10 @@ export interface SourceTable {
   delimiter: string;
   /** Decimal mark detected in numeric-looking cells. */
   decimal: '.' | ',';
+  /** Parsed document for JSON inputs (mzQC); `table` is unused then. */
+  json?: unknown;
+  /** Parquet list columns (cast to VARCHAR[]); scalars are VARCHAR. */
+  lists?: string[];
 }
 
 export interface Transformation {
@@ -63,6 +76,8 @@ export interface Importer {
   version: string;
   /** Formats it reads (from the ingest sniffers). */
   formats: string[];
+  /** How the file is loaded: a delimited/Parquet table (default) or a JSON document. */
+  input?: 'table' | 'json';
   /** True when the header looks like this tool's output. */
   detect(columns: string[]): boolean;
   build(source: SourceTable, ctx: ImportContext, prefix: string): BuiltImport;

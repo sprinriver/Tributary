@@ -33,6 +33,7 @@ export function registerImportRoutes(app: FastifyInstance, conn: DuckDBConnectio
             programId: body.context.program_id,
             runs: body.context.runs,
             contrast: body.context.contrast,
+            contrasts: body.context.contrasts,
             options: body.context.options,
           });
         } catch (error) {

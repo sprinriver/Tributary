@@ -10,6 +10,14 @@ export function suggestImporter(name: string): string {
   const n = name.toLowerCase();
   if (n.includes('pg_matrix')) return 'diann_pg_matrix';
   if (n.includes('toptable')) return 'limma_toptable';
+  if (n.includes('report') && n.endsWith('.parquet')) return 'diann_report_parquet';
+  if (n.includes('proteingroups')) return 'maxquant_protein_groups';
+  if (n.includes('combined_protein')) return 'fragpipe_combined_protein';
+  if (n.endsWith('.mzqc') || n.includes('mzqc')) return 'mzqc';
+  if (n.includes('curves')) return 'curvecurator';
+  if (n.includes('gene_summary')) return 'mageck_gene_summary';
+  if (n.includes('precursors')) return 'alphadia_precursors';
+  if (n === 'pg.matrix.tsv') return 'alphadia_pg_matrix';
   if (/compound_propert/.test(n)) return 'reference_compound_property';
   if (/^compounds?\./.test(n)) return 'reference_compound';
   if (n.includes('target_annotation')) return 'reference_target_annotation';
@@ -43,6 +51,7 @@ export function ImportDialog({
   const [contrastId, setContrastId] = useState('');
   const [presetId, setPresetId] = useState('');
   const [reference, setReference] = useState({ species: '', source: '', source_release: '' });
+  const [curve, setCurve] = useState({ compound_id: '', doses: '', dose_scale: '1e-9' });
   const info = importers.data?.items.find((i) => i.key === importer);
   const needs = new Set(info?.needs ?? []);
 
@@ -56,6 +65,19 @@ export function ImportDialog({
           ...(needs.has('contrast') && contrastId ? { contrast_id: contrastId } : {}),
           ...(needs.has('mapping') && presetId ? { preset_id: presetId } : {}),
           ...(needs.has('source_release') ? { options: reference } : {}),
+          ...(needs.has('doses')
+            ? {
+                options: {
+                  compound_id: curve.compound_id,
+                  doses: curve.doses
+                    .split(/[,;\s]+/)
+                    .filter(Boolean)
+                    .map(Number),
+                  dose_scale: Number(curve.dose_scale),
+                  dose_unit: 'M',
+                },
+              }
+            : {}),
         },
         reason: `Import ${file.name}`,
       }),
@@ -134,6 +156,37 @@ export function ImportDialog({
               )}
             </Field>
           ))}
+        {needs.has('doses') && (
+          <>
+            <Field label="Compound ID">
+              {(id) => (
+                <input
+                  id={id}
+                  value={curve.compound_id}
+                  onChange={(e) => setCurve((c) => ({ ...c, compound_id: e.target.value }))}
+                />
+              )}
+            </Field>
+            <Field label="Doses" hint="As in the CurveCurator TOML, in order; control = 0">
+              {(id) => (
+                <input
+                  id={id}
+                  value={curve.doses}
+                  onChange={(e) => setCurve((c) => ({ ...c, doses: e.target.value }))}
+                />
+              )}
+            </Field>
+            <Field label="Dose scale (to molar)" hint="e.g. 1e-9 when doses are in nM">
+              {(id) => (
+                <input
+                  id={id}
+                  value={curve.dose_scale}
+                  onChange={(e) => setCurve((c) => ({ ...c, dose_scale: e.target.value }))}
+                />
+              )}
+            </Field>
+          </>
+        )}
         <ErrorMessage error={start.error} />
         <div className="row">
           <button type="submit" className="primary" disabled={!ready || start.isPending}>

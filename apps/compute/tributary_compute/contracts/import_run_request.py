@@ -23,6 +23,7 @@ class Run(BaseModel):
     sample_key: str
     instrument_run: str | None
     raw_file: str | None
+    condition: str | None = None
 
 
 class Contrast(BaseModel):
@@ -56,6 +57,7 @@ class Context(BaseModel):
     ]
     runs: list[Run] | None = None
     contrast: Contrast | None = None
+    contrasts: list[Contrast] | None = None
     options: dict[str, Any] | None = None
 
 

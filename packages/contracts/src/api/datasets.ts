@@ -62,6 +62,7 @@ const RunSchema = z.object({
   sample_key: z.string(),
   instrument_run: z.string().nullable(),
   raw_file: z.string().nullable(),
+  condition: z.string().nullable().optional(),
 });
 
 /** API → apps/query: run one importer over a stored file and, if it passes, write the release object. */
@@ -74,6 +75,8 @@ export const ImportRunRequestSchema = z
       program_id: z.uuid(),
       runs: z.array(RunSchema).optional(),
       contrast: z.object({ id: z.uuid(), label: z.string() }).optional(),
+      /** All registered contrasts (tables holding several comparisons, e.g. MSstats). */
+      contrasts: z.array(z.object({ id: z.uuid(), label: z.string() })).optional(),
       options: z.record(z.string(), z.unknown()).optional(),
     }),
     output: z.object({ bucket: z.string(), key: z.string() }),
@@ -220,7 +223,9 @@ export const ImporterInfoSchema = z.object({
   formats: z.array(z.string()),
   /** Kinds this importer can target (custom_tabular: any importable kind). */
   kinds: z.array(DatasetKindSchema),
-  needs: z.array(z.enum(['experiment_version', 'contrast', 'mapping', 'source_release'])),
+  needs: z.array(
+    z.enum(['experiment_version', 'contrast', 'contrasts', 'mapping', 'source_release', 'doses']),
+  ),
 });
 export const ImporterListSchema = z
   .object({ items: z.array(ImporterInfoSchema) })

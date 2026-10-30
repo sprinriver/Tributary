@@ -1,7 +1,7 @@
 import { DATASET_CONTRACTS } from '@tributary/contracts';
 import type { DuckDBConnection } from '@duckdb/node-api';
 import { createHash } from 'node:crypto';
-import { closeSync, openSync, readSync } from 'node:fs';
+import { closeSync, openSync, readFileSync, readSync, statSync } from 'node:fs';
 import { ImportError } from './errors.ts';
 import { IMPORTERS } from './registry.ts';
 import { contractAssertions, evaluate, importerAssertions, parseAssertions } from './rules.ts';
@@ -28,6 +28,17 @@ function firstLine(path: string): string {
   }
 }
 
+function readMagic(path: string): string {
+  const fd = openSync(path, 'r');
+  try {
+    const buffer = Buffer.alloc(4);
+    readSync(fd, buffer, 0, 4, 0);
+    return buffer.toString('latin1');
+  } finally {
+    closeSync(fd);
+  }
+}
+
 /** Delimiter from the extension, else the most frequent of tab, semicolon and comma in the header line. */
 export function detectDelimiter(path: string, header: string): string {
   if (/\.csv$/i.test(path)) return header.includes(';') && !header.includes(',') ? ';' : ',';
@@ -36,10 +47,53 @@ export function detectDelimiter(path: string, header: string): string {
   return ['\t', ';', ','].reduce((best, c) => (count(c) > count(best) ? c : best), '\t');
 }
 
-/** Loads a delimited file as an all-text temp table and detects its decimal mark. */
-export async function loadSource(conn: DuckDBConnection, path: string, prefix: string): Promise<SourceTable> {
-  const delimiter = detectDelimiter(path, firstLine(path));
+/** Parquet → temp table with scalars as VARCHAR and lists as VARCHAR[] (importers map text, as for CSV). */
+async function loadParquet(conn: DuckDBConnection, path: string, table: string): Promise<SourceTable> {
+  const described = (
+    await conn.runAndReadAll(
+      'SELECT column_name, column_type FROM (DESCRIBE SELECT * FROM read_parquet($path))',
+      { path },
+    )
+  ).getRows();
+  const lists = described.filter((r) => String(r[1]).endsWith('[]')).map((r) => String(r[0]));
+  const casts = described.map((r) => {
+    const name = String(r[0]);
+    return `CAST(${ident(name)} AS ${lists.includes(name) ? 'VARCHAR[]' : 'VARCHAR'}) AS ${ident(name)}`;
+  });
+  await conn.run(
+    `CREATE OR REPLACE TEMP TABLE ${table} AS SELECT ${casts.join(', ')} FROM read_parquet($path)`,
+    { path },
+  );
+  return { table, columns: described.map((r) => String(r[0])), delimiter: 'parquet', decimal: '.', lists };
+}
+
+const MAX_JSON_BYTES = 200 * 1024 * 1024;
+
+/** Loads a file as an all-text temp table (delimited or Parquet) or a parsed JSON document. */
+export async function loadSource(
+  conn: DuckDBConnection,
+  path: string,
+  prefix: string,
+  input: 'table' | 'json' = 'table',
+): Promise<SourceTable> {
   const table = `${prefix}_src`;
+  if (input === 'json') {
+    if (statSync(path).size > MAX_JSON_BYTES)
+      throw new ImportError('too_large', 'JSON inputs are limited to 200 MB.');
+    try {
+      return {
+        table,
+        columns: [],
+        delimiter: 'json',
+        decimal: '.',
+        json: JSON.parse(readFileSync(path, 'utf8')),
+      };
+    } catch {
+      throw new ImportError('unreadable', 'The file is not valid JSON.');
+    }
+  }
+  if (/\.parquet$/i.test(path) || readMagic(path) === 'PAR1') return loadParquet(conn, path, table);
+  const delimiter = detectDelimiter(path, firstLine(path));
   try {
     await conn.run(
       `CREATE OR REPLACE TEMP TABLE ${table} AS SELECT * FROM read_csv($path, delim = $delim, header = true, all_varchar = true, quote = '"', escape = '"')`,
@@ -89,7 +143,7 @@ export async function runImport(
   const importer = IMPORTERS[key];
   if (!importer) throw new ImportError('unknown_importer', `No importer named ${key}.`);
   const prefix = `imp${++counter}`;
-  const source = await loadSource(conn, path, prefix);
+  const source = await loadSource(conn, path, prefix, importer.input);
   const built = importer.build(source, ctx, prefix);
   const kind = built.kind ?? importer.kind;
   const contract = DATASET_CONTRACTS[kind];
@@ -151,7 +205,12 @@ export async function runImport(
 /** Importers whose header signature matches the file. */
 export async function detectImporters(conn: DuckDBConnection, path: string): Promise<string[]> {
   const prefix = `det${++counter}`;
-  const source = await loadSource(conn, path, prefix);
+  let source: SourceTable;
+  try {
+    source = await loadSource(conn, path, prefix);
+  } catch {
+    return [];
+  }
   await conn.run(`DROP TABLE IF EXISTS ${source.table}`);
   return Object.values(IMPORTERS)
     .filter((i) => i.detect(source.columns))

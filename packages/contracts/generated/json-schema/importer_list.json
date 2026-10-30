@@ -41,8 +41,10 @@
                   "enum": [
                     "experiment_version",
                     "contrast",
+                    "contrasts",
                     "mapping",
-                    "source_release"
+                    "source_release",
+                    "doses"
                   ]
                 }
               }
