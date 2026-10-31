@@ -8,10 +8,8 @@ describe('chart spec', () => {
     expect(CHART_TYPES).toContain('dose_response');
   });
 
-  it('CON-03: the registry fills phase by phase (Phase 15: every type except dose-response, which is Phase 16)', () => {
-    expect(Object.keys(CHART_REGISTRY).sort()).toEqual(
-      CHART_TYPES.filter((t) => t !== 'dose_response').sort(),
-    );
+  it('CON-03: the registry fills phase by phase (Phase 16: every chart type)', () => {
+    expect(Object.keys(CHART_REGISTRY).sort()).toEqual([...CHART_TYPES].sort());
   });
 
   it('CON-03: a ChartSpec wraps a QuerySpec or a saved view', () => {

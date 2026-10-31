@@ -21,6 +21,7 @@ Statistics in result tables are simulated around known true effects, not compute
 | `reference/compounds.tsv` | Registry export | InChIKeys left empty (no toolkit to compute them) |
 | `reference/compound_properties.tsv` | ADME/physchem results | Solubility capped at 200 µM with qualifier `>` |
 | `reference/target_annotations.tsv` | Key/value target annotations | Real proteins only |
+| `reference/compound_targets.tsv` | Synthetic compound → target links (key `primary_target` / `off_target`, value = compound id) | Real proteins, invented links |
 | `tools/samples.tsv` | Manifest for the tool fixtures | 4 runs `TOOLS_run01..04`, 2 DMSO + 2 treated |
 | `tools/diann/report.tsv` | DIA-NN main report columns (TSV; tests convert to Parquet) | Precursor rows, q < 0.01 |
 | `tools/alphadia/precursors.tsv`, `pg.matrix.tsv` | AlphaDIA 2.3 outputs | Columns from `alphadia/constants/keys.py` |

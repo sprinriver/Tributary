@@ -58,9 +58,9 @@ const check = (
 
 describe('chart registry — remaining v1 charts and omics presets', () => {
   it('VIZ-05: every chart type is registered with valid defaults and minimal encodings', () => {
-    expect(Object.keys(CHART_REGISTRY).sort()).toEqual(
-      [...CHART_TYPES].filter((t) => t !== 'dose_response').sort(),
-    );
+    for (const type of Object.keys(BASE)) expect(CHART_TYPES, type).toContain(type);
+    for (const type of Object.keys(BASE) as ChartSpec['type'][])
+      expect(CHART_REGISTRY[type], type).toBeDefined();
     for (const type of Object.keys(BASE) as ChartSpec['type'][]) {
       expect(CHART_REGISTRY[type]!.options.safeParse(chartDefaults(type)).success, type).toBe(true);
       expect(check(type, {}), type).toEqual([]);

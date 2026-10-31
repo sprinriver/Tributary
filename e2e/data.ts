@@ -5,6 +5,12 @@ import { apiCall } from './helpers.ts';
 
 // Shared e2e data setup through the API.
 const FIXTURES = resolve(import.meta.dirname, '../fixtures/experiments/ONC-DIA-05');
+export const CURVE_OPTIONS = {
+  compound_id: 'CPD-000001',
+  doses: [0, 1, 10, 100, 1000, 10000],
+  dose_scale: 1e-9,
+  dose_unit: 'M',
+};
 export const CONTRAST = {
   numerator: 'CPD-000005@1 µM',
   denominator: 'DMSO',
@@ -29,35 +35,25 @@ export const pqRelease = (page: Page, name: string) =>
     contrast: false,
   });
 
-async function publishedRelease(
-  page: Page,
-  name: string,
-  what: { file: string; importer: string; contrast: boolean },
-): Promise<{ version: string; release: string }> {
-  const programs = await apiCall<{ items: { id: string; code: string }[] }>(page, 'GET', '/v1/programs');
-  const created = await apiCall<{ id: string; versions: { id: string }[] }>(page, 'POST', '/v1/experiments', {
-    program_id: programs.body.items.find((p) => p.code === 'ONC')!.id,
-    assay_type: 'proteomics_dia',
-    name,
-  });
-  const version = created.body.versions[0]!.id;
-  await apiCall(page, 'PUT', `/v1/versions/${version}/samples`, { rows: manifestRows() });
-  const contrasts = await apiCall<{ items: { id: string }[] }>(
-    page,
-    'PUT',
-    `/v1/versions/${version}/contrasts`,
-    {
-      contrasts: [CONTRAST],
-    },
-  );
-  const bytes = readFileSync(`${FIXTURES}/${what.file}`);
+interface Upload {
+  /** Path under fixtures/ (experiments/ONC-DIA-05 by default). */
+  file: string;
+  importer: string;
+  contrast?: boolean;
+  options?: Record<string, unknown>;
+  dataset?: string;
+}
+
+async function upload(page: Page, version: string, what: Upload): Promise<string> {
+  const path = what.file.includes('/') ? resolve(FIXTURES, '../..', what.file) : `${FIXTURES}/${what.file}`;
+  const bytes = readFileSync(path);
   const started = await apiCall<{ file: { id: string }; parts: { url: string }[] }>(
     page,
     'POST',
     '/v1/files/uploads',
     {
       experiment_version_id: version,
-      name: what.file,
+      name: path.split('/').pop(),
       size_bytes: bytes.length,
       role: 'processed',
     },
@@ -76,21 +72,90 @@ async function publishedRelease(
       },
     )
     .toBe('qc_passed');
+  return started.body.file.id;
+}
+
+/** A published ONC experiment (ONC-DIA-05 manifest + contrast); returns ids. */
+export async function publishedExperiment(page: Page, name: string, files: Upload[] = []) {
+  const programs = await apiCall<{ items: { id: string; code: string }[] }>(page, 'GET', '/v1/programs');
+  const created = await apiCall<{ id: string; versions: { id: string }[] }>(page, 'POST', '/v1/experiments', {
+    program_id: programs.body.items.find((p) => p.code === 'ONC')!.id,
+    assay_type: 'proteomics_dia',
+    name,
+  });
+  const version = created.body.versions[0]!.id;
+  await apiCall(page, 'PUT', `/v1/versions/${version}/samples`, { rows: manifestRows() });
+  const contrasts = await apiCall<{ items: { id: string }[] }>(
+    page,
+    'PUT',
+    `/v1/versions/${version}/contrasts`,
+    {
+      contrasts: [CONTRAST],
+    },
+  );
+  const fileIds = [];
+  for (const f of files) fileIds.push(await upload(page, version, f));
   expect((await apiCall(page, 'POST', `/v1/versions/${version}/publish`, { reason: 'ready' })).status).toBe(
     200,
   );
-  const imported = await apiCall<{ id: string }>(page, 'POST', '/v1/imports', {
-    file_id: started.body.file.id,
-    importer: what.importer,
-    dataset_name: name,
-    ...(what.contrast ? { contrast_id: contrasts.body.items[0]!.id } : {}),
+  const releases: string[] = [];
+  for (const [i, f] of files.entries()) {
+    const imported = await apiCall<{ id: string }>(page, 'POST', '/v1/imports', {
+      file_id: fileIds[i],
+      importer: f.importer,
+      dataset_name: f.dataset ?? name,
+      ...(f.contrast ? { contrast_id: contrasts.body.items[0]!.id } : {}),
+      ...(f.options ? { options: f.options } : {}),
+    });
+    expect(imported.status, JSON.stringify(imported.body)).toBe(201);
+    expect(
+      (await apiCall(page, 'POST', `/v1/releases/${imported.body.id}/publish`, { reason: 'checked' })).status,
+    ).toBe(200);
+    releases.push(imported.body.id);
+  }
+  return { experiment: created.body.id, version, releases, contrast: contrasts.body.items[0]!.id };
+}
+
+async function publishedRelease(
+  page: Page,
+  name: string,
+  what: Upload,
+): Promise<{ version: string; release: string }> {
+  const made = await publishedExperiment(page, name, [what]);
+  return { version: made.version, release: made.releases[0]! };
+}
+
+/** Launches the seeded demo pipeline on a new published experiment and waits for its outputs to be published. */
+export async function demoRun(page: Page, name: string) {
+  const made = await publishedExperiment(page, name);
+  const pipelines = await apiCall<{ items: { id: string; key: string }[] }>(page, 'GET', '/v1/pipelines');
+  const run = await apiCall<{ id: string }>(page, 'POST', '/v1/runs', {
+    pipeline_definition_id: pipelines.body.items.find((p) => p.key === 'demo')!.id,
+    experiment_version_id: made.version,
+    runner: 'local',
+    params: {},
   });
-  expect(imported.status).toBe(201);
-  const release = imported.body.id;
-  expect((await apiCall(page, 'POST', `/v1/releases/${release}/publish`, { reason: 'checked' })).status).toBe(
-    200,
-  );
-  return { version, release };
+  expect(run.status, JSON.stringify(run.body)).toBe(201);
+  await expect
+    .poll(
+      async () => {
+        const r = (
+          await apiCall<{ status: string; outputs: { release_status: string | null }[] }>(
+            page,
+            'GET',
+            `/v1/runs/${run.body.id}`,
+          )
+        ).body;
+        return (
+          r.status === 'succeeded' &&
+          r.outputs.length > 0 &&
+          r.outputs.every((o) => o.release_status === 'published')
+        );
+      },
+      { timeout: 150_000, intervals: [2000] },
+    )
+    .toBe(true);
+  return { ...made, run: run.body.id };
 }
 
 export async function pickRelease(page: Page, name: string) {

@@ -1,0 +1,17 @@
+uniprot_accession	gene_symbol	family	key	value
+P04637	TP53	transcription factor	primary_target	CPD-000001
+P01116	KRAS	signalling	off_target	CPD-000001
+P00533	EGFR	receptor	primary_target	CPD-000002
+P15056	BRAF	signalling	off_target	CPD-000002
+P31749	AKT1	signalling	primary_target	CPD-000003
+P60484	PTEN	enzyme	off_target	CPD-000003
+P01116	KRAS	signalling	primary_target	CPD-000004
+P06493	CDK1	cell cycle	off_target	CPD-000004
+P15056	BRAF	signalling	primary_target	CPD-000005
+P24941	CDK2	cell cycle	off_target	CPD-000005
+P60484	PTEN	enzyme	primary_target	CPD-000006
+P11802	CDK4	cell cycle	off_target	CPD-000006
+P06493	CDK1	cell cycle	primary_target	CPD-000007
+Q00534	CDK6	cell cycle	off_target	CPD-000007
+P24941	CDK2	cell cycle	primary_target	CPD-000008
+P04626	ERBB2	receptor	off_target	CPD-000008
