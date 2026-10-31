@@ -486,4 +486,4 @@ Entry template:
   drafts only); reordered (no assertion changed). Added a NULL-negation regression test (query.test.ts).
 - Gaps: 50M-row single-file pages take 1.6–7.3 s locally (SPEC M6 target met at 5M only; Phase 22); Iceberg
   sources still unread (Phase 8 gap); count is a second scan.
-- Commit: (pending)
+- Commit: 0aa1edb
