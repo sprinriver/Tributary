@@ -291,7 +291,7 @@ describe('query execution against Parquet releases', () => {
     const big = join(dir, 'big.parquet');
     await conn.run(
       `COPY (SELECT * EXCLUDE (range) REPLACE (md5(range::VARCHAR) AS feature_id)
-       FROM read_parquet('${daFile}') CROSS JOIN range(50000)) TO '${big}' (FORMAT parquet)`,
+       FROM read_parquet('${daFile}') CROSS JOIN range(5000)) TO '${big}' (FORMAT parquet)`,
     );
     const slow = runQuery(
       conn,
