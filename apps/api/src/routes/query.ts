@@ -1,59 +1,22 @@
 import {
-  checkJoinKeys,
   InternalExportResultSchema,
   QueryExportBodySchema,
   QueryExportSchema,
   QueryResultSchema,
   QuerySpecSchema,
-  validateQuerySpec,
-  DATASET_CONTRACTS,
-  type ContractError,
   type InternalQueryRequest,
-  type QuerySpec,
-  type ResolvedSource,
-  type SourceRef,
 } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 import { sql } from 'kysely';
 import { insertAudit, requestActor } from '../audit.ts';
-import { readablePrograms, requirePrincipal } from '../auth/plugin.ts';
+import { requirePrincipal } from '../auth/plugin.ts';
 import type { ApiConfig } from '../config.ts';
-import { HttpError, parse } from '../errors.ts';
+import { parse } from '../errors.ts';
 import { callQueryService } from '../datasets/query-client.ts';
-import { resolveSource } from '../query/resolve.ts';
+import { prepare, releaseIds } from '../query/prepare.ts';
 import { respond } from '../respond.ts';
 import type { Storage } from '../storage.ts';
-
-/** Advanced joins (any key pair or operator) need a role above viewer (ARCHITECTURE §6). */
-const canUseAdvanced = (request: FastifyRequest) =>
-  requirePrincipal(request).bindings.some((b) => b.role !== 'viewer');
-
-/** Scopes every source to the caller's programs, then validates the spec against the resolved contracts. */
-async function prepare(db: Database, request: FastifyRequest, spec: QuerySpec) {
-  const readable = readablePrograms(requirePrincipal(request));
-  const refs: SourceRef[] = [spec.source, ...(spec.joins ?? []).map((j) => j.target)];
-  const resolved = await Promise.all(refs.map((ref) => resolveSource(db, ref, readable)));
-  const byRef = new Map<SourceRef, ResolvedSource>();
-  refs.forEach((ref, i) => resolved[i] && byRef.set(ref, resolved[i]));
-  const resolve = (ref: SourceRef) => {
-    const source = byRef.get(ref);
-    return source ? DATASET_CONTRACTS[source.kind] : undefined;
-  };
-  const errors: ContractError[] = [
-    ...validateQuerySpec(spec, resolve),
-    ...checkJoinKeys(spec, resolve, { advancedAllowed: canUseAdvanced(request) }),
-  ];
-  const [first] = errors;
-  if (first) throw new HttpError(400, first.code, first.message, first.field, errors);
-  const [source, ...joins] = resolved as ResolvedSource[];
-  return { source: source!, joins };
-}
-
-const releaseIds = (request: InternalQueryRequest) =>
-  [request.source, ...request.joins].flatMap((s) =>
-    'releases' in s ? s.releases.map((r) => r.release_id) : [],
-  );
 
 export function registerQueryRoutes(
   app: FastifyInstance,

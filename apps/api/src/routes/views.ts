@@ -54,6 +54,16 @@ function visible(db: Database, request: FastifyRequest) {
   );
 }
 
+/** A view the caller may open, or undefined (charts read views through this too). */
+export async function visibleView(
+  db: Database,
+  request: FastifyRequest,
+  id: string,
+): Promise<View | undefined> {
+  const row = await visible(db, request).where('v.id', '=', id).executeTakeFirst();
+  return row ? toView(row) : undefined;
+}
+
 /** Saved views (SPEC M6). Someone without access gets 404, so links never reveal that a view exists. */
 export function registerViewRoutes(app: FastifyInstance, db: Database): void {
   app.get('/v1/views', async (request) =>

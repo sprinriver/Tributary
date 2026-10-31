@@ -97,6 +97,7 @@ export function registerQueryRoutes(app: FastifyInstance, deps: Deps): void {
             return await runQuery(conn, body.spec, sources, {
               ...limits,
               cache: immutable ? cache : undefined,
+              ...(body.all_rows ? { pageSize: body.all_rows } : {}),
             });
           }
           const { format, bucket, key } = body.export;

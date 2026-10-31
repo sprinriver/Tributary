@@ -1,5 +1,9 @@
 import { z } from 'zod';
+import { dendrogram } from './charts/dendrogram.ts';
+import { heatmap } from './charts/heatmap.ts';
+import { volcano } from './charts/volcano.ts';
 import { UuidV7Schema } from './common.ts';
+import type { ContractError } from './errors.ts';
 import { QuerySpecSchema } from './query.ts';
 
 /** The 12 v1 chart types (REFERENCE_V1 §7) plus MA plot, PCA, dose-response and QC panel (SPEC §7.2). */
@@ -54,6 +58,8 @@ export interface ChartDefinition {
   encodings: Partial<Record<EncodingSlot, EncodingDef>>;
   /** Types, ranges, defaults and cross-field `requires` rules. */
   options: z.ZodType;
+  /** Rules that need the encodings too (e.g. labelling hits needs a label column). */
+  rules?: (spec: ChartSpec, options: unknown) => ContractError[];
   dataRules: {
     minRows?: number;
     minRowsPerGroup?: number;
@@ -66,7 +72,11 @@ export interface ChartDefinition {
 }
 
 /** Filled in Phases 14–15 via the add-chart-type skill. */
-export const CHART_REGISTRY: Partial<Record<ChartType, ChartDefinition>> = {};
+export const CHART_REGISTRY: Partial<Record<ChartType, ChartDefinition>> = { volcano, heatmap, dendrogram };
+
+/** Option values with every default applied (what the form starts from). */
+export const chartDefaults = (type: ChartType): Record<string, unknown> =>
+  (CHART_REGISTRY[type]?.options.parse({}) ?? {}) as Record<string, unknown>;
 
 const AxisSchema = z.strictObject({ title: z.string().optional() });
 

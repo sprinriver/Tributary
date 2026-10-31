@@ -75,7 +75,7 @@ describe('chart rendering (/v1/charts/render)', () => {
     const rows = topTable();
     const up = rows.filter((r) => r.logFC >= 1 && r.adjP <= 0.05);
     const down = rows.filter((r) => r.logFC <= -1 && r.adjP <= 0.05);
-    const traces = Object.fromEntries((body.figure.data as Json[]).map((tr) => [tr.name, tr]));
+    const traces: Json = Object.fromEntries((body.figure.data as Json[]).map((tr) => [tr.name, tr]));
     expect(traces[`Up (${up.length})`].x).toHaveLength(up.length);
     expect(traces[`Down (${down.length})`].x).toHaveLength(down.length);
     expect(Object.values(traces).every((tr) => tr.type === 'scattergl')).toBe(true);

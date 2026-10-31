@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/PValuesResult",
+  "$defs": {
+    "PValuesResult": {
+      "type": "object",
+      "properties": {
+        "adjusted": {
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "method": {
+          "type": "string"
+        },
+        "compute_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "adjusted",
+        "method",
+        "compute_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

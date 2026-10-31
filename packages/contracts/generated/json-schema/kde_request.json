@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/KdeRequest",
+  "$defs": {
+    "KdeRequest": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "points": {
+          "type": "integer",
+          "minimum": 16,
+          "maximum": 2048
+        },
+        "bandwidth": {
+          "type": "string",
+          "enum": [
+            "scott",
+            "silverman"
+          ]
+        }
+      },
+      "required": [
+        "values",
+        "points",
+        "bandwidth"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

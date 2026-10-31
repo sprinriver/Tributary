@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/KdeResult",
+  "$defs": {
+    "KdeResult": {
+      "type": "object",
+      "properties": {
+        "x": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "density": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "bandwidth": {
+          "type": "number"
+        },
+        "compute_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "x",
+        "density",
+        "bandwidth",
+        "compute_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

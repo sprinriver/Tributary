@@ -61,6 +61,8 @@ export const InternalQueryRequestSchema = z.strictObject({
   spec: QuerySpecSchema,
   source: ResolvedSourceSchema,
   joins: z.array(ResolvedSourceSchema),
+  /** Charts: every row up to this many in one response (pages are for the grid). */
+  all_rows: z.int().positive().max(1_000_000).optional(),
   /** Present for exports: where the query service writes the file. */
   export: z.strictObject({ format: ExportFormatSchema, bucket: z.string(), key: z.string() }).optional(),
 });

@@ -23,6 +23,8 @@ export interface RunOptions {
   rowCap?: number;
   /** Rows counted before `totalCapped` is set. */
   countCap?: number;
+  /** Overrides the spec's page size (charts read every row up to this many). */
+  pageSize?: number;
   /** Page cache; only pass one when every source is immutable (release files). */
   cache?: ResultCache<QueryResult> | undefined;
 }
@@ -102,7 +104,7 @@ export async function runQuery(
   const page = (spec as { page?: { size?: number; cursor?: string }; limitRows?: number }).page;
   const limitRows = (spec as { limitRows?: number }).limitRows;
   const offset = decodeCursor(page?.cursor, compiled.sqlHash);
-  const size = page?.size ?? 100;
+  const size = opts.pageSize ?? page?.size ?? 100;
   const cap = Math.min(limitRows ?? Infinity, opts.rowCap);
   const limit = Math.max(0, Math.min(size, cap - offset));
   const key = `${compiled.sqlHash}|${offset}|${limit}|${cap}`;

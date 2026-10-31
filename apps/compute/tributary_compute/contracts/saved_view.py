@@ -45,7 +45,7 @@ class ReleaseId(RootModel[UUID]):
     ]
 
 
-class SourceRef11(BaseModel):
+class SourceRef17(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -214,7 +214,7 @@ class Layout(BaseModel):
     subplotLegend: bool
 
 
-class SourceRef12(BaseModel):
+class SourceRef18(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -222,8 +222,8 @@ class SourceRef12(BaseModel):
     scope: Scope
 
 
-class SourceRef(RootModel[SourceRef11 | SourceRef12]):
-    root: SourceRef11 | SourceRef12
+class SourceRef(RootModel[SourceRef17 | SourceRef18]):
+    root: SourceRef17 | SourceRef18
 
 
 class RuleGroup(BaseModel):

@@ -1,4 +1,5 @@
 export * from './api/auth.ts';
+export * from './api/charts.ts';
 export * from './api/datasets.ts';
 export * from './api/files.ts';
 export * from './api/manifest.ts';
@@ -8,6 +9,11 @@ export * from './api/views.ts';
 export * from './api/registry.ts';
 export * from './api/routes.ts';
 export * from './charts.ts';
+export * from './charts/dendrogram.ts';
+export * from './charts/heatmap.ts';
+export * from './charts/validate.ts';
+export * from './charts/volcano.ts';
+export * from './compute.ts';
 export * from './common.ts';
 export * from './datasets/index.ts';
 export * from './entities/platform.ts';

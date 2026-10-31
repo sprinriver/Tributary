@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Fit4plRequest",
+  "$defs": {
+    "Fit4plRequest": {
+      "type": "object",
+      "properties": {
+        "doses_molar": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "responses": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        }
+      },
+      "required": [
+        "doses_molar",
+        "responses"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

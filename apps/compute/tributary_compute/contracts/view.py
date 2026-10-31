@@ -45,14 +45,14 @@ class ReleaseId(RootModel[UUID]):
     ]
 
 
-class SourceRef15(BaseModel):
+class SourceRef21(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     releaseIds: Annotated[list[ReleaseId], Field(min_length=1)]
 
 
-class ProgramId10(RootModel[UUID]):
+class ProgramId13(RootModel[UUID]):
     root: Annotated[
         UUID,
         Field(
@@ -74,7 +74,7 @@ class Scope(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    programIds: list[ProgramId10] | None = None
+    programIds: list[ProgramId13] | None = None
     experimentVersionIds: list[ExperimentVersionId] | None = None
     latestPublishedOnly: bool | None = None
 
@@ -214,7 +214,7 @@ class Layout(BaseModel):
     subplotLegend: bool
 
 
-class SourceRef16(BaseModel):
+class SourceRef22(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -222,8 +222,8 @@ class SourceRef16(BaseModel):
     scope: Scope
 
 
-class SourceRef(RootModel[SourceRef15 | SourceRef16]):
-    root: SourceRef15 | SourceRef16
+class SourceRef(RootModel[SourceRef21 | SourceRef22]):
+    root: SourceRef21 | SourceRef22
 
 
 class RuleGroup(BaseModel):

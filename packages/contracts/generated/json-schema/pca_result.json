@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/PcaResult",
+  "$defs": {
+    "PcaResult": {
+      "type": "object",
+      "properties": {
+        "scores": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "loadings": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "number"
+            }
+          }
+        },
+        "explained_variance_ratio": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "compute_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "scores",
+        "loadings",
+        "explained_variance_ratio",
+        "compute_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

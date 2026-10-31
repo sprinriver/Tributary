@@ -1,7 +1,9 @@
-"""Phase 14 statistics endpoints: clustering (+ bootstrap), KDE, p-value adjustment, z-score, PCA, 4PL fits."""
+# pyright: basic
+# Direct SciPy calls are the reference here; SciPy ships incomplete type information.
+"""Phase 14 statistics: clustering (+ bootstrap), KDE, p-value adjustment, z-score, PCA, 4PL fits."""
 
 import asyncio
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import numpy as np
@@ -32,7 +34,7 @@ def matrix(rows: int = 12, cols: int = 6, seed: int = 7) -> list[list[float]]:
     return [[float(v) for v in row] for row in data]
 
 
-def cluster_body(values: list[list[float | None]], **overrides: Any) -> dict[str, Any]:
+def cluster_body(values: Any, **overrides: Any) -> dict[str, Any]:
     body: dict[str, Any] = {
         "values": values,
         "row_labels": [f"r{i}" for i in range(len(values))],
@@ -63,7 +65,8 @@ def test_VIZ_03_clustering_matches_direct_scipy(method: str, metric: str) -> Non
     assert res.status_code == 200, res.text
     data = np.asarray(values)
     expected = hierarchy.linkage(
-        pdist(data, metric=SCIPY_METRIC.get(metric, metric)), method=SCIPY_METHOD.get(method, method)
+        pdist(data, metric=cast(Any, SCIPY_METRIC.get(metric, metric))),
+        method=SCIPY_METHOD.get(method, method),
     )
     tree = res.json()["rows"]
     assert np.allclose(np.asarray(tree["linkage"]), expected)
@@ -122,7 +125,11 @@ def test_VIZ_03_two_clear_groups_have_high_support() -> None:
         (cluster_body([[1.0, 2.0]]), "too_few_rows", "values"),
         (cluster_body([[1.0], [2.0]], axis="columns"), "too_few_columns", "values"),
         (cluster_body([[1.0, None], [2.0, 3.0]]), "missing_values", "values"),
-        (cluster_body([[1.0, 2.0], [2.0, 3.0]], method="ward.D2", metric="manhattan"), "method_requires_euclidean", "metric"),
+        (
+            cluster_body([[1.0, 2.0], [2.0, 3.0]], method="ward.D2", metric="manhattan"),
+            "method_requires_euclidean",
+            "metric",
+        ),
         (cluster_body([[1.0, 2.0], [2.0, 3.0]], row_labels=["a"]), "label_count", "row_labels"),
         (cluster_body([[1.0, 2.0], [2.0]]), "ragged_matrix", "values"),
         (cluster_body([[1.0, 1.0], [2.0, 3.0]], metric="correlation"), "constant_vector", "values"),
@@ -158,14 +165,16 @@ def test_VIZ_03_pvalue_adjustment_matches_scipy_and_keeps_nulls() -> None:
     expected = false_discovery_control([0.01, 0.04, 0.03, 0.2], method="bh")
     assert res["adjusted"][2] is None
     assert np.allclose([v for v in res["adjusted"] if v is not None], expected)
-    for bad in ([0.0, 0.5], [1.5], [float("nan")]):
+    for bad in ([0.0, 0.5], [1.5], [-0.01]):
         r = post("/stats/pvalues", {"p_values": bad, "method": "BH"})
         assert r.status_code == 422
         assert r.json()["code"] == "p_out_of_range"
 
 
 def test_VIZ_03_zscore_rows_with_sample_sd_and_constant_rows_null() -> None:
-    res = post("/stats/zscore", {"values": [[1.0, 2.0, 3.0], [5.0, 5.0, 5.0], [1.0, None, 3.0]], "axis": "rows"})
+    res = post(
+        "/stats/zscore", {"values": [[1.0, 2.0, 3.0], [5.0, 5.0, 5.0], [1.0, None, 3.0]], "axis": "rows"}
+    )
     out = res.json()["values"]
     assert np.allclose(out[0], [-1.0, 0.0, 1.0])
     assert out[1] == [None, None, None]
