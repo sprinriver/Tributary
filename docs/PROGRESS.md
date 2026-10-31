@@ -452,4 +452,4 @@ Entry template:
 - Gaps: SDRF path prefill (needs the SDRF materialised into the run's work bucket; with the AWS runners, Phase 21);
   task-level table on the run page (Nextflow trace parsing) not built — the timeline shows run-level status only.
 - Review: plan-reviewer subagent could not run (usage limit); to re-run before the next phase finish.
-- Commit: (pending)
+- Commit: cfa9112
