@@ -603,4 +603,4 @@ Entry template:
   signed in twice on one page); three shaping expectations I had computed wrongly were corrected before the first
   green run (MA hits without p, pie sum, PCA long data).
 - Gaps: no picker for the pairwise reference group; scatter 3D has no panels; MA/volcano label collision handling.
-- Commit: (pending)
+- Commit: 2e4b791
