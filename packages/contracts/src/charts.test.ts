@@ -8,8 +8,8 @@ describe('chart spec', () => {
     expect(CHART_TYPES).toContain('dose_response');
   });
 
-  it('CON-03: the registry starts empty (charts arrive in Phases 14–15)', () => {
-    expect(Object.keys(CHART_REGISTRY)).toEqual([]);
+  it('CON-03: the registry fills phase by phase (Phase 14: volcano, heatmap, dendrogram)', () => {
+    expect(Object.keys(CHART_REGISTRY).sort()).toEqual(['dendrogram', 'heatmap', 'volcano']);
   });
 
   it('CON-03: a ChartSpec wraps a QuerySpec or a saved view', () => {
