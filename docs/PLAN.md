@@ -238,18 +238,18 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 14 — Chart framework, compute service and reference charts
-Status: todo
+Status: done
 Goal: Schema-driven charting with server-side statistics; volcano and heatmap + dendrogram as reference implementations.
 Spec: M7, §7.2, ARCHITECTURE §7   Features: VIZ-01 … VIZ-04
 In scope: chart registry entries (volcano, heatmap, dendrogram); form generator (type-aware pickers, option controls, `requires` rules, Apply disabled until valid, inline errors); `/v1/charts/render` (QuerySpec → data → shaping → compute → Plotly figure JSON); apps/compute endpoints `cluster` (methods, metrics, leaf ordering, bootstrap N with seed), `kde`, `pvalues`, `zscore`, `pca`, `fit-4pl` with pydantic guards and structured errors; Plotly partial bundle (measure gz size, lazy-load); axis titles and layout options; provenance popover; PNG/SVG export; lasso → rows.
 **Suggested split:** 14a = chart registry entries, form generator, `/v1/charts/render`, apps/compute endpoints and their tests · 14b = volcano and heatmap/dendrogram UI, provenance, export, lasso, bundle size.
 Definition of done:
-- [ ] Registry tests: every option and `requires` rule for the three charts
-- [ ] Compute pytest: clustering matches a direct scipy reference; bootstrap deterministic with seed; guards return structured errors
-- [ ] REFERENCE_V1 §8 heatmap/dendrogram defect scenarios show field-level errors (e2e)
-- [ ] e2e: volcano with thresholds + labels; heatmap with row/column clustering; screenshots
-- [ ] Bundle size recorded in ARCHITECTURE §3
-- [ ] `pnpm check` exits 0
+- [x] Registry tests: every option and `requires` rule for the three charts
+- [x] Compute pytest: clustering matches a direct scipy reference; bootstrap deterministic with seed; guards return structured errors
+- [x] REFERENCE_V1 §8 heatmap/dendrogram defect scenarios show field-level errors (e2e)
+- [x] e2e: volcano with thresholds + labels; heatmap with row/column clustering; screenshots
+- [x] Bundle size recorded in ARCHITECTURE §3
+- [x] `pnpm check` exits 0
 
 ## Phase 15 — Remaining charts and omics presets (fan-out)
 Status: todo

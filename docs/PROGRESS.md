@@ -522,3 +522,49 @@ Entry template:
 - Gaps: no "share token" links for people outside the program (column exists, unused); saved views cannot be
   renamed/updated yet; chart part of views comes with Phase 14.
 - Commit: c07ffd0
+
+## 2026-10-31 — Phase 14: Chart framework, compute service and reference charts — done
+- Built (14a): chart registry entries volcano, heatmap, dendrogram (`packages/contracts/src/charts/`: encodings
+  with accepted types, option schemas with ranges/defaults and `requires`/`conflict`/`range` rules, data rules)
+  and `validateChartSpec` (field-level errors before any data is read). apps/compute `/stats/cluster` (SciPy
+  linkage; R method/metric names; optimal leaf ordering; seeded bootstrap support per clade with the number of
+  valid resamples), `/stats/kde`, `/stats/pvalues` (BH/BY, nulls kept), `/stats/zscore`, `/stats/pca` (SVD, sign
+  fixed), `/stats/fit-4pl` (top ≥ bottom, EC50-in-range flag), all with structured 422 guards; compute request/
+  response schemas live in contracts and are generated as pydantic models. `POST /v1/charts/render`: QuerySpec (or
+  saved view) → program scoping → validation → encoded columns only (point cap) → shaping (volcano in TS;
+  heatmap/dendrogram matrix in TS with clustering in compute) → Plotly figure JSON + provenance (release ids,
+  sqlHash, spec with defaults, rows/dropped rows, transformations, compute versions and seed).
+- Built (14b): chart panel under the Data Explorer results: form generated from the registry (type-aware
+  column pickers, option controls from the zod schemas, errors next to each control, Apply disabled until valid,
+  server data errors mapped back to their control), axis titles, Plotly partial bundle loaded lazily (core +
+  scatter, scattergl, heatmap) with a ~60-line `Plotly.react` wrapper, lasso/box selection → "Selected points"
+  table, provenance dialog, PNG/SVG download, "Data table" alternative for every chart.
+- Decisions (and why):
+  - Shaping/figures built server-side (SPEC §8 "ChartSpec → Plotly figure JSON"); the browser only renders.
+  - Statistics only in apps/compute; TypeScript does pseudolog and z-scores (science rules). scipy 1.18.0 only:
+    PCA by SVD in numpy and BH/BY via scipy, so scikit-learn and statsmodels are not needed yet.
+  - SciPy ships incomplete types: one adapter module (`stats/scipy_api.py`) and the SciPy-reference test run in
+    pyright basic mode; everything else stays strict.
+  - Heatmap dendrograms on their own numeric axes aligned to the heatmap's categories.
+  - Volcano panels (facets) not offered yet (removed from its encodings rather than shipped dead); MA, PCA,
+    dose-response charts arrive in Phase 15 on the same endpoints.
+- Dependencies added: scipy 1.18.0 (BSD-3; ≥ 90 days). plotly.js 4.1.2 (MIT; pinned in ARCHITECTURE) — note:
+  every Plotly 4.x release is < 90 days old (4.1.2: 2026-10-05); CLAUDE.md requires 4.x, so taken with this flag;
+  please confirm. `es5-ext` install script denied in pnpm-workspace.yaml (message only). Vite `define global`.
+- Evidence: `pnpm check` ✓ · `pnpm run test:compute` ✓ (64) · `pnpm run test:contracts VIZ` ✓ ·
+  `pnpm run test:api VIZ` ✓ (11, incl. every option changes the output) · `pnpm e2e` ✓ (25) · dendrogram with
+  bootstrap N=100 on 200×20 (optimal leaf ordering, correlation): 0.19 s locally (SPEC target < 10 s) · bundle
+  sizes in ARCHITECTURE §3 · screenshots in `artifacts/phase-14/`.
+- Review: omics-reviewer — fixed: canberra now R's |x−y|/|x+y| (SciPy's differs for opposite signs; P0),
+  volcano threshold lines in plotted space (−log10 and pseudolog), labels ranked by significance when y is
+  already −log10 p, constant x no longer silently zeroed, bootstrap support reports valid resamples, 4PL reported
+  with top ≥ bottom and an extrapolation flag, constant z-scored columns named; documented `weighted` = R
+  `mcquitty`; SciPy's Silverman bandwidth differs from R's bw.nrd0 (noted, not changed).
+- Test amendments: CON-03 "registry starts empty" now expects the Phase 14 entries (it documented the
+  phase-by-phase fill); the compute SciPy-reference test now uses R's canberra as the reference (it asserted
+  SciPy's formula, i.e. wrong v1 semantics); compute test stubs in API tests gained `bootstrap_valid` (contract
+  change); a NaN p-value case was replaced by −0.01 (NaN cannot be sent as JSON); test typing fixes. Shaping
+  option tests were written after the code.
+- Gaps: volcano facets (panel encoding); 200k-point WebGL pan smoothness not measured in e2e (scattergl is used);
+  long-format heatmaps pivot in TS (fine to ~200k cells, the point cap).
+- Commit: (pending)

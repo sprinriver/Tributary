@@ -26,7 +26,27 @@ function dropIncomplete(m: Matrix): number {
 }
 
 function computeInfo(res: ClusterResult | null): Record<string, string | number> {
-  return res ? { cluster: res.compute_version, method: res.method, metric: res.metric, seed: res.seed } : {};
+  if (!res) return {};
+  const valid = res.rows?.bootstrap_valid ?? res.columns?.bootstrap_valid;
+  return {
+    cluster: res.compute_version,
+    method: res.method,
+    metric: res.metric,
+    seed: res.seed,
+    // Support is a share of the resamples that produced a tree.
+    ...(valid !== null && valid !== undefined ? { bootstrap_valid: valid } : {}),
+  };
+}
+
+/** A column that z-scoring turned all-null (it does not vary) is named, not silently dropped with every row. */
+function constantColumns(m: Matrix, field: string): void {
+  const constant = m.colLabels.filter((_, j) => m.z.length > 1 && m.z.every((row) => row[j] === null));
+  if (constant.length)
+    throw dataError(
+      'constant_column',
+      field,
+      `${constant.join(', ')} does not vary, so it cannot be z-scored by column.`,
+    );
 }
 
 /** Link traces (one per colour) in (leaf position, height) space, mapped to x/y by `place`. */
@@ -103,6 +123,7 @@ export async function shapeHeatmap(
   if (!clustering && m.z.length < 2)
     throw dataError('too_few_rows', 'encodings.values', 'A heatmap needs at least 2 rows.');
   const transformations = scaleMatrix(m, o.scale);
+  if (o.scale === 'zscore_columns') constantColumns(m, 'options.scale');
   const dropped = m.dropped + (clustering ? dropIncomplete(m) : 0);
   const axis =
     o.cluster_rows && o.cluster_columns
@@ -121,40 +142,32 @@ export async function shapeHeatmap(
     ...(spec.title ? { title: { text: spec.title } } : {}),
   };
   const annotations: Record<string, unknown>[] = [];
+  // Dendrograms sit on their own numeric axes whose range matches the heatmap's categories (category i is at
+  // position i), so the heatmap keeps its label axes.
   if (o.dendrograms && res?.rows) {
-    const d = linkTraces(
-      { ...res.rows, order: res.rows.order },
-      { interpolation: 'step', color_scheme: 'single' },
-      (p, h) => [h, p],
-      { xaxis: 'x2', yaxis: 'y' },
-    );
+    const d = linkTraces(res.rows, { interpolation: 'step', color_scheme: 'single' }, (p, h) => [h, p], {
+      xaxis: 'x2',
+      yaxis: 'y3',
+    });
     data.push(...d.traces);
     annotations.push(...d.annotations);
     (layout.xaxis as Record<string, unknown>).domain = [0.15, 1];
-    layout.xaxis2 = {
-      domain: [0, 0.13],
-      anchor: 'y',
-      autorange: 'reversed',
-      showticklabels: false,
-      showgrid: false,
-      zeroline: false,
-    };
+    // Row labels move to the right so they do not overlap the tree; the colour bar moves past them.
+    Object.assign(layout.yaxis as Record<string, unknown>, { side: 'right' });
+    Object.assign(data[0]!, { colorbar: { x: 1.18 } });
+    layout.xaxis2 = { domain: [0, 0.13], anchor: 'y3', autorange: 'reversed', visible: false };
+    layout.yaxis3 = { overlaying: 'y', range: [-0.5, m.rowLabels.length - 0.5], visible: false };
   }
   if (o.dendrograms && res?.columns) {
     const d = linkTraces(res.columns, { interpolation: 'step', color_scheme: 'single' }, (p, h) => [p, h], {
-      xaxis: 'x',
+      xaxis: 'x3',
       yaxis: 'y2',
     });
     data.push(...d.traces);
     annotations.push(...d.annotations);
     (layout.yaxis as Record<string, unknown>).domain = [0, 0.85];
-    layout.yaxis2 = {
-      domain: [0.87, 1],
-      anchor: 'x',
-      showticklabels: false,
-      showgrid: false,
-      zeroline: false,
-    };
+    layout.yaxis2 = { domain: [0.87, 1], anchor: 'x3', visible: false };
+    layout.xaxis3 = { overlaying: 'x', range: [-0.5, m.colLabels.length - 0.5], visible: false };
   }
   layout.annotations = annotations;
   return { data, layout, rows: m.z.length, dropped, transformations, compute: computeInfo(res) };
@@ -168,6 +181,7 @@ export async function shapeDendrogram(
 ): Promise<Shaped> {
   const m = buildMatrix(rows, spec, true);
   const transformations = scaleMatrix(m, o.standardize);
+  if (o.standardize === 'zscore_columns') constantColumns(m, 'options.standardize');
   const dropped = m.dropped + dropIncomplete(m);
   const res = await clusterMatrix(m, o.axis, o, cluster);
   const unordered = { rows: [...m.rowLabels], cols: [...m.colLabels] };
@@ -199,6 +213,8 @@ export async function shapeDendrogram(
       showgrid: false,
       zeroline: false,
       automargin: true,
+      // Labels sit next to the leaves: opposite the root.
+      ...(o.orientation === 'left' ? { side: 'right' } : o.orientation === 'bottom' ? { side: 'top' } : {}),
     };
     const heightAxis = {
       title: { text: `height (${o.method}, ${o.metric})` },

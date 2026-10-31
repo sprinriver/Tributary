@@ -1,6 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { addRule, CONTRAST, daRelease, pickRelease } from './data.ts';
-import { apiCall, signIn, uniqueName } from './helpers.ts';
+import { signIn, uniqueName } from './helpers.ts';
 
 // Needs the local stack, `pnpm db:migrate` and `pnpm db:seed`.
 const SHOTS = 'artifacts/phase-13';

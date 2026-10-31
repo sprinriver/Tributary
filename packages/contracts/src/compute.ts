@@ -3,7 +3,8 @@ import { z } from 'zod';
 // apps/api → apps/compute statistics requests (ARCHITECTURE §7). Generated as pydantic models for the service.
 // Guards and errors follow .claude/rules/science.md; failures are 422 with a ContractError `{code, field, message}`.
 
-/** Hierarchical clustering methods (v1 parity, REFERENCE_V1 §7). `ward.D2` = Ward on Euclidean distances. */
+/** Hierarchical clustering methods (v1 parity, REFERENCE_V1 §7). `ward.D2` = Ward on Euclidean distances;
+ * `weighted` = WPGMA (R hclust "mcquitty"). */
 export const CLUSTER_METHODS = [
   'average',
   'single',
@@ -53,6 +54,8 @@ export const ClusterTreeSchema = z
     linkage: z.array(z.array(z.number()).length(4)),
     /** Bootstrap support per merge (fraction of resamples with the same clade); null without bootstrap. */
     support: z.array(z.number()).nullable(),
+    /** Resamples that produced a tree (support is a share of these); null without bootstrap. */
+    bootstrap_valid: z.int().nullable(),
   })
   .meta({ id: 'ClusterTree' });
 
@@ -133,8 +136,11 @@ export const Fit4plResultSchema = z
     ec50_molar: z.number(),
     /** −log10(EC50 in M). */
     pec50: z.number(),
+    /** > 0: the response falls with dose. Reported with top ≥ bottom. */
     hill_slope: z.number(),
     r2: z.number(),
+    /** False when the fitted EC50 lies outside the tested doses (extrapolated). */
+    ec50_in_range: z.boolean(),
     compute_version: z.string(),
   })
   .meta({ id: 'Fit4plResult' });

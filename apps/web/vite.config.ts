@@ -5,6 +5,8 @@ const apiTarget = process.env.API_URL ?? 'http://127.0.0.1:3000';
 
 export default defineConfig({
   plugins: [react()],
+  // plotly.js (CommonJS) and some of its dependencies read Node's `global`.
+  define: { global: 'globalThis' },
   server: {
     port: 5173,
     strictPort: true,

@@ -3,7 +3,7 @@
 """Phase 14 statistics: clustering (+ bootstrap), KDE, p-value adjustment, z-score, PCA, 4PL fits."""
 
 import asyncio
-from typing import Any, cast
+from typing import Any
 
 import httpx
 import numpy as np
@@ -16,6 +16,12 @@ from tributary_compute.main import app
 
 SCIPY_METHOD = {"ward.D2": "ward"}
 SCIPY_METRIC = {"manhattan": "cityblock", "maximum": "chebyshev"}
+
+
+def r_canberra(u: Any, v: Any) -> float:
+    """R stats::dist canberra: 0/0 terms are dropped and the sum rescaled by p / (p - dropped)."""
+    terms = [abs(a - b) / abs(a + b) for a, b in zip(u, v, strict=True) if not (a - b == 0 and a + b == 0)]
+    return sum(terms) * len(u) / len(terms) if terms else 0.0
 
 
 def post(path: str, body: dict[str, Any]) -> httpx.Response:
@@ -64,10 +70,9 @@ def test_VIZ_03_clustering_matches_direct_scipy(method: str, metric: str) -> Non
     res = post("/stats/cluster", cluster_body(values, method=method, metric=metric))
     assert res.status_code == 200, res.text
     data = np.asarray(values)
-    expected = hierarchy.linkage(
-        pdist(data, metric=cast(Any, SCIPY_METRIC.get(metric, metric))),
-        method=SCIPY_METHOD.get(method, method),
-    )
+    # canberra follows R's dist() (v1 used R names): sum |x - y| / |x + y|, not SciPy's |x| + |y| denominator.
+    ref_metric: Any = r_canberra if metric == "canberra" else SCIPY_METRIC.get(metric, metric)
+    expected = hierarchy.linkage(pdist(data, metric=ref_metric), method=SCIPY_METHOD.get(method, method))
     tree = res.json()["rows"]
     assert np.allclose(np.asarray(tree["linkage"]), expected)
     assert tree["order"] == [int(i) for i in hierarchy.leaves_list(expected)]
@@ -210,3 +215,33 @@ def test_VIZ_03_fit_4pl_recovers_parameters_and_guards_dose_levels() -> None:
     assert few.json()["code"] == "too_few_dose_levels"
     zero = post("/stats/fit-4pl", {"doses_molar": [0.0, *doses[1:]], "responses": responses})
     assert zero.json()["code"] == "dose_not_positive"
+
+
+def test_VIZ_03_canberra_uses_r_definition() -> None:
+    # Opposite signs: R gives |1 - (-1)| / |1 + (-1)| = inf (undefined); SciPy would give 2.
+    values = [[1.0, 2.0, 4.0], [2.0, 2.0, 1.0], [3.0, 1.0, 1.0]]
+    res = post("/stats/cluster", cluster_body(values, metric="canberra", method="single"))
+    assert res.status_code == 200, res.text
+    pairs = [r_canberra(values[i], values[j]) for i, j in ((0, 1), (0, 2), (1, 2))]
+    assert res.json()["rows"]["linkage"][0][2] == pytest.approx(min(pairs))
+    bad = post("/stats/cluster", cluster_body([[1.0, -1.0], [-1.0, 1.0]], metric="canberra"))
+    assert bad.status_code == 422
+    assert bad.json()["code"] == "undefined_distance"
+
+
+def test_VIZ_03_bootstrap_reports_valid_resamples() -> None:
+    tree = post("/stats/cluster", cluster_body(matrix(), bootstrap_n=30, seed=5)).json()["rows"]
+    assert tree["bootstrap_valid"] == 30
+    assert post("/stats/cluster", cluster_body(matrix())).json()["rows"]["bootstrap_valid"] is None
+
+
+def test_VIZ_03_fit_4pl_reports_top_above_bottom_and_flags_extrapolation() -> None:
+    doses = [1e-9, 3e-9, 1e-8, 3e-8, 1e-7, 3e-7, 1e-6, 3e-6]
+    rising = [0.1 + 0.9 / (1 + (5e-8 / d) ** 1.2) for d in doses]
+    fit = post("/stats/fit-4pl", {"doses_molar": doses, "responses": rising}).json()
+    assert fit["top"] > fit["bottom"]
+    assert fit["hill_slope"] < 0
+    assert fit["ec50_molar"] == pytest.approx(5e-8, rel=1e-3)
+    assert fit["ec50_in_range"] is True
+    far = [0.1 + 0.9 / (1 + (d / 1e-4) ** 1.2) for d in doses]
+    assert post("/stats/fit-4pl", {"doses_molar": doses, "responses": far}).json()["ec50_in_range"] is False

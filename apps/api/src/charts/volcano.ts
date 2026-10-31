@@ -36,7 +36,14 @@ export function shapeVolcano(rows: Row[], spec: ChartSpec, o: VolcanoOptions): S
 
   let xs = kept.map((k) => k.x);
   if (o.standardize_x) {
-    xs = zscore(xs).map((v) => v ?? 0);
+    const z = zscore(xs);
+    if (z.some((v) => v === null))
+      throw dataError(
+        'constant_vector',
+        'options.standardize_x',
+        `"${xCol}" does not vary, so it cannot be z-scored.`,
+      );
+    xs = z as number[];
     transformations.push(`x z-scored (sample SD) over ${xs.length} rows`);
   }
   const base = o.pseudolog_base ?? 10;
@@ -95,7 +102,9 @@ export function shapeVolcano(rows: Row[], spec: ChartSpec, o: VolcanoOptions): S
     };
   });
 
-  const yLine = o.y_transform === 'neg_log10' ? -Math.log10(o.p_threshold) : o.p_threshold;
+  // Threshold lines live in the plotted space: y is −log10(p) in both modes, then any pseudolog.
+  const yLine = o.pseudolog_y ? pseudolog(-Math.log10(o.p_threshold), base) : -Math.log10(o.p_threshold);
+  const xLine = (v: number) => (o.pseudolog_x ? pseudolog(v, base) : v);
   const line = { color: '#57606a', dash: 'dash', width: 1 };
   const shapes = [
     ...(o.fc_threshold > 0
@@ -103,8 +112,8 @@ export function shapeVolcano(rows: Row[], spec: ChartSpec, o: VolcanoOptions): S
           type: 'line',
           xref: 'x',
           yref: 'paper',
-          x0: s * o.fc_threshold,
-          x1: s * o.fc_threshold,
+          x0: xLine(s * o.fc_threshold),
+          x1: xLine(s * o.fc_threshold),
           y0: 0,
           y1: 1,
           line,
@@ -115,7 +124,11 @@ export function shapeVolcano(rows: Row[], spec: ChartSpec, o: VolcanoOptions): S
   const hits = kept
     .map((k, j) => ({ k, j }))
     .filter(({ j }) => classes[j] !== 'none')
-    .sort((a, b) => a.k.p - b.k.p || Math.abs(b.k.x) - Math.abs(a.k.x))
+    // Most significant first: smallest p, or largest y when y is already −log10(p).
+    .sort(
+      (a, b) =>
+        (o.y_transform === 'neg_log10' ? a.k.p - b.k.p : b.k.p - a.k.p) || Math.abs(b.k.x) - Math.abs(a.k.x),
+    )
     .slice(0, label ? o.label_top : 0);
   const annotations = hits.map(({ k, j }) => ({
     x: xs[j],

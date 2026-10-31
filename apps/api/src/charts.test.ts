@@ -21,6 +21,7 @@ function computeStub() {
     order: [...Array(n).keys()].reverse(),
     linkage: [...Array(n - 1).keys()].map((k) => [k === 0 ? 0 : n + k - 1, k + 1, k + 1, k + 2]),
     support: support ? [...Array(n - 1).keys()].map(() => 0.5) : null,
+    bootstrap_valid: support ? 25 : null,
   });
   const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
     const url = new URL(String(input instanceof Request ? input.url : input));

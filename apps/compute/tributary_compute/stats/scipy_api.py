@@ -15,7 +15,7 @@ from scipy.stats import false_discovery_control, gaussian_kde
 Array = npt.NDArray[np.float64]
 
 
-def distances(data: Array, metric: str) -> Array:
+def distances(data: Array, metric: str | Callable[[Array, Array], float]) -> Array:
     return np.asarray(pdist(data, metric=cast(Any, metric)), dtype=np.float64)
 
 

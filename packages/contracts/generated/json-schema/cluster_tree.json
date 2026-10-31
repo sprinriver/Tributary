@@ -36,12 +36,25 @@
               "type": "null"
             }
           ]
+        },
+        "bootstrap_valid": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            {
+              "type": "null"
+            }
+          ]
         }
       },
       "required": [
         "order",
         "linkage",
-        "support"
+        "support",
+        "bootstrap_valid"
       ],
       "additionalProperties": false
     }

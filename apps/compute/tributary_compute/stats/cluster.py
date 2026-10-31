@@ -19,6 +19,7 @@ from tributary_compute.stats.errors import COMPUTE_VERSION, ComputeError
 from tributary_compute.stats.matrix import complete, rectangular
 from tributary_compute.stats.scipy_api import distances, leaves, linkage, optimal_leaf_ordering
 
+# `weighted` is WPGMA (R's "mcquitty"); v1 used the SciPy name.
 SCIPY_METHOD = {"ward.D2": "ward"}
 SCIPY_METRIC = {"manhattan": "cityblock", "maximum": "chebyshev"}
 EUCLIDEAN_ONLY = {"centroid", "median", "ward.D2"}
@@ -26,8 +27,22 @@ EUCLIDEAN_ONLY = {"centroid", "median", "ward.D2"}
 Linkage = npt.NDArray[np.float64]
 
 
+def canberra_r(u: npt.NDArray[np.float64], v: npt.NDArray[np.float64]) -> float:
+    """R's dist(method = "canberra"): sum |u - v| / |u + v|; 0/0 terms are omitted and the sum is scaled by
+    p / (p - omitted) (R stats::dist documentation). SciPy's canberra divides by |u| + |v| instead, which
+    differs whenever signs differ (log fold changes, z-scores)."""
+    num = np.abs(u - v)
+    den = np.abs(u + v)
+    keep = ~((num == 0) & (den == 0))
+    if not keep.any():
+        return 0.0
+    with np.errstate(divide="ignore", invalid="ignore"):
+        total = float(np.sum(num[keep] / den[keep]))
+    return total * len(u) / int(keep.sum())
+
+
 def _distances(data: npt.NDArray[np.float64], metric: str) -> npt.NDArray[np.float64] | None:
-    d = distances(data, SCIPY_METRIC.get(metric, metric))
+    d = distances(data, canberra_r if metric == "canberra" else SCIPY_METRIC.get(metric, metric))
     return d if np.all(np.isfinite(d)) else None
 
 
@@ -46,20 +61,23 @@ def _tree(
         raise ComputeError(code, "values", f"Clustering {axis_name} needs at least 2 {axis_name}.")
     d = _distances(data, request.metric)
     if d is None:
+        constant = request.metric in ("correlation", "cosine")
         raise ComputeError(
-            "constant_vector",
+            "constant_vector" if constant else "undefined_distance",
             "values",
-            f"Some {axis_name} have no variation, so the {request.metric} distance is undefined.",
+            f"Some {axis_name} have no variation, so the {request.metric} distance is undefined."
+            if constant
+            else f"The {request.metric} distance is undefined for some {axis_name} (canberra: x + y = 0).",
         )
     method = SCIPY_METHOD.get(request.method, request.method)
     z = linkage(d, method)
     if request.leaf_ordering == "optimal":
         z = optimal_leaf_ordering(z, d)
     support: list[float] | None = None
+    valid = 0
     if request.bootstrap_n > 0:
         clades = _clades(z, data.shape[0])
         hits = np.zeros(len(clades))
-        valid = 0
         for _ in range(request.bootstrap_n):
             cols = rng.integers(0, data.shape[1], size=data.shape[1])
             bd = _distances(data[:, cols], request.metric)
@@ -73,6 +91,8 @@ def _tree(
         "order": leaves(z),
         "linkage": [[float(v) for v in row] for row in z],
         "support": support,
+        # Resamples that produced a tree (support is a share of these, not of bootstrap_n).
+        "bootstrap_valid": valid if request.bootstrap_n > 0 else None,
     }
 
 

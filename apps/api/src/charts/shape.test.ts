@@ -50,6 +50,7 @@ const cluster = async (body: Record<string, unknown>): Promise<ClusterResult> =>
     order: [...Array(n).keys()].reverse(),
     linkage: [...Array(n - 1).keys()].map((k) => [k === 0 ? 0 : n + k - 1, k + 1, k + 1, k + 2]),
     support: (body.bootstrap_n as number) > 0 ? [...Array(n - 1).keys()].map(() => 0.8) : null,
+    bootstrap_valid: (body.bootstrap_n as number) > 0 ? (body.bootstrap_n as number) : null,
   });
   return {
     rows: body.axis === 'columns' ? null : tree(values.length),
@@ -90,6 +91,45 @@ describe('every chart option changes the output (REFERENCE_V1 §8: no dead optio
     );
     expect(volcano({ webgl: false }).data[0]!.type).toBe('scatter');
     expect(base.data[0]!.type).toBe('scattergl');
+  });
+
+  it('VIZ-02: volcano review fixes — thresholds in plotted space, ranking when y is −log10 p, constant x', () => {
+    const lines = (s: Json) => s.layout.shapes.map((sh: Json) => [sh.x0, sh.y0]);
+    // y already −log10(p): the line sits at −log10(0.05), and the most significant hits are the largest y.
+    const transformed = shapeVolcano(
+      rows.map((r) => ({ ...r, p: -Math.log10(r.p) })),
+      vSpec,
+      { ...(chartDefaults('volcano') as VolcanoOptions), y_transform: 'none', label_top: 1 },
+    ) as Json;
+    expect(transformed.layout.shapes.at(-1).y0).toBeCloseTo(-Math.log10(0.05), 9);
+    expect(transformed.layout.annotations[0].text).toBe('A');
+    expect(volcano({ label_top: 1 }).layout.annotations[0].text).toBe('A');
+    // Pseudolog X moves the fold-change lines with the points.
+    expect(lines(volcano({ pseudolog_x: true }))[1][0]).toBeCloseTo(Math.asinh(0.5) / Math.log(10), 9);
+    expect(lines(volcano({ pseudolog_y: true, y_transform: 'none' })).at(-1)[1]).toBeCloseTo(
+      Math.asinh(-Math.log10(0.05) / 2) / Math.log(10),
+      9,
+    );
+    const flat = rows.map((r) => ({ ...r, fc: 1 }));
+    expect(() =>
+      shapeVolcano(flat, vSpec, {
+        ...(chartDefaults('volcano') as VolcanoOptions),
+        standardize_x: true,
+        fc_threshold: 0,
+      }),
+    ).toThrow(/does not vary/);
+  });
+
+  it('VIZ-03: z-scoring a constant column names it instead of dropping every row', async () => {
+    const constant = rows.map((r) => ({ ...r, s2: 4 }));
+    await expect(
+      shapeHeatmap(
+        constant,
+        mSpec,
+        { ...(chartDefaults('heatmap') as HeatmapOptions), scale: 'zscore_columns', cluster_rows: true },
+        cluster,
+      ),
+    ).rejects.toMatchObject({ body: { code: 'constant_column', field: 'options.scale' } });
   });
 
   it('VIZ-03: heatmap options', async () => {

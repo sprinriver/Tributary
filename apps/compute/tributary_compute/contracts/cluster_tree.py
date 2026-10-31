@@ -14,6 +14,10 @@ class LinkageItem(RootModel[list[float]]):
     root: Annotated[list[float], Field(max_length=4, min_length=4)]
 
 
+class BootstrapValid(RootModel[int]):
+    root: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
 class ClusterTree(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -21,6 +25,7 @@ class ClusterTree(BaseModel):
     order: list[OrderItem]
     linkage: list[LinkageItem]
     support: list[float] | None
+    bootstrap_valid: BootstrapValid | None
 
 
 class Model(RootModel[ClusterTree]):

@@ -64,7 +64,7 @@ One deployment per customer AWS account (single-tenant). Four deployables plus s
 | Web | React 19 + Vite 8 | 19.3.1 / 8.3.5 | SPA, no SSR. **Pinned:** 19.3.1 / 8.3.5, @vitejs/plugin-react 6.1.2. |
 | Routing / data | TanStack Router / Query | 1.170.x / 5.104.x | **Pinned:** 1.170.46 (code-based routes, no router plugin) / 5.104.5. |
 | Grid | AG Grid Community (MIT) | 36.2.0 | Enterprise features not used. **Pinned:** ag-grid-community / ag-grid-react 36.2.0 (`AllCommunityModule`; rows render under `.ag-grid-scrolling-container`, not v32's `.ag-center-cols-container`). |
-| Charts | Plotly.js 4 + react-plotly.js | 4.1.2 / 4.1.0 | Custom partial bundle, lazy-loaded. |
+| Charts | Plotly.js 4 + react-plotly.js | 4.1.2 / 4.1.0 | Custom partial bundle, lazy-loaded. **Pinned:** plotly.js 4.1.2 only (a ~60-line `Plotly.react` wrapper replaces react-plotly.js). Partial bundle `lib/core` + scatter, scattergl, heatmap: **1,497 kB min / 511 kB gzip** (+ 11 kB gzip CSS), loaded only when a chart is drawn; main app chunk 548 kB gzip (`pnpm build:web`, Phase 14, 2026-10-31). Vite needs `define: { global: 'globalThis' }` for plotly's CommonJS deps. |
 | Query builder | react-querybuilder | 8.25.0 | JSON rules → server compiler. |
 | CSV/TSV | Papa Parse | 5.7.0 | Web Worker mode. **Pinned:** papaparse 5.7.0 (+ @types/papaparse 5.5.2), run inside our own module worker. |
 | UI kit | Celeste's kit if any; else Tailwind + shadcn/ui | verify | Decide in Phase 0. |

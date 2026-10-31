@@ -5,3 +5,5 @@ allowBuilds:
   cpu-features: false
   protobufjs: false
   ssh2: false
+  # Install script only prints a message (plotly.js → d3 dependency chain); not needed.
+  es5-ext: false

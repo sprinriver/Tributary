@@ -123,6 +123,10 @@ def fit_4pl(request: Fit4plRequest) -> Fit4plResult:
     except RuntimeError as error:
         raise ComputeError("fit_failed", "responses", f"The curve fit did not converge: {error}") from error
     bottom, top, log_ec50, hill = params
+    if top < bottom:
+        # (bottom, top, hill) and (top, bottom, -hill) draw the same curve; report top >= bottom with the
+        # direction in the sign of the slope (hill > 0 = response falls with dose).
+        bottom, top, hill = top, bottom, -hill
     residual = y - _logistic(x, bottom, top, log_ec50, hill)
     ss_tot = float(np.sum((y - y.mean()) ** 2))
     r2 = 1 - float(np.sum(residual**2)) / ss_tot if ss_tot > 0 else 0.0
@@ -133,5 +137,6 @@ def fit_4pl(request: Fit4plRequest) -> Fit4plResult:
         pec50=-log_ec50,
         hill_slope=hill,
         r2=r2,
+        ec50_in_range=bool(x.min() <= log_ec50 <= x.max()),
         compute_version=COMPUTE_VERSION,
     )

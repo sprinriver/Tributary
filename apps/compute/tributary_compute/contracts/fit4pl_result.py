@@ -15,6 +15,7 @@ class Fit4plResult(BaseModel):
     pec50: float
     hill_slope: float
     r2: float
+    ec50_in_range: bool
     compute_version: str
 
 

@@ -1,8 +1,15 @@
-import { DATASET_CONTRACTS, QuerySpecSchema, type ExportFormat, type QuerySpec } from '@tributary/contracts';
+import {
+  DATASET_CONTRACTS,
+  QuerySpecSchema,
+  type ColumnType,
+  type ExportFormat,
+  type QuerySpec,
+} from '@tributary/contracts';
 import { keepPreviousData, useMutation, useQuery } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect, useMemo, useState } from 'react';
 import { api, ApiError } from '../api.ts';
+import { ChartPanel } from '../charts/ChartPanel.tsx';
 import { ErrorMessage } from '../components/ui.tsx';
 import { DatasetPicker } from './DatasetPicker.tsx';
 import { CopyCodeDialog, SaveViewDialog } from './dialogs.tsx';
@@ -19,6 +26,17 @@ export interface ExplorerSearch {
 
 const PAGE_SIZE = 25;
 
+/** Column → type for charts: the primary source's columns and `alias.column` for joins (as the API resolves). */
+function columnTypesOf(draft: Draft): Record<string, ColumnType> {
+  const types: Record<string, ColumnType> = {};
+  for (const c of DATASET_CONTRACTS[draft.source.kind].columns) types[c.name] = c.type;
+  for (const j of draft.joins)
+    for (const c of DATASET_CONTRACTS[j.kind].columns) types[`${j.alias}.${c.name}`] = c.type;
+  if (draft.joins.some((j) => j.explode))
+    Object.assign(types, { explode_value: 'text', explode_ambiguous: 'boolean' });
+  return types;
+}
+
 /** SPEC M6 Data Explorer: pick a dataset, filter, join, sort, page, export, save and share. */
 export function ExplorerPage() {
   const search = useSearch({ from: '/explore' });
@@ -33,6 +51,7 @@ export function ExplorerPage() {
   const [loadError, setLoadError] = useState<unknown>();
 
   const [formError, setFormError] = useState<string>();
+  const [executedColumns, setExecutedColumns] = useState<Record<string, ColumnType>>({});
   const run = (next: Draft, opts: { url?: boolean } = {}) => {
     const empty = emptyRules(next.where) + next.joins.reduce((n, j) => n + emptyRules(j.where), 0);
     setFormError(
@@ -43,6 +62,7 @@ export function ExplorerPage() {
     if (empty) return;
     const spec = buildSpec(next);
     setExecuted(spec);
+    setExecutedColumns(columnTypesOf(next));
     setCursors([undefined]);
     setExported(undefined);
     if (opts.url !== false) void navigate({ search: { q: encodeSpec(spec) }, replace: true });
@@ -181,6 +201,7 @@ export function ExplorerPage() {
         onExport={(format) => exportMutation.mutate(format)}
         exported={exported}
       />
+      {executed && <ChartPanel data={executed} columns={executedColumns} />}
       {dialog === 'save' && executed && (
         <SaveViewDialog
           spec={executed}

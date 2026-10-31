@@ -15,6 +15,7 @@
     "test:api": "node scripts/vitest-pattern.mjs apps/api",
     "test:query": "node scripts/vitest-pattern.mjs apps/query",
     "bench:query": "node apps/query/scripts/bench.ts",
+    "build:web": "pnpm --dir apps/web run build",
     "test:contracts": "node scripts/vitest-pattern.mjs packages/contracts",
     "test:db": "node scripts/vitest-pattern.mjs packages/db",
     "test:importers": "node scripts/vitest-pattern.mjs packages/importers",
