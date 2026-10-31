@@ -75,6 +75,13 @@ export async function listExperiments(db: Database, query: ListExperimentsQuery,
         'parent_version_id', cur.parent_version_id, 'experiment_date', cur.experiment_date,
         'species', cur.species, 'spectral_library', cur.spectral_library, 'time_points', cur.time_points
       ) as current_version,
+      -- Latest pipeline run of the current version and whether it has published results (SPEC M4 list parity).
+      (select json_build_object('id', r.id, 'status', r.status, 'pipeline_key', d.key)
+        from pipeline_run r join pipeline_definition d on d.id = r.pipeline_definition_id
+        where r.experiment_version_id = cur.id and r.deleted_at is null
+        order by r.created_at desc limit 1) as latest_run,
+      exists (select 1 from dataset ds join dataset_release dr on dr.dataset_id = ds.id
+        where ds.experiment_version_id = cur.id and dr.status = 'published' and ds.deleted_at is null) as has_results,
       ${sort.expr}::text as sort_value
     from experiment e
     join program p on p.id = e.program_id

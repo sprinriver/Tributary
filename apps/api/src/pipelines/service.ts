@@ -45,6 +45,14 @@ export async function pollRuns(deps: PipelineDeps): Promise<number> {
       continue;
     }
     const status = await runner.getStatus(run.external_id);
+    for (const earlier of status.history ?? []) {
+      await observe(deps, run, {
+        status: earlier.status,
+        externalStatus: earlier.externalStatus,
+        at: earlier.at ?? new Date(),
+        source: 'poll',
+      });
+    }
     const result = await observe(deps, run, {
       status: status.status,
       externalStatus: status.externalStatus,

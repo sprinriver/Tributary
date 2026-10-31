@@ -10,6 +10,7 @@ import {
   readTsv,
   type FixtureExperiment,
 } from './fixtures.ts';
+import { seedDemoPipeline } from './pipelines.ts';
 import { ensureBucket, stageFile, type StagingTarget } from './s3.ts';
 
 export { localStagingTarget, type StagingTarget } from './s3.ts';
@@ -165,6 +166,7 @@ export async function seedDatabase(db: Database, options: SeedOptions): Promise<
       await seedReference(trx, base, dir, programIds, audit);
     });
   }
+  await seedDemoPipeline(db, tenant, seedActor);
   return countRows(db);
 }
 

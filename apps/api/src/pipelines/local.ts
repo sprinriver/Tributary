@@ -100,16 +100,21 @@ export class LocalDockerRunner implements PipelineRunner {
     if (state.Status === 'running')
       return { status: 'running', externalStatus: 'running', at: new Date(state.StartedAt) };
     const at = new Date(state.FinishedAt);
+    // The run may have started and finished between two polls: report when it was running, from Docker's record.
+    const history = [
+      { status: 'running' as const, externalStatus: 'running', at: new Date(state.StartedAt) },
+    ];
     if (existsSync(join(dir, '.cancelled')))
-      return { status: 'cancelled', externalStatus: `exited:${state.ExitCode}`, at };
+      return { status: 'cancelled', externalStatus: `exited:${state.ExitCode}`, at, history };
     if (state.Status === 'exited' && state.ExitCode === 0) {
       await this.#uploadOutputs(dir);
-      return { status: 'succeeded', externalStatus: 'exited:0', at };
+      return { status: 'succeeded', externalStatus: 'exited:0', at, history };
     }
     return {
       status: 'failed',
       externalStatus: `${state.Status}:${state.ExitCode}`,
       at,
+      history,
       reason: state.Error || `Nextflow exited with ${state.ExitCode}`,
     };
   }

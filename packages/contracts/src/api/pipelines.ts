@@ -116,3 +116,11 @@ export const RunListSchema = z.object({ items: z.array(RunSummarySchema) }).meta
 export const RunLogsSchema = z
   .object({ links: z.array(LogLinkSchema), lines: z.array(z.string()) })
   .meta({ id: 'RunLogs' });
+
+/** In-app notifications (SPEC M4): the caller's runs of the last 7 days, newest first. */
+export const MyRunSchema = RunSummarySchema.extend({
+  experiment_id: z.uuid(),
+  experiment_name: z.string(),
+}).meta({ id: 'MyRun' });
+export type MyRun = z.infer<typeof MyRunSchema>;
+export const MyRunListSchema = z.object({ items: z.array(MyRunSchema) }).meta({ id: 'MyRunList' });

@@ -39,6 +39,22 @@ class ExperimentDate(RootModel[date]):
     ]
 
 
+class LatestRun(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: Annotated[
+        UUID,
+        Field(
+            pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        ),
+    ]
+    status: Literal[
+        "submitted", "pending", "starting", "running", "stopping", "succeeded", "failed", "cancelled"
+    ]
+    pipeline_key: str
+
+
 class OntologyTerm(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -113,6 +129,8 @@ class ExperimentListItem(BaseModel):
     archived_at: ArchivedAt | None
     latest_published_version: LatestPublishedVersion | None
     current_version: CurrentVersion
+    latest_run: LatestRun | None
+    has_results: bool
 
 
 class Model(RootModel[ExperimentListItem]):

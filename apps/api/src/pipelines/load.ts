@@ -1,4 +1,4 @@
-import type { RunDetail, RunSummary } from '@tributary/contracts';
+import type { MyRun, RunDetail, RunSummary } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
 import { notFound } from '../errors.ts';
 
@@ -30,6 +30,8 @@ function base(db: Database) {
       'r.cost_estimate',
       'r.triggered_by',
       'e.program_id',
+      'e.id as experiment_id',
+      'e.name as experiment_name',
     ])
     .where('r.deleted_at', 'is', null);
 }
@@ -56,6 +58,27 @@ export async function versionRuns(db: Database, versionId: string): Promise<RunS
     .orderBy('r.created_at', 'desc')
     .execute();
   return rows.map(summary);
+}
+
+/** Runs the user launched in the last 7 days, in programs they can still read. */
+export async function myRuns(
+  db: Database,
+  userId: string,
+  programs: readonly string[] | null,
+): Promise<MyRun[]> {
+  let q = base(db)
+    .where('r.triggered_by', '=', userId)
+    .where('r.created_at', '>', new Date(Date.now() - 7 * 24 * 3600 * 1000));
+  if (programs !== null) {
+    if (!programs.length) return [];
+    q = q.where('e.program_id', 'in', programs);
+  }
+  const rows = await q.orderBy('r.created_at', 'desc').limit(50).execute();
+  return rows.map((r) => ({
+    ...summary(r),
+    experiment_id: r.experiment_id,
+    experiment_name: r.experiment_name,
+  }));
 }
 
 export async function loadRun(db: Database, id: string): Promise<RunDetail & { program_id: string }> {

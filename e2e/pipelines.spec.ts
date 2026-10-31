@@ -77,6 +77,14 @@ test('PIPE-05: launch the demo pipeline from the list; status updates without re
   await expect(outputs).toContainText('toptable.tsv');
   await expect(outputs.getByRole('link', { name: /published/i })).toHaveCount(2);
   await page.screenshot({ path: `${SHOTS}/run-page.png`, fullPage: true });
+
+  // In-app notifications: the finished run is listed in the header menu.
+  const runs = page.getByRole('banner').getByRole('button', { name: /^Runs/ });
+  await runs.click();
+  const notes = page.getByRole('region', { name: 'Run notifications' });
+  await expect(notes.getByRole('link', { name: new RegExp(name) })).toBeVisible();
+  await expect(notes).toContainText('Succeeded');
+  await page.screenshot({ path: `${SHOTS}/notifications.png`, fullPage: true });
   void experiment;
 });
 

@@ -141,7 +141,10 @@ describe('experiment prefill', () => {
   };
 
   it('PIPE-05: species and contrasts fill matching schema fields; nothing else is invented', () => {
-    expect(experimentPrefill(fields, version)).toEqual({ organism: 'Homo sapiens', contrasts: 'A vs B;C vs B' });
+    expect(experimentPrefill(fields, version)).toEqual({
+      organism: 'Homo sapiens',
+      contrasts: 'A vs B;C vs B',
+    });
     expect(experimentPrefill(fields, { species: null, contrasts: [] })).toEqual({});
     expect(experimentPrefill([], version)).toEqual({});
   });

@@ -104,6 +104,25 @@ export const ExperimentListItemSchema = z
       spectral_library: z.string().nullable(),
       time_points: z.array(QuantitySchema),
     }),
+    /** Latest pipeline run of the current version (SPEC M4: status on the list). */
+    latest_run: z
+      .object({
+        id: z.uuid(),
+        status: z.enum([
+          'submitted',
+          'pending',
+          'starting',
+          'running',
+          'stopping',
+          'succeeded',
+          'failed',
+          'cancelled',
+        ]),
+        pipeline_key: z.string(),
+      })
+      .nullable(),
+    /** The current version has at least one published dataset release. */
+    has_results: z.boolean(),
   })
   .meta({ id: 'ExperimentListItem' });
 export type ExperimentListItem = z.infer<typeof ExperimentListItemSchema>;

@@ -41,12 +41,18 @@ const runners: Runners = config.production
         storage,
       ),
     };
-// Poller fallback for run status (SPEC M4): every minute via pg-boss's scheduler.
-await boss.createQueue('runs-poll');
-await boss.schedule('runs-poll', '* * * * *');
-await boss.work('runs-poll', async () => {
-  await pollRuns({ db, config, storage, fetch, runners });
-});
+// Poller fallback for run status (SPEC M4); events (SQS) are the primary signal on AWS. Never overlaps itself.
+const pollSeconds = Number(process.env.RUN_POLL_SECONDS ?? (config.production ? 60 : 5));
+let polling = false;
+const poller = setInterval(() => {
+  if (polling) return;
+  polling = true;
+  pollRuns({ db, config, storage, fetch, runners })
+    .catch((error: unknown) => app.log.error({ error }, 'run poll'))
+    .finally(() => {
+      polling = false;
+    });
+}, pollSeconds * 1000);
 
 const app = buildApp({
   db,
@@ -65,6 +71,7 @@ const queueUrl = process.env.RUN_EVENTS_QUEUE_URL;
 let stopping = false;
 app.addHook('onClose', async () => {
   stopping = true;
+  clearInterval(poller);
 });
 if (queueUrl) {
   const sqs = new SQSClient({ region: config.s3.region });

@@ -8,10 +8,14 @@ export function QcGatePanel({
   versionId,
   canApprove,
   poll,
+  label = 'Pipeline launch gate',
+  title = 'Pipeline launch',
 }: {
   versionId: string;
   canApprove: boolean;
   poll: boolean;
+  label?: string;
+  title?: string;
 }) {
   const queryClient = useQueryClient();
   const gate = useQuery({
@@ -34,8 +38,8 @@ export function QcGatePanel({
   const failed = data?.blockers.filter((b) => b.status === 'qc_failed') ?? [];
 
   return (
-    <section role="region" aria-label="Pipeline launch gate" className="card stack">
-      <h3 style={{ margin: 0 }}>Pipeline launch</h3>
+    <section role="region" aria-label={label} className="card stack">
+      <h3 style={{ margin: 0 }}>{title}</h3>
       <ErrorMessage error={gate.error} />
       {data && (
         <>
@@ -72,6 +76,8 @@ export function QcGatePanel({
           className="stack"
           onSubmit={(e) => {
             e.preventDefault();
+            // React submit events bubble through portals/nested forms: keep this one out of an enclosing form.
+            e.stopPropagation();
             override.mutate();
           }}
         >

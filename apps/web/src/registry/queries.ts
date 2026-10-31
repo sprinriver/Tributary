@@ -1,13 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { api, type ApiQuery } from '../api.ts';
+import { api, type ApiResponse, type ApiQuery } from '../api.ts';
 
 export const usePrograms = () => useQuery({ queryKey: ['programs'], queryFn: () => api('listPrograms') });
 
-export const useExperiments = (query: ApiQuery<'listExperiments'>) =>
+export const useExperiments = (
+  query: ApiQuery<'listExperiments'>,
+  poll?: (data: ApiResponse<'listExperiments'> | undefined) => number | false,
+) =>
   useQuery({
     queryKey: ['experiments', query],
     queryFn: () => api('listExperiments', { query }),
     placeholderData: (prev) => prev,
+    ...(poll
+      ? {
+          refetchInterval: (q: { state: { data: ApiResponse<'listExperiments'> | undefined } }) =>
+            poll(q.state.data),
+        }
+      : {}),
   });
 
 export const useExperiment = (id: string) =>

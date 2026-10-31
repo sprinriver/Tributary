@@ -18,6 +18,8 @@ export interface ObservedStatus {
   /** When the runner reports the state started; defaults to now. */
   at?: Date | undefined;
   reason?: string | undefined;
+  /** Earlier states the runner knows happened (e.g. a container's start time), applied before this one. */
+  history?: ObservedStatus[] | undefined;
 }
 
 export interface PipelineRunner {

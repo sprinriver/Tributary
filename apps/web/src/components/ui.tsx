@@ -72,7 +72,8 @@ function OpenDialog({
     if (dialog && !dialog.open) dialog.showModal();
   }, []);
   return (
-    <dialog ref={ref} aria-labelledby={titleId} onClose={onClose}>
+    // Only this dialog's own close: a nested dialog's close event must not close its parent.
+    <dialog ref={ref} aria-labelledby={titleId} onClose={(e) => e.target === e.currentTarget && onClose()}>
       <h2 id={titleId}>{title}</h2>
       {children}
     </dialog>

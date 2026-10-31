@@ -427,3 +427,29 @@ Entry template:
   list to verify then); Batch/HealthOmics `recentLogs` return [] (logs:GetLogEvents IAM in Phase 21); cost
   estimates stay null.
 - Commit: cf1fb9b
+
+## 2026-10-30 — Phase 11: Pipelines UI — done
+- Built: admin pipelines page (`/admin/pipelines`, system admins): nf-schema JSON upload with a live preview of the
+  generated form, output importers, runners; launch dialog generated from nf-schema (draft-07 `definitions` and
+  2020-12 `$defs` groups; types, enums, defaults, min/max, pattern, help; hidden params kept out) with prefill from
+  the experiment (species → `organism`/`species`, contrast labels → `contrasts`/`contrast`; a re-run's values win);
+  QC gate panel with approver override inside the dialog; experiments list shows the latest run status and a
+  Results flag and polls while a run is active; run page (`/runs/:id`): params, status timeline, recent log lines,
+  log deep links, outputs with their releases, cancel, re-run with edits; header "Runs" notifications menu
+  (`GET /v1/me/runs`: my runs of the last 7 days, finished-since-last-opened count). The demo pipeline is seeded
+  for the local runner (`pnpm db:seed`, idempotent) and gained a `delay_seconds` test param.
+- Decisions (and why):
+  - Live status by polling (TanStack Query `refetchInterval` while a run is active), not SSE: no extra
+    infrastructure, and the run status itself is poll/event-driven server-side.
+  - The local runner reports a `running` observation at the container's StartedAt when it first sees a finished
+    container, so short runs still show running in the timeline.
+  - Notifications are in-app only (read state per browser in localStorage); email/webhooks come with Phase 20.
+  - The QC gate panel sits outside the launch `<form>`: the override dialog's own form nested inside it caused a
+    native GET submission (page reload).
+- Evidence: `pnpm check` ✓ · `pnpm run test:api PIPE` ✓ (11) · `pnpm run test:web PIPE` ✓ (5) · `pnpm e2e` ✓ (16);
+  screenshots in `artifacts/phase-11/`. MAN-03 failed once under full-suite load (paste dialog still waiting for
+  the preset save after 5 s) and passed 3/3 alone and in the next full run.
+- Gaps: SDRF path prefill (needs the SDRF materialised into the run's work bucket; with the AWS runners, Phase 21);
+  task-level table on the run page (Nextflow trace parsing) not built — the timeline shows run-level status only.
+- Review: plan-reviewer subagent could not run (usage limit); to re-run before the next phase finish.
+- Commit: (pending)

@@ -9,6 +9,7 @@ import { ASSAY_LABELS, Dialog, ErrorMessage, Field, Tabs, VersionStatus } from '
 import { useCloneVersion, useExperiment, useRegistryInvalidation, useVersion } from '../registry/queries.ts';
 import { ManifestEditor } from '../manifest/ManifestEditor.tsx';
 import { FilesTab } from '../files/FilesTab.tsx';
+import { canApproveIn, LaunchDialog } from '../pipelines/LaunchDialog.tsx';
 import { ContrastsTab } from '../registry/ContrastsTab.tsx';
 import { VersionsTab } from '../registry/VersionsTab.tsx';
 
@@ -127,9 +128,28 @@ function VersionActions({
     (r) => r.program_id === experiment.program_id || r.role === 'system_admin',
   )?.role;
   const canWrite = role !== undefined && role !== 'viewer';
+  const [launching, setLaunching] = useState(false);
+  const navigateTo = useNavigate();
 
   return (
     <div className="row" style={{ marginLeft: 'auto' }}>
+      {version.status === 'published' && canWrite && (
+        <button type="button" className="primary" onClick={() => setLaunching(true)}>
+          Launch pipeline
+        </button>
+      )}
+      {launching && (
+        <LaunchDialog
+          target={{
+            versionId: version.id,
+            programId: experiment.program_id,
+            assayType: experiment.assay_type,
+          }}
+          canApprove={canApproveIn(me.data?.roles, experiment.program_id)}
+          onClose={() => setLaunching(false)}
+          onLaunched={(id) => void navigateTo({ to: '/runs/$id', params: { id } })}
+        />
+      )}
       {version.status === 'draft' && canWrite && (
         <button type="button" className="primary" onClick={() => setOpen(true)}>
           Publish

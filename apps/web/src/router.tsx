@@ -2,6 +2,8 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import { ForbiddenPage, Layout } from './components/Layout.tsx';
 import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
 import { ReleasePage } from './datasets/ReleasePage.tsx';
+import { AdminPipelinesPage } from './pipelines/AdminPipelinesPage.tsx';
+import { RunPage } from './pipelines/RunPage.tsx';
 import { ExperimentPage } from './routes/ExperimentPage.tsx';
 import { ExperimentsPage, type ExperimentsSearch } from './routes/ExperimentsPage.tsx';
 import { HomePage } from './routes/HomePage.tsx';
@@ -50,6 +52,12 @@ const releaseRoute = createRoute({
   path: '/releases/$id',
   component: ReleasePage,
 });
+const runRoute = createRoute({ getParentRoute: () => rootRoute, path: '/runs/$id', component: RunPage });
+const adminPipelinesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/pipelines',
+  component: AdminPipelinesPage,
+});
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/forbidden',
@@ -64,6 +72,8 @@ export const router = createRouter({
     experimentRoute,
     datasetsRoute,
     releaseRoute,
+    runRoute,
+    adminPipelinesRoute,
     forbiddenRoute,
   ]),
 });

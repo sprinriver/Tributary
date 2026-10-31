@@ -203,15 +203,15 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 11 — Pipelines UI
-Status: todo
+Status: done
 Goal: Admins define pipelines; scientists launch and follow runs (v1 parity + run page).
 Spec: M4, REFERENCE_V1 §5   Features: PIPE-05, PIPE-06
 In scope: admin pipeline definitions (params_schema upload + preview); launch dialog generated from nf-schema (types, enums, defaults, help); prefill from experiment (SDRF path, species, contrasts); QC-gate message + approver override; live status on the experiments list (SSE or polling); run page (params, timeline, tasks, recent logs, deep links, outputs, re-run with edits, cancel); in-app notifications.
 Definition of done:
-- [ ] e2e: launch demo pipeline from the list → status updates without refresh → run page shows logs and outputs → results flag set; screenshots
-- [ ] e2e: Launch is disabled with the QC reason for a `qc_failed` experiment; an approver overrides with a reason and launch works
-- [ ] Launch-form validation from nf-schema (unit tests)
-- [ ] `pnpm check` exits 0
+- [x] e2e: launch demo pipeline from the list → status updates without refresh → run page shows logs and outputs → results flag set; screenshots
+- [x] e2e: Launch is disabled with the QC reason for a `qc_failed` experiment; an approver overrides with a reason and launch works
+- [x] Launch-form validation from nf-schema (unit tests)
+- [x] `pnpm check` exits 0
 
 ## Phase 12 — Query compiler and query service
 Status: todo

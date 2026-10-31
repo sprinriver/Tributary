@@ -148,6 +148,48 @@
             "time_points"
           ],
           "additionalProperties": false
+        },
+        "latest_run": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "submitted",
+                    "pending",
+                    "starting",
+                    "running",
+                    "stopping",
+                    "succeeded",
+                    "failed",
+                    "cancelled"
+                  ]
+                },
+                "pipeline_key": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "status",
+                "pipeline_key"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "has_results": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -161,7 +203,9 @@
         "updated_at",
         "archived_at",
         "latest_published_version",
-        "current_version"
+        "current_version",
+        "latest_run",
+        "has_results"
       ],
       "additionalProperties": false
     },

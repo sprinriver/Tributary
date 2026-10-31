@@ -6,6 +6,7 @@ nextflow.enable.dsl = 2
 params.pg_matrix = null
 params.toptable = null
 params.outdir = 'results'
+params.delay_seconds = 0
 
 process DEMO_QUANT {
     publishDir params.outdir, mode: 'copy'
@@ -20,6 +21,7 @@ process DEMO_QUANT {
 
     script:
     """
+    sleep ${params.delay_seconds as int}
     cp in/report.pg_matrix.tsv report.pg_matrix.tsv
     cp in/toptable.tsv toptable.tsv
     """

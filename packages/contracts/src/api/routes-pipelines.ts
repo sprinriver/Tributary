@@ -1,5 +1,6 @@
 import {
   LaunchRunBodySchema,
+  MyRunListSchema,
   PipelineDefinitionBodySchema,
   PipelineSchema,
   PipelineListSchema,
@@ -53,6 +54,12 @@ export const PIPELINE_ROUTES = {
     summary: 'Ask the runner to cancel',
     response: RunDetailSchema,
     reason: true,
+  },
+  listMyRuns: {
+    method: 'get',
+    path: '/v1/me/runs',
+    summary: 'My runs of the last 7 days, newest first (in-app notifications)',
+    response: MyRunListSchema,
   },
   getRunLogs: {
     method: 'get',

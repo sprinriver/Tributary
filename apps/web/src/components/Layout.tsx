@@ -1,5 +1,6 @@
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
 import { loginHref, useMe } from '../auth.ts';
+import { NotificationsMenu } from '../pipelines/NotificationsMenu.tsx';
 import { UserMenu } from './UserMenu.tsx';
 
 export function Layout() {
@@ -22,7 +23,11 @@ export function Layout() {
         <nav aria-label="Main" style={{ display: 'flex', gap: 12, flex: 1 }}>
           <Link to="/experiments">Experiments</Link>
           <Link to="/datasets">Datasets</Link>
+          {me.data?.roles.some((r) => r.role === 'system_admin') && (
+            <Link to="/admin/pipelines">Pipelines</Link>
+          )}
         </nav>
+        {me.data && <NotificationsMenu />}
         {me.data ? <UserMenu me={me.data} /> : me.isPending ? null : <a href={loginHref(path)}>Sign in</a>}
       </header>
       <Outlet />

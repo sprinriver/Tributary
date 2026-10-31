@@ -4,6 +4,10 @@ import { useState } from 'react';
 import { RequireAuth } from '../components/Layout.tsx';
 import { ASSAY_LABELS, ErrorMessage, Field, VersionStatus } from '../components/ui.tsx';
 import { useCloneVersion, useExperiments, usePrograms } from '../registry/queries.ts';
+import { StatusBadge } from '@tributary/ui';
+import { useMe } from '../auth.ts';
+import { isActive, RUN_LABEL, RUN_TONE } from '../pipelines/labels.ts';
+import { canApproveIn, LaunchDialog, type LaunchTarget } from '../pipelines/LaunchDialog.tsx';
 
 /** List filters kept in the URL, so a filtered list can be shared. */
 export interface ExperimentsSearch {
@@ -26,11 +30,21 @@ const COLUMNS = [
   { id: 'assay', label: 'Assay type' },
   { id: 'date', label: 'Experiment date', sort: 'experiment_date' },
   { id: 'latest', label: 'Latest published' },
+  { id: 'pipeline', label: 'Pipeline' },
   { id: 'urn', label: 'URN' },
   { id: 'created', label: 'Created', sort: 'created_at' },
 ] as const;
 type ColumnId = (typeof COLUMNS)[number]['id'];
-const DEFAULT_COLUMNS: ColumnId[] = ['name', 'version', 'status', 'program', 'assay', 'date', 'latest'];
+const DEFAULT_COLUMNS: ColumnId[] = [
+  'name',
+  'version',
+  'status',
+  'program',
+  'assay',
+  'date',
+  'latest',
+  'pipeline',
+];
 
 function cell(id: ColumnId, e: ExperimentListItem) {
   switch (id) {
@@ -52,6 +66,23 @@ function cell(id: ColumnId, e: ExperimentListItem) {
       return e.current_version.experiment_date ?? '—';
     case 'latest':
       return e.latest_published_version ? `v${e.latest_published_version}` : '—';
+    case 'pipeline':
+      return (
+        <span className="row" style={{ gap: 6 }}>
+          {e.latest_run ? (
+            <Link to="/runs/$id" params={{ id: e.latest_run.id }}>
+              <StatusBadge
+                label={RUN_LABEL[e.latest_run.status]}
+                tone={RUN_TONE[e.latest_run.status]}
+                live={false}
+              />
+            </Link>
+          ) : (
+            '—'
+          )}
+          {e.has_results && <StatusBadge label="Results" tone="ok" live={false} />}
+        </span>
+      );
     case 'urn':
       return <code>{e.urn}</code>;
     case 'created':
@@ -73,12 +104,25 @@ function ExperimentsList() {
   const [cursors, setCursors] = useState<string[]>([]);
   const [columns, setColumns] = useState<ColumnId[]>(DEFAULT_COLUMNS);
   const programs = usePrograms();
-  const list = useExperiments({
-    ...search,
-    limit: 25,
-    ...(cursors.length ? { cursor: cursors.at(-1)! } : {}),
-  });
+  const list = useExperiments(
+    { ...search, limit: 25, ...(cursors.length ? { cursor: cursors.at(-1)! } : {}) },
+    // Live run status on the list (SPEC M4): poll while any run is active or results are being imported.
+    (data) =>
+      data?.items.some(
+        (e) =>
+          e.latest_run &&
+          (isActive(e.latest_run.status) || (e.latest_run.status === 'succeeded' && !e.has_results)),
+      )
+        ? 3000
+        : false,
+  );
   const clone = useCloneVersion();
+  const me = useMe();
+  const [launching, setLaunching] = useState<LaunchTarget | null>(null);
+  const canWriteIn = (programId: string) =>
+    (me.data?.roles ?? []).some(
+      (r) => r.role === 'system_admin' || (r.program_id === programId && r.role !== 'viewer'),
+    );
 
   const setFilter = (patch: Partial<ExperimentsSearch>) => {
     setCursors([]);
@@ -243,7 +287,22 @@ function ExperimentsList() {
               ))}
               <td>
                 <div className="row" style={{ gap: 6 }}>
-                  <button type="button" disabled title="Pipelines arrive in a later release">
+                  <button
+                    type="button"
+                    disabled={e.current_version.status !== 'published' || !canWriteIn(e.program_id)}
+                    title={
+                      e.current_version.status !== 'published'
+                        ? 'Publish the version to launch a pipeline'
+                        : undefined
+                    }
+                    onClick={() =>
+                      setLaunching({
+                        versionId: e.current_version.id,
+                        programId: e.program_id,
+                        assayType: e.assay_type,
+                      })
+                    }
+                  >
                     Launch pipeline
                   </button>
                   <button
@@ -269,6 +328,14 @@ function ExperimentsList() {
         </tbody>
       </table>
       {list.data && !list.data.items.length && <p className="muted">No experiments match these filters.</p>}
+      {launching && (
+        <LaunchDialog
+          target={launching}
+          canApprove={canApproveIn(me.data?.roles, launching.programId)}
+          onClose={() => setLaunching(null)}
+          onLaunched={() => setLaunching(null)}
+        />
+      )}
       <div className="toolbar">
         <button type="button" disabled={!cursors.length} onClick={() => setCursors((c) => c.slice(0, -1))}>
           Previous

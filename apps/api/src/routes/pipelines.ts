@@ -1,5 +1,6 @@
 import {
   LaunchRunBodySchema,
+  MyRunListSchema,
   PipelineDefinitionBodySchema,
   PipelineListSchema,
   PipelineSchema,
@@ -10,10 +11,10 @@ import {
 } from '@tributary/contracts';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { insertAudit, requestActor } from '../audit.ts';
-import { authorize, requirePrincipal, requireSystemAdmin } from '../auth/plugin.ts';
+import { authorize, readablePrograms, requirePrincipal, requireSystemAdmin } from '../auth/plugin.ts';
 import { HttpError, notFound, parse } from '../errors.ts';
 import { canLaunch } from '../ingest/gate.ts';
-import { loadRun, versionRuns } from '../pipelines/load.ts';
+import { loadRun, myRuns, versionRuns } from '../pipelines/load.ts';
 import type { PipelineDeps } from '../pipelines/service.ts';
 import { applyRunStatus } from '../pipelines/status.ts';
 import { contrastsOf, loadVersion } from '../registry/load.ts';
@@ -270,6 +271,13 @@ export function registerPipelineRoutes(app: FastifyInstance, deps: PipelineDeps)
     const version = await loadVersion(db, request.params.id);
     authorize(request, 'read', 'PipelineRun', version.program_id);
     return respond(RunListSchema, { items: await versionRuns(db, version.id) });
+  });
+
+  app.get('/v1/me/runs', async (request) => {
+    const principal = requirePrincipal(request);
+    return respond(MyRunListSchema, {
+      items: await myRuns(db, principal.userId, readablePrograms(principal)),
+    });
   });
 
   app.post('/v1/runs/:id/cancel', async (request: IdParams) => {
