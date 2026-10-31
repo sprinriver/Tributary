@@ -50,7 +50,7 @@ test('VIZ-07: MA plot and PCA (scores and variance explained)', async ({ page })
   await expect(ma.locator('.legendtext', { hasText: /^Up \(\d+\)$/ })).toBeVisible();
   await page.screenshot({ path: `${SHOTS.replace('14', '15')}/ma.png`, fullPage: true });
 
-  const pq = await chartOnPq(page);
+  const pq = await chartOnPq(page, { signedIn: true });
   const pca = await drawChart(
     page,
     pq,

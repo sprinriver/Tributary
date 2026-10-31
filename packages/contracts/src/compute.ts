@@ -144,3 +144,53 @@ export const Fit4plResultSchema = z
     compute_version: z.string(),
   })
   .meta({ id: 'Fit4plResult' });
+
+const Groups = z
+  .array(z.strictObject({ name: z.string(), values: z.array(z.number()) }))
+  .min(1)
+  .max(200);
+
+export const GroupTestRequestSchema = z
+  .strictObject({
+    groups: Groups,
+    /** Pairwise against the first group (BH-adjusted): welch_t, mann_whitney, ks. Overall: anova, kruskal. */
+    method: z.enum(['welch_t', 'mann_whitney', 'ks', 'anova', 'kruskal']),
+  })
+  .meta({ id: 'GroupTestRequest' });
+export const GroupTestResultSchema = z
+  .object({
+    method: z.string(),
+    overall_p: z.number().nullable(),
+    comparisons: z.array(
+      z.object({ group: z.string(), reference: z.string(), p: z.number(), p_adj: z.number() }),
+    ),
+    adj_method: z.string(),
+    compute_version: z.string(),
+  })
+  .meta({ id: 'GroupTestResult' });
+export type GroupTestResult = z.infer<typeof GroupTestResultSchema>;
+
+export const GroupSummaryRequestSchema = z
+  .strictObject({ groups: Groups })
+  .meta({ id: 'GroupSummaryRequest' });
+export const GroupSummaryResultSchema = z
+  .object({
+    groups: z.array(
+      z.object({
+        name: z.string(),
+        n: z.int(),
+        mean: z.number().nullable(),
+        /** Sample SD (n − 1); null for n < 2. */
+        sd: z.number().nullable(),
+        sem: z.number().nullable(),
+        /** Half-width of the 95% t interval of the mean. */
+        ci95: z.number().nullable(),
+        median: z.number().nullable(),
+        /** sd / mean (null when mean is 0 or n < 2). */
+        cv: z.number().nullable(),
+      }),
+    ),
+    compute_version: z.string(),
+  })
+  .meta({ id: 'GroupSummaryResult' });
+export type GroupSummaryResult = z.infer<typeof GroupSummaryResultSchema>;

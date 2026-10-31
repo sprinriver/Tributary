@@ -1,15 +1,11 @@
 import {
   CHART_REGISTRY,
   ChartRenderSchema,
-  ClusterResultSchema,
   QueryResultSchema,
   validateChartSpec,
   type ChartRender,
   type ChartSpec,
-  type DendrogramOptions,
-  type HeatmapOptions,
   type QuerySpec,
-  type VolcanoOptions,
 } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
 import type { FastifyRequest } from 'fastify';
@@ -19,46 +15,13 @@ import { HttpError, notFound } from '../errors.ts';
 import { columnTypes, prepare, releaseIds } from '../query/prepare.ts';
 import { visibleView } from '../routes/views.ts';
 import { dataError } from './errors.ts';
-import { shapeDendrogram, shapeHeatmap } from './figures.ts';
-import type { Cluster } from './matrix.ts';
-import { shapeVolcano, type Shaped } from './volcano.ts';
+import { httpCompute } from './compute.ts';
+import { shapeChart } from './dispatch.ts';
 
 export interface ChartDeps {
   db: Database;
   config: ApiConfig;
   fetch: typeof fetch;
-}
-
-/** Compute fields → the chart control the user changes. */
-const COMPUTE_FIELD: Record<string, string> = {
-  values: 'encodings.values',
-  row_labels: 'encodings.rowLabel',
-};
-
-function computeClient(deps: ChartDeps): Cluster {
-  return async (body) => {
-    let res: Response;
-    try {
-      res = await deps.fetch(`${deps.config.computeUrl}/stats/cluster`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-        signal: AbortSignal.timeout(120_000),
-      });
-    } catch {
-      throw new HttpError(503, 'compute_unavailable', 'The compute service is not reachable.');
-    }
-    const json = (await res.json().catch(() => ({}))) as { code?: string; field?: string; message?: string };
-    if (res.status === 422)
-      throw dataError(
-        json.code ?? 'compute_failed',
-        COMPUTE_FIELD[json.field ?? ''] ?? `options.${json.field}`,
-        json.message ?? 'Clustering failed.',
-      );
-    if (!res.ok)
-      throw new HttpError(502, 'compute_failed', `The compute service answered HTTP ${res.status}.`);
-    return ClusterResultSchema.parse(json);
-  };
 }
 
 /** The view's or the inline QuerySpec (a view the caller may not open is "not found"). */
@@ -105,11 +68,13 @@ export async function renderChart(
       `No rows to plot (needs at least ${def.dataRules.minRows ?? 1}).`,
     );
 
-  let shaped: Shaped;
-  if (spec.type === 'volcano') shaped = shapeVolcano(result.rows, spec, options as VolcanoOptions);
-  else if (spec.type === 'heatmap')
-    shaped = await shapeHeatmap(result.rows, spec, options as HeatmapOptions, computeClient(deps));
-  else shaped = await shapeDendrogram(result.rows, spec, options as DendrogramOptions, computeClient(deps));
+  const shaped = await shapeChart(
+    spec.type,
+    result.rows,
+    spec,
+    options,
+    httpCompute(deps.config, deps.fetch),
+  );
 
   return ChartRenderSchema.parse({
     figure: { data: shaped.data, layout: shaped.layout },

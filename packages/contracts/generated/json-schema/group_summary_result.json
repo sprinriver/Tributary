@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/GroupSummaryResult",
+  "$defs": {
+    "GroupSummaryResult": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "n": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "mean": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "sd": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "sem": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "ci95": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "median": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "cv": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "n",
+              "mean",
+              "sd",
+              "sem",
+              "ci95",
+              "median",
+              "cv"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "compute_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "groups",
+        "compute_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

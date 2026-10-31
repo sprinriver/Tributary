@@ -568,3 +568,39 @@ Entry template:
 - Gaps: volcano facets (panel encoding); 200k-point WebGL pan smoothness not measured in e2e (scattergl is used);
   long-format heatmaps pivot in TS (fine to ~200k cells, the point cap).
 - Commit: 6197c84, b304508
+
+## 2026-10-31 — Phase 15: Remaining charts and omics presets — done
+- Built: registry entries for line, bar, scatter 2D, scatter 3D, box/violin, histogram/KDE, lollipop, bubble,
+  pie/donut (all v1 options; `packages/contracts/src/charts/{xy,distribution}.ts`) and the omics presets MA plot,
+  PCA (scores + variance explained, observations × complete features, long or wide data) and QC panel (IDs per
+  run, missing values per run, CVs per feature, intensity distributions) (`charts/omics.ts`). Shared encodings,
+  pseudolog (base 2–10) and `requires`/`conflict` rules; facets capped at 24 with the count in the error. apps/api
+  shaping per family (`charts/{xy,dist,omics}-shapes.ts`, `dispatch.ts`, shared `common.ts`: groups, facets,
+  palettes, layout options — grid lines, shared axes, shared legend). apps/compute `/stats/group-test` (Welch t,
+  Mann–Whitney, KS pairwise vs the first group with BH; ANOVA, Kruskal–Wallis overall) and `/stats/group-summary`
+  (n, mean, SD, SEM, CI95 by t, median, CV). Web: palette and layout options, Plotly bundle extended (bar, box,
+  violin, histogram, pie, scatter3d), labels per chart.
+- Every REFERENCE_V1 §8 row has a named VIZ-06 test (contracts: p-values without a group column, required x/y,
+  lollipop size type, pseudolog base typed 2–10, no dead "query" option, facet cap declared; API shaping: KDE after
+  filtering, > 24 panels, lollipop nulls dropped and counted, bubble pseudolog, heatmap+dendrogram for rows/
+  columns/both, negative pie values; e2e: required y and p-values messages with Apply disabled).
+- Decisions (and why):
+  - Aggregates (mean/median/sum/count) and SD/SEM in TypeScript (science rules allow error bars); CI95 (t quantile),
+    group tests and CVs in apps/compute.
+  - p-values are refused when the chart splits groups the test would pool (colour/panel) — omics review.
+  - QC: missing or ≤ 0 values count as "not quantified" in every panel (tools write 0 for not quantified).
+  - Vite pre-bundles the Plotly modules (`optimizeDeps.include`): discovering them on first chart reloaded the page.
+- Dependencies: none new.
+- Evidence: `pnpm check` ✓ · `pnpm run test:contracts` ✓ (81) · `pnpm run test:api VIZ` ✓ (28) ·
+  `pnpm run test:compute` ✓ (73) · `pnpm e2e` ✓ (29) · bundle size in ARCHITECTURE §3 (709 kB gzip, lazy) ·
+  screenshots in `artifacts/phase-15/`.
+- Review: omics-reviewer — fixed: pseudolog Y with error bars (P0: linear lengths on a log axis) now a conflict;
+  n < 2 groups have no error bar (not zero); pooled p-values refused; line z-scores labelled per series; QC zeros
+  and placement consistent; pie percentages of pseudolog values refused; moving-average window odd with edge note;
+  histogram mean/median labelled when pseudologged; MA hit rule recorded; constant groups give a structured error.
+  Open: the reference group for pairwise tests is the first group in data order (no picker yet).
+- Test amendments: CON-03 registry contents (Phase 15 set); e2e helper `chartOnPq` gained `signedIn` (the test
+  signed in twice on one page); three shaping expectations I had computed wrongly were corrected before the first
+  green run (MA hits without p, pie sum, PCA long data).
+- Gaps: no picker for the pairwise reference group; scatter 3D has no panels; MA/volcano label collision handling.
+- Commit: (pending)

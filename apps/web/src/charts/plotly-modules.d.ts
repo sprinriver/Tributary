@@ -23,3 +23,27 @@ declare module 'plotly.js/lib/heatmap' {
   const trace: unknown;
   export default trace;
 }
+declare module 'plotly.js/lib/bar' {
+  const trace: unknown;
+  export default trace;
+}
+declare module 'plotly.js/lib/box' {
+  const trace: unknown;
+  export default trace;
+}
+declare module 'plotly.js/lib/histogram' {
+  const trace: unknown;
+  export default trace;
+}
+declare module 'plotly.js/lib/pie' {
+  const trace: unknown;
+  export default trace;
+}
+declare module 'plotly.js/lib/scatter3d' {
+  const trace: unknown;
+  export default trace;
+}
+declare module 'plotly.js/lib/violin' {
+  const trace: unknown;
+  export default trace;
+}

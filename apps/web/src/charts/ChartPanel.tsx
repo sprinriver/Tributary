@@ -1,4 +1,5 @@
 import {
+  CHART_PALETTES,
   CHART_REGISTRY,
   validateChartSpec,
   type ChartProvenance,
@@ -14,7 +15,8 @@ import { Dialog, ErrorMessage, Field } from '../components/ui.tsx';
 import { AVAILABLE_TYPES, ChartForm, newDraft, type ChartDraft } from './ChartForm.tsx';
 import { PlotlyFigure, type SelectedPoint } from './PlotlyFigure.tsx';
 
-const LAYOUT = {
+type Layout = ChartSpec['layout'];
+const LAYOUT: Layout = {
   palette: 'default',
   gridX: true,
   gridY: true,
@@ -23,8 +25,51 @@ const LAYOUT = {
   sharedLegend: true,
   subplotLegend: false,
 };
+const LAYOUT_TOGGLES: [keyof Layout, string][] = [
+  ['gridX', 'Grid lines X'],
+  ['gridY', 'Grid lines Y'],
+  ['sharedX', 'Shared X axes'],
+  ['sharedY', 'Shared Y axes'],
+  ['sharedLegend', 'Shared legend'],
+];
 
-function toSpec(draft: ChartDraft, data: QuerySpec): ChartSpec {
+/** v1 layout options: palette, grid lines, shared axes across panels, one legend for all panels. */
+function LayoutOptions({ value, onChange }: { value: Layout; onChange: (l: Layout) => void }) {
+  return (
+    <details>
+      <summary>Layout options</summary>
+      <div className="row" style={{ flexWrap: 'wrap', alignItems: 'flex-end' }}>
+        <Field label="Palette">
+          {(id) => (
+            <select
+              id={id}
+              value={value.palette}
+              onChange={(e) => onChange({ ...value, palette: e.target.value })}
+            >
+              {CHART_PALETTES.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          )}
+        </Field>
+        {LAYOUT_TOGGLES.map(([key, label]) => (
+          <label key={key} className="row" style={{ gap: 6 }}>
+            <input
+              type="checkbox"
+              checked={value[key] === true}
+              onChange={(e) => onChange({ ...value, [key]: e.target.checked })}
+            />
+            {label}
+          </label>
+        ))}
+      </div>
+    </details>
+  );
+}
+
+function toSpec(draft: ChartDraft, data: QuerySpec, layout: Layout): ChartSpec {
   const { page: _page, ...query } = data;
   const axes = {
     ...(draft.xTitle ? { x: { title: draft.xTitle } } : {}),
@@ -36,7 +81,7 @@ function toSpec(draft: ChartDraft, data: QuerySpec): ChartSpec {
     encodings: draft.encodings,
     options: draft.options,
     ...(Object.keys(axes).length ? { axes } : {}),
-    layout: LAYOUT,
+    layout,
   } as ChartSpec;
 }
 
@@ -86,6 +131,9 @@ function ProvenanceDialog({ provenance, onClose }: { provenance: ChartProvenance
   );
 }
 
+/** Numbers to 4 significant digits; labels (categorical axes) as they are. */
+const cell = (v: unknown) => (typeof v === 'number' ? Number(v.toPrecision(4)) : String(v ?? ''));
+
 /** Table alternative for the drawn chart (web UI rule): points of scatter traces, or the heatmap matrix. */
 function FigureTable({ render }: { render: ChartRender }) {
   const traces = render.figure.data as Record<string, unknown>[];
@@ -120,12 +168,12 @@ function FigureTable({ render }: { render: ChartRender }) {
     );
   }
   const points = traces
-    .filter((t) => t.mode === 'markers')
+    .filter((t) => typeof t.mode === 'string' && t.mode.includes('markers') && Array.isArray(t.x))
     .flatMap((t) =>
-      (t.x as number[]).map((x, i) => ({
+      (t.x as unknown[]).map((x, i) => ({
         group: String(t.name),
         x,
-        y: (t.y as number[])[i]!,
+        y: (t.y as unknown[] | undefined)?.[i],
         label: ((t.customdata as unknown[][] | undefined)?.[i]?.[0] as string | null) ?? '',
       })),
     );
@@ -144,8 +192,8 @@ function FigureTable({ render }: { render: ChartRender }) {
           <tr key={i}>
             <td>{p.label}</td>
             <td>{p.group}</td>
-            <td>{Number(p.x.toPrecision(4))}</td>
-            <td>{Number(p.y.toPrecision(4))}</td>
+            <td>{cell(p.x)}</td>
+            <td>{cell(p.y)}</td>
           </tr>
         ))}
       </tbody>
@@ -156,10 +204,11 @@ function FigureTable({ render }: { render: ChartRender }) {
 /** SPEC M7 charts over the Data Explorer's current query: registry form → /v1/charts/render → Plotly. */
 export function ChartPanel({ data, columns }: { data: QuerySpec; columns: Record<string, ColumnType> }) {
   const [draft, setDraft] = useState<ChartDraft>(() => newDraft('volcano'));
+  const [layout, setLayout] = useState<Layout>(LAYOUT);
   const [selected, setSelected] = useState<SelectedPoint[]>([]);
   const [showProvenance, setShowProvenance] = useState(false);
   const download = useRef<(format: 'png' | 'svg') => void>(undefined);
-  const spec = useMemo(() => toSpec(draft, data), [draft, data]);
+  const spec = useMemo(() => toSpec(draft, data, layout), [draft, data, layout]);
   const clientErrors = useMemo(() => validateChartSpec(spec, columns), [spec, columns]);
   const render = useMutation({
     mutationFn: () => api('renderChart', { body: { spec } }),
@@ -197,6 +246,7 @@ export function ChartPanel({ data, columns }: { data: QuerySpec; columns: Record
         )}
       </Field>
       <ChartForm draft={draft} columns={columns} errors={errors} onChange={setDraft} />
+      <LayoutOptions value={layout} onChange={setLayout} />
       <div className="row">
         <button
           type="button"

@@ -7,6 +7,22 @@ export default defineConfig({
   plugins: [react()],
   // plotly.js (CommonJS) and some of its dependencies read Node's `global`.
   define: { global: 'globalThis' },
+  // Pre-bundle the Plotly partial bundle's CommonJS modules at startup; discovering them on first chart
+  // makes the dev server re-optimise and reload the page.
+  optimizeDeps: {
+    include: [
+      'core',
+      'scatter',
+      'scattergl',
+      'heatmap',
+      'bar',
+      'box',
+      'violin',
+      'histogram',
+      'pie',
+      'scatter3d',
+    ].map((m) => `plotly.js/lib/${m}`),
+  },
   server: {
     port: 5173,
     strictPort: true,

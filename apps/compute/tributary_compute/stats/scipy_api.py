@@ -7,6 +7,7 @@ from typing import Any, cast
 
 import numpy as np
 import numpy.typing as npt
+from scipy import stats as _stats
 from scipy.cluster import hierarchy
 from scipy.optimize import curve_fit
 from scipy.spatial.distance import pdist
@@ -47,3 +48,22 @@ def fit(
 ) -> list[float]:
     params, _cov = curve_fit(model, x, y, p0=p0, bounds=bounds, maxfev=20000)
     return [float(v) for v in params]
+
+
+def two_sample_p(method: str, a: Array, b: Array) -> float:
+    """b vs a: Welch's t (unequal variances), Mann-Whitney U (two-sided), or two-sample Kolmogorov-Smirnov."""
+    if method == "welch_t":
+        return float(cast(Any, _stats.ttest_ind(b, a, equal_var=False)).pvalue)
+    if method == "mann_whitney":
+        return float(cast(Any, _stats.mannwhitneyu(b, a, alternative="two-sided")).pvalue)
+    return float(cast(Any, _stats.ks_2samp(b, a)).pvalue)
+
+
+def overall_p(method: str, groups: list[Array]) -> float:
+    """One-way ANOVA (F test) or Kruskal-Wallis H test across all groups."""
+    test = _stats.f_oneway if method == "anova" else _stats.kruskal
+    return float(cast(Any, test(*groups)).pvalue)
+
+
+def t_quantile(q: float, df: int) -> float:
+    return float(_stats.t.ppf(q, df))

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/GroupSummaryRequest",
+  "$defs": {
+    "GroupSummaryRequest": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "minItems": 1,
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "name",
+              "values"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "groups"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

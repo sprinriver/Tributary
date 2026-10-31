@@ -3,7 +3,7 @@
 """Phase 15 group statistics: p-values between groups and per-group summaries (error bars, CVs)."""
 
 import asyncio
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import numpy as np
@@ -32,9 +32,9 @@ GROUPS = [
 @pytest.mark.parametrize(
     ("method", "reference"),
     [
-        ("welch_t", lambda a, b: stats.ttest_ind(b, a, equal_var=False).pvalue),
-        ("mann_whitney", lambda a, b: stats.mannwhitneyu(b, a, alternative="two-sided").pvalue),
-        ("ks", lambda a, b: stats.ks_2samp(b, a).pvalue),
+        ("welch_t", lambda a, b: cast(Any, stats.ttest_ind(b, a, equal_var=False)).pvalue),
+        ("mann_whitney", lambda a, b: cast(Any, stats.mannwhitneyu(b, a, alternative="two-sided")).pvalue),
+        ("ks", lambda a, b: cast(Any, stats.ks_2samp(b, a)).pvalue),
     ],
 )
 def test_VIZ_05_pairwise_tests_match_scipy_with_bh(method: str, reference: Any) -> None:
@@ -45,7 +45,9 @@ def test_VIZ_05_pairwise_tests_match_scipy_with_bh(method: str, reference: Any) 
     assert [c["group"] for c in body["comparisons"]] == ["CPD-1", "CPD-2"]
     assert all(c["reference"] == "DMSO" for c in body["comparisons"])
     assert np.allclose([c["p"] for c in body["comparisons"]], raw)
-    assert np.allclose([c["p_adj"] for c in body["comparisons"]], stats.false_discovery_control(raw, method="bh"))
+    assert np.allclose(
+        [c["p_adj"] for c in body["comparisons"]], stats.false_discovery_control(raw, method="bh")
+    )
     assert body["adj_method"] == "BH"
     assert body["overall_p"] is None
 
@@ -69,7 +71,7 @@ def test_VIZ_06_group_tests_need_two_groups_with_two_values() -> None:
 
 
 def test_VIZ_05_group_summary_sd_sem_ci95_cv() -> None:
-    body = post("/stats/group-summary", {"groups": GROUPS + [{"name": "one", "values": [2.0]}]}).json()
+    body = post("/stats/group-summary", {"groups": [*GROUPS, {"name": "one", "values": [2.0]}]}).json()
     first = body["groups"][0]
     v = np.asarray(GROUPS[0]["values"])
     sd = v.std(ddof=1)
@@ -84,3 +86,10 @@ def test_VIZ_05_group_summary_sd_sem_ci95_cv() -> None:
     assert single["n"] == 1
     assert single["sd"] is None
     assert single["ci95"] is None
+
+
+def test_VIZ_06_constant_groups_give_a_structured_error() -> None:
+    groups = [{"name": "a", "values": [1.0, 1.0, 1.0]}, {"name": "b", "values": [1.0, 1.0, 1.0]}]
+    res = post("/stats/group-test", {"groups": groups, "method": "welch_t"})
+    assert res.status_code == 422
+    assert res.json()["code"] == "constant_groups"

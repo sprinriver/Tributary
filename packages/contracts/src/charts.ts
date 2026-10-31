@@ -1,7 +1,10 @@
 import { z } from 'zod';
 import { dendrogram } from './charts/dendrogram.ts';
+import { boxViolin, histogramKde, lollipop, pieDonut } from './charts/distribution.ts';
 import { heatmap } from './charts/heatmap.ts';
+import { ma, pca, qcPanel } from './charts/omics.ts';
 import { volcano } from './charts/volcano.ts';
+import { bar, bubble, line, scatter2d, scatter3d } from './charts/xy.ts';
 import { UuidV7Schema } from './common.ts';
 import type { ContractError } from './errors.ts';
 import { QuerySpecSchema } from './query.ts';
@@ -72,11 +75,30 @@ export interface ChartDefinition {
 }
 
 /** Filled in Phases 14–15 via the add-chart-type skill. */
-export const CHART_REGISTRY: Partial<Record<ChartType, ChartDefinition>> = { volcano, heatmap, dendrogram };
+export const CHART_REGISTRY: Partial<Record<ChartType, ChartDefinition>> = {
+  line,
+  bar,
+  scatter2d,
+  scatter3d,
+  box_violin: boxViolin,
+  histogram_kde: histogramKde,
+  lollipop,
+  volcano,
+  bubble,
+  heatmap,
+  dendrogram,
+  pie_donut: pieDonut,
+  ma,
+  pca,
+  qc_panel: qcPanel,
+};
 
 /** Option values with every default applied (what the form starts from). */
 export const chartDefaults = (type: ChartType): Record<string, unknown> =>
   (CHART_REGISTRY[type]?.options.parse({}) ?? {}) as Record<string, unknown>;
+
+/** Colour palettes for `layout.palette` (colours live with the renderer). `colorblind` = Okabe–Ito. */
+export const CHART_PALETTES = ['default', 'colorblind', 'viridis', 'greys'] as const;
 
 const AxisSchema = z.strictObject({ title: z.string().optional() });
 

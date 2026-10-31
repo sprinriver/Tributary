@@ -6,7 +6,7 @@ import {
   type ColumnType,
 } from '@tributary/contracts';
 import { Field } from '../components/ui.tsx';
-import { controlsOf, OPTION_LABELS, slotLabel, type Control } from './controls.ts';
+import { controlsOf, optionLabel, slotLabel, type Control } from './controls.ts';
 
 export interface ChartDraft {
   type: ChartType;
@@ -26,17 +26,18 @@ export const newDraft = (type: ChartType): ChartDraft => ({
 });
 
 function OptionControl({
+  label,
   control,
   value,
   error,
   onChange,
 }: {
+  label: string;
   control: Control;
   value: unknown;
   error?: string | undefined;
   onChange: (v: unknown) => void;
 }) {
-  const label = OPTION_LABELS[control.name] ?? control.name;
   if (control.kind === 'boolean') {
     return (
       <div className="field">
@@ -171,6 +172,7 @@ export function ChartForm({
         {controlsOf(draft.type).map((control) => (
           <OptionControl
             key={control.name}
+            label={optionLabel(draft.type, control.name)}
             control={control}
             value={draft.options[control.name]}
             error={errors[`options.${control.name}`]}

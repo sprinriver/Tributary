@@ -11,6 +11,10 @@ from tributary_compute.contracts.cluster_request import ClusterRequest
 from tributary_compute.contracts.cluster_result import ClusterResult
 from tributary_compute.contracts.fit4pl_request import Fit4plRequest
 from tributary_compute.contracts.fit4pl_result import Fit4plResult
+from tributary_compute.contracts.group_summary_request import GroupSummaryRequest
+from tributary_compute.contracts.group_summary_result import GroupSummaryResult
+from tributary_compute.contracts.group_test_request import GroupTestRequest
+from tributary_compute.contracts.group_test_result import GroupTestResult
 from tributary_compute.contracts.kde_request import KdeRequest
 from tributary_compute.contracts.kde_result import KdeResult
 from tributary_compute.contracts.pca_request import PcaRequest
@@ -20,7 +24,7 @@ from tributary_compute.contracts.pvalues_result import PValuesResult
 from tributary_compute.contracts.zscore_request import ZScoreRequest
 from tributary_compute.contracts.zscore_result import ZScoreResult
 from tributary_compute.sdrf import ExportResult, ImportResult, export_sdrf, import_sdrf
-from tributary_compute.stats import cluster, simple
+from tributary_compute.stats import cluster, groups, simple
 from tributary_compute.stats.errors import ComputeError
 
 app = FastAPI(title="tributary-compute", version=__version__)
@@ -95,3 +99,13 @@ def stats_pca(request: PcaRequest) -> PcaResult:
 @app.post("/stats/fit-4pl")
 def stats_fit_4pl(request: Fit4plRequest) -> Fit4plResult:
     return simple.fit_4pl(request)
+
+
+@app.post("/stats/group-test")
+def stats_group_test(request: GroupTestRequest) -> GroupTestResult:
+    return groups.group_test(request)
+
+
+@app.post("/stats/group-summary")
+def stats_group_summary(request: GroupSummaryRequest) -> GroupSummaryResult:
+    return groups.group_summary(request)

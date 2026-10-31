@@ -36,7 +36,44 @@ export const OPTION_LABELS: Record<string, string> = {
   bootstrap_n: 'Bootstrap iterations',
   seed: 'Random seed',
   attach_heatmap: 'Attach heatmap',
+  point_label: 'Point labels',
+  smoothing: 'Smoothing',
+  window: 'Window',
+  aggregate: 'Aggregate',
+  error_bars: 'Error bars',
+  p_values: 'p-values',
+  kind: 'Kind',
+  points: 'Points',
+  bins: 'Bins',
+  stats: 'Mean and median lines',
+  sort: 'Sort',
+  size_min: 'Smallest bubble',
+  size_max: 'Largest bubble',
+  hole: 'Donut hole',
+  textinfo: 'Text',
+  textposition: 'Text position',
+  direction: 'Direction',
+  rotation: 'Start angle',
+  pull: 'Explode slices',
+  pseudolog_values: 'Pseudolog values',
+  pseudolog_z: 'Pseudolog Z',
+  components: 'Components',
+  pc_x: 'PC on X',
+  pc_y: 'PC on Y',
+  log2: 'log2 intensities',
+  show_ids: 'IDs per run',
+  show_completeness: 'Missing values',
+  show_cv: 'CVs',
+  show_intensity: 'Intensity distributions',
 };
+
+/** Same option name, different meaning per chart. */
+const OPTION_LABELS_BY_TYPE: Partial<Record<ChartType, Record<string, string>>> = {
+  dendrogram: { orientation: 'Root position' },
+  pca: { scale: 'Unit variance (scale)' },
+};
+export const optionLabel = (type: ChartType, name: string) =>
+  OPTION_LABELS_BY_TYPE[type]?.[name] ?? OPTION_LABELS[name] ?? name;
 
 export const SLOT_LABELS: Record<string, string> = {
   x: 'X',
@@ -47,12 +84,21 @@ export const SLOT_LABELS: Record<string, string> = {
   hover: 'Hover',
   values: 'Values',
   rowLabel: 'Row label',
+  z: 'Z',
+  size: 'Size',
+  shape: 'Shape',
+  panel: 'Panels',
+  categories: 'Categories',
 };
-/** Matrix charts use x for the column category of long data. */
+const SLOT_LABELS_BY_TYPE: Partial<Record<ChartType, Record<string, string>>> = {
+  heatmap: { x: 'Column category' },
+  dendrogram: { x: 'Column category' },
+  pca: { x: 'Feature (long data)', color: 'Colour (per observation)' },
+  qc_panel: { x: 'Run', color: 'Group (for CVs)' },
+  ma: { z: 'Adjusted p' },
+};
 export const slotLabel = (type: ChartType, slot: string) =>
-  (type === 'heatmap' || type === 'dendrogram') && slot === 'x'
-    ? 'Column category'
-    : (SLOT_LABELS[slot] ?? slot);
+  SLOT_LABELS_BY_TYPE[type]?.[slot] ?? SLOT_LABELS[slot] ?? slot;
 
 function unwrap(schema: z.ZodType): { base: z.ZodType; optional: boolean } {
   let s = schema;

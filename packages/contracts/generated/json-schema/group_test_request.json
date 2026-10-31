@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/GroupTestRequest",
+  "$defs": {
+    "GroupTestRequest": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "minItems": 1,
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "values": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            },
+            "required": [
+              "name",
+              "values"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "welch_t",
+            "mann_whitney",
+            "ks",
+            "anova",
+            "kruskal"
+          ]
+        }
+      },
+      "required": [
+        "groups",
+        "method"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

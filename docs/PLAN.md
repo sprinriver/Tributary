@@ -252,14 +252,14 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 15 — Remaining charts and omics presets (fan-out)
-Status: todo
+Status: done
 Goal: All 12 v1 chart types plus MA plot, PCA and QC panel, each with schema, tests and e2e.
 Spec: M7, REFERENCE_V1 §7–8   Features: VIZ-05 … VIZ-08
 In scope: `add-chart-type` skill + `/batch` for line, bar, scatter 2D, scatter 3D, box/violin, histogram/KDE, lollipop, bubble, pie/donut; then MA plot, PCA, QC panel by hand; layout options shared.
 Definition of done:
-- [ ] `pnpm e2e "VIZ-0[5-8]"` passes for every type (run once in the main checkout after the batch merges)
-- [ ] Every row of REFERENCE_V1 §8 has a named test that passes
-- [ ] `pnpm check` exits 0
+- [x] `pnpm e2e "VIZ-0[5-8]"` passes for every type (run once in the main checkout after the batch merges)
+- [x] Every row of REFERENCE_V1 §8 has a named test that passes
+- [x] `pnpm check` exits 0
 
 ## Phase 16 — Results pages and cross-experiment views
 Status: todo

@@ -10092,6 +10092,214 @@
         ],
         "additionalProperties": false
       },
+      "GroupSummaryRequest": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "minItems": 1,
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "values"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "groups"
+        ],
+        "additionalProperties": false
+      },
+      "GroupSummaryResult": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "n": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "mean": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sd": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "sem": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "ci95": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "median": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "cv": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "name",
+                "n",
+                "mean",
+                "sd",
+                "sem",
+                "ci95",
+                "median",
+                "cv"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "compute_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "groups",
+          "compute_version"
+        ],
+        "additionalProperties": false
+      },
+      "GroupTestRequest": {
+        "type": "object",
+        "properties": {
+          "groups": {
+            "minItems": 1,
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "values": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "required": [
+                "name",
+                "values"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "welch_t",
+              "mann_whitney",
+              "ks",
+              "anova",
+              "kruskal"
+            ]
+          }
+        },
+        "required": [
+          "groups",
+          "method"
+        ],
+        "additionalProperties": false
+      },
+      "GroupTestResult": {
+        "type": "object",
+        "properties": {
+          "method": {
+            "type": "string"
+          },
+          "overall_p": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "comparisons": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "group": {
+                  "type": "string"
+                },
+                "reference": {
+                  "type": "string"
+                },
+                "p": {
+                  "type": "number"
+                },
+                "p_adj": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "group",
+                "reference",
+                "p",
+                "p_adj"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "adj_method": {
+            "type": "string"
+          },
+          "compute_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "method",
+          "overall_p",
+          "comparisons",
+          "adj_method",
+          "compute_version"
+        ],
+        "additionalProperties": false
+      },
       "HealthStatus": {
         "type": "object",
         "properties": {

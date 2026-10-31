@@ -187,3 +187,19 @@ describe('REFERENCE_V1 §8 — every v1 defect has a named test (registry part)'
       expect(CHART_REGISTRY[type]!.dataRules.maxFacets, type).toBe(24);
   });
 });
+
+describe('omics review rules (Phase 15)', () => {
+  it('VIZ-05: error bars need a linear y axis; pooled p-values are refused; pie percentages of pseudolog values', () => {
+    expect(check('bar', { error_bars: 'sd', pseudolog_y: true })).toEqual(['options.pseudolog_y:conflict']);
+    expect(check('bar', { p_values: 'welch_t' }, { color: 'h' })).toEqual(['options.p_values:conflict']);
+    expect(check('box_violin', { p_values: 'kruskal' }, { panel: 'h' })).toEqual([
+      'options.p_values:conflict',
+    ]);
+    expect(check('histogram_kde', { p_values: 'kruskal' }, { color: 'g', panel: 'h' })).toEqual([
+      'options.p_values:conflict',
+    ]);
+    expect(check('pie_donut', { pseudolog_values: true })).toEqual(['options.pseudolog_values:conflict']);
+    expect(check('pie_donut', { pseudolog_values: true, textinfo: 'value' })).toEqual([]);
+    expect(check('line', { smoothing: 'moving_average', window: 4 })).toEqual(['options.window:range']);
+  });
+});

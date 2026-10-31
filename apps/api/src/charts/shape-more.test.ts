@@ -105,7 +105,7 @@ const shape = (
   type: ChartType,
   encodings: ChartSpec['encodings'],
   options: Record<string, unknown> = {},
-  data = rows,
+  data: Record<string, unknown>[] = rows,
 ) =>
   shapeChart(
     type,

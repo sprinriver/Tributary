@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/GroupTestResult",
+  "$defs": {
+    "GroupTestResult": {
+      "type": "object",
+      "properties": {
+        "method": {
+          "type": "string"
+        },
+        "overall_p": {
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "comparisons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "group": {
+                "type": "string"
+              },
+              "reference": {
+                "type": "string"
+              },
+              "p": {
+                "type": "number"
+              },
+              "p_adj": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "group",
+              "reference",
+              "p",
+              "p_adj"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "adj_method": {
+          "type": "string"
+        },
+        "compute_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "overall_p",
+        "comparisons",
+        "adj_method",
+        "compute_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

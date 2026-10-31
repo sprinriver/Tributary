@@ -25,8 +25,8 @@ export async function pickColumns(chart: ReturnType<Page['getByRole']>, slot: st
 }
 
 /** Signed-in explorer on a protein_quant release (all rows); returns the Chart region. */
-export async function chartOnPq(page: Page) {
-  await signIn(page, 'scientist');
+export async function chartOnPq(page: Page, options: { signedIn?: boolean } = {}) {
+  if (!options.signedIn) await signIn(page, 'scientist');
   const name = uniqueName('VIZ-PQ');
   await pqRelease(page, name);
   await page.goto('/explore');
