@@ -453,3 +453,37 @@ Entry template:
   task-level table on the run page (Nextflow trace parsing) not built — the timeline shows run-level status only.
 - Review: plan-reviewer subagent could not run (usage limit); to re-run before the next phase finish.
 - Commit: cfa9112
+
+## 2026-10-31 — Phase 12: Query compiler and query service — done
+- Built: QuerySpec compiler in apps/query (`src/compiler/`): every typed operator, nested groups and NOT,
+  inner/left/right joins on declared keys (`checkJoinKeys` in contracts) plus role-gated advanced mode
+  (`join.advanced`, any role above viewer), per-join `where` compiled inside the joined CTE (LEFT joins keep
+  unmatched rows), one explode per query (`explode_value`, `explode_ambiguous`), select/orderBy, deterministic
+  order (release file + row number tiebreak), cursor pagination bound to the sqlHash, capped count. All user
+  values are `$pN` parameters; release files are a LIST parameter. Runner: per-query timeout (repeated
+  interrupt), row cap, concurrency semaphore, page cache for release-only queries (key: sqlHash + page),
+  DuckDB memory/threads/temp dir from env. Exports (CSV/TSV/Parquet) run the same SQL via `COPY … TO` and are
+  uploaded to the work bucket; API returns a presigned URL and audits `query.export` (format, rows, sqlHash,
+  release ids, spec, reason). API `POST /v1/query`, `POST /v1/query/export`: program scoping first (kind sources
+  → latest published release per dataset in the caller's programs; release ids must be published, visible, one
+  kind, one release per dataset), then validation against the resolved contracts. Metadata kinds from
+  `query_meta` views as `tributary_query_ro` (migration 0014; ADR 0019). `pnpm bench:query`.
+- Decisions (and why):
+  - Metadata via read-only views + per-request temp tables, not DuckDB's postgres extension (not installable
+    here; ADR 0019).
+  - Negations keep NULL rows (omics review): `!=`, `notIn`, `doesNotContain`, `notBetween` and NOT groups
+    would otherwise drop NA values silently.
+  - Offset cursors (simple, exact with the deterministic order); keyset cursors deferred to Phase 22 (bench).
+  - `sample` contract 1.1.0 (additive): ontology ids, `time_display`, `raw_file` (omics review).
+- Dependencies: none new (`@tributary/db` moved to apps/query dependencies; lockfile importer entry only).
+- Evidence: `pnpm run test:query` ✓ (18) · `pnpm run test:api QRY` ✓ (4) · `pnpm run test:contracts QRY` ✓ (3) ·
+  `pnpm run test:db` ✓ (16) · `pnpm bench:query` (numbers in ARCHITECTURE §6) · `pnpm check` ✓ · `pnpm e2e` ✓.
+- Review: omics-reviewer — fixed: NULL-dropping negations, sample view time_display/raw_file/ontology ids,
+  duplicate releases of one dataset; documented (ARCHITECTURE §6): explode ambiguity meaning and exact
+  accession matching, metadata views include drafts, kind sources span all published versions unless
+  `latestPublishedOnly`. Phase 11 plan-review still outstanding (usage limit at the time).
+- Test amendments: apps/api `query.test.ts` setup uploaded the file after publishing the version (files go to
+  drafts only); reordered (no assertion changed). Added a NULL-negation regression test (query.test.ts).
+- Gaps: 50M-row single-file pages take 1.6–7.3 s locally (SPEC M6 target met at 5M only; Phase 22); Iceberg
+  sources still unread (Phase 8 gap); count is a second scan.
+- Commit: (pending)

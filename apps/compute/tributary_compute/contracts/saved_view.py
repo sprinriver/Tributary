@@ -45,7 +45,7 @@ class ReleaseId(RootModel[UUID]):
     ]
 
 
-class SourceRef7(BaseModel):
+class SourceRef9(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -214,7 +214,7 @@ class Layout(BaseModel):
     subplotLegend: bool
 
 
-class SourceRef8(BaseModel):
+class SourceRef10(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -222,8 +222,8 @@ class SourceRef8(BaseModel):
     scope: Scope
 
 
-class SourceRef(RootModel[SourceRef7 | SourceRef8]):
-    root: SourceRef7 | SourceRef8
+class SourceRef(RootModel[SourceRef9 | SourceRef10]):
+    root: SourceRef9 | SourceRef10
 
 
 class RuleGroup(BaseModel):
@@ -246,6 +246,7 @@ class Join(BaseModel):
     on: Annotated[list[OnItem], Field(min_length=1)]
     where: RuleGroup | None = None
     explode: Literal["protein_ids", "gene_names"] | None = None
+    advanced: bool | None = None
 
 
 class QuerySpec(BaseModel):

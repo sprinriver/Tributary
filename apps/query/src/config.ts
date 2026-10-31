@@ -1,3 +1,5 @@
+import { DEFAULT_DATABASE_URL } from '@tributary/db';
+
 /** Query service configuration. Dev defaults match docker-compose.yml; production requires secrets. */
 export interface QueryConfig {
   production: boolean;
@@ -10,6 +12,12 @@ export interface QueryConfig {
   };
   /** Local scratch space for source files and the immutable release cache. */
   workDir: string;
+  /** Postgres for the metadata views (read as tributary_query_ro inside read-only transactions). */
+  databaseUrl: string;
+  /** ARCHITECTURE §6 limits. */
+  limits: { timeoutMs: number; rowCap: number; maxConcurrent: number };
+  /** DuckDB settings; unset keeps DuckDB's defaults (80% of RAM, one thread per core). */
+  duckdb: { memoryLimit: string | undefined; threads: number | undefined; tempDirectory: string | undefined };
 }
 
 export function loadQueryConfig(env: NodeJS.ProcessEnv = process.env): QueryConfig {
@@ -34,5 +42,16 @@ export function loadQueryConfig(env: NodeJS.ProcessEnv = process.env): QueryConf
             : { accessKeyId: 'tributary-dev', secretAccessKey: 'tributary-dev-secret' },
     },
     workDir: env.QUERY_WORK_DIR ?? '',
+    databaseUrl: required('DATABASE_URL', DEFAULT_DATABASE_URL),
+    limits: {
+      timeoutMs: Number(env.QUERY_TIMEOUT_MS ?? 30_000),
+      rowCap: Number(env.QUERY_ROW_CAP ?? 1_000_000),
+      maxConcurrent: Number(env.QUERY_MAX_CONCURRENT ?? 4),
+    },
+    duckdb: {
+      memoryLimit: env.QUERY_MEMORY_LIMIT,
+      threads: env.QUERY_THREADS ? Number(env.QUERY_THREADS) : undefined,
+      tempDirectory: env.QUERY_TEMP_DIR,
+    },
   };
 }

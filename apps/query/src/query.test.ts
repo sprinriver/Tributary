@@ -165,6 +165,37 @@ describe('query execution against Parquet releases', () => {
     expect(result.columns.map((c) => c.name)).toEqual(['feature_id', 'log2_fc']);
   });
 
+  it('QRY-01: negations keep rows whose value is NULL (nothing is dropped silently)', async () => {
+    const count = async (where: QuerySpec['where']) =>
+      (
+        await runQuery(
+          conn,
+          { source: { kind: 'differential_abundance', scope }, where },
+          { source: da(), joins: [] },
+        )
+      ).totalRows;
+    // P003 has log2_fc NULL; every other row has |log2_fc| <= 2.
+    expect(
+      await count({
+        combinator: 'and',
+        rules: [{ field: 'log2_fc', operator: 'notBetween', value: [-100, 100] }],
+      }),
+    ).toBe(1);
+    expect(
+      await count({
+        combinator: 'and',
+        not: true,
+        rules: [{ field: 'log2_fc', operator: '>', value: -100 }],
+      }),
+    ).toBe(1);
+    expect(await count({ combinator: 'and', rules: [{ field: 'log2_fc', operator: '!=', value: 99 }] })).toBe(
+      60,
+    );
+    expect(
+      await count({ combinator: 'and', rules: [{ field: 'log2_fc', operator: 'notIn', value: [99] }] }),
+    ).toBe(60);
+  });
+
   it('QRY-02: a LEFT join with a per-join filter keeps every primary row', async () => {
     const result = await runQuery(
       conn,

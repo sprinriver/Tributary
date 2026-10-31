@@ -271,6 +271,9 @@ importers:
       '@tributary/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@tributary/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       '@tributary/importers':
         specifier: workspace:*
         version: link:../../packages/importers
@@ -281,9 +284,6 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
     devDependencies:
-      '@tributary/db':
-        specifier: workspace:*
-        version: link:../../packages/db
       vitest:
         specifier: 5.0.5
         version: 5.0.5(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.5(@types/node@24.19.2)(yaml@2.9.1))

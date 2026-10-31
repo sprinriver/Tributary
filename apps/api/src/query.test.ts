@@ -38,8 +38,6 @@ describe('query API (QuerySpec → page, export)', () => {
     const contrasts = (
       await call('PUT', `/v1/versions/${side.version}/contrasts`, { contrasts: [CONTRAST] })
     ).json() as Json;
-    const published = await call('POST', `/v1/versions/${side.version}/publish`, { reason: 'ready' });
-    expect(published.statusCode, published.body).toBe(200);
     const started = (
       await call('POST', '/v1/files/uploads', {
         experiment_version_id: side.version,
@@ -53,6 +51,9 @@ describe('query API (QuerySpec → page, export)', () => {
       parts: [{ part_number: 1, etag: put.headers.get('etag') }],
     });
     await t.drainIngest();
+    // Files are added to drafts; the version is published before its results are imported.
+    const published = await call('POST', `/v1/versions/${side.version}/publish`, { reason: 'ready' });
+    expect(published.statusCode, published.body).toBe(200);
     const imported = await call('POST', '/v1/imports', {
       file_id: started.file.id,
       importer: 'limma_toptable',

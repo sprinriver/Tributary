@@ -14,6 +14,7 @@ import { registerImportRoutes } from './routes/imports.ts';
 import { registerLifecycleRoutes } from './routes/lifecycle.ts';
 import { registerQcGateRoutes } from './routes/qc-gate.ts';
 import { registerPipelineRoutes } from './routes/pipelines.ts';
+import { registerQueryRoutes } from './routes/query.ts';
 import type { Runners } from './pipelines/runner.ts';
 import { runIngest } from './ingest/job.ts';
 import type { IngestQueue } from './ingest/queue.ts';
@@ -98,6 +99,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerQcGateRoutes(scoped, db);
     registerLifecycleRoutes(scoped, db);
     registerImportRoutes(scoped, db, config, storage, fetchImpl);
+    registerQueryRoutes(scoped, db, config, storage, fetchImpl);
     registerDatasetRoutes(scoped, db, config, fetchImpl);
     registerPipelineRoutes(scoped, { db, config, storage, fetch: fetchImpl, runners: options.runners ?? {} });
   });

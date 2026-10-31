@@ -94,6 +94,7 @@ export async function startTestApi(
           S3_ACCESS_KEY_ID: TEST_S3_CREDENTIALS.accessKeyId,
           S3_SECRET_ACCESS_KEY: TEST_S3_CREDENTIALS.secretAccessKey,
           QUERY_INTERNAL_TOKEN: config.queryInternalToken,
+          DATABASE_URL: testDb.url,
         }),
       })
     : undefined;

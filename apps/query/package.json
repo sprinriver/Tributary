@@ -17,12 +17,12 @@
     "@aws-sdk/client-s3": "3.1156.0",
     "@duckdb/node-api": "2.0.0-r.1",
     "@tributary/contracts": "workspace:*",
+    "@tributary/db": "workspace:*",
     "@tributary/importers": "workspace:*",
     "fastify": "5.12.7",
     "zod": "4.6.7"
   },
   "devDependencies": {
-    "@tributary/db": "workspace:*",
     "vitest": "5.0.5"
   }
 }

@@ -237,6 +237,7 @@ class Join(BaseModel):
     on: Annotated[list[OnItem], Field(min_length=1)]
     where: RuleGroup | None = None
     explode: Literal["protein_ids", "gene_names"] | None = None
+    advanced: bool | None = None
 
 
 class QuerySpec(BaseModel):

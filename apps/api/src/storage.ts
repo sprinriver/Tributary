@@ -85,6 +85,13 @@ export class Storage {
     );
   }
 
+  /** Short-lived download link (exports). */
+  presignGet(key: string, bucket = this.bucket): Promise<string> {
+    return getSignedUrl(this.client, new GetObjectCommand({ Bucket: bucket, Key: key }), {
+      expiresIn: this.config.presignTtlSeconds,
+    });
+  }
+
   async listParts(key: string, uploadId: string): Promise<StoredPart[]> {
     const parts: StoredPart[] = [];
     let marker: string | undefined;

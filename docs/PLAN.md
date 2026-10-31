@@ -214,17 +214,17 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 12 — Query compiler and query service
-Status: todo
+Status: done
 Goal: Any QuerySpec is validated, scoped to the caller's programs, compiled to parameterized SQL and returned fast and safely.
 Spec: M6, §6.2, §7.1, ARCHITECTURE §6   Features: QRY-01 … QRY-06
 In scope: compiler (all typed operators, nested groups, NOT; inner/left/right joins on declared keys + advanced mode; per-join `where` compiled into the joined subquery so LEFT joins keep their semantics; explode `protein_ids`/`gene_names` with ambiguity flag; select/orderBy; cursor pagination; capped total count); read-only metadata kinds (`experiment_version`, `sample`, `file_object`, `pipeline_run` — SPEC §6.2) served from program-scoped Postgres views through DuckDB's postgres extension with a read-only DB role; program scoping injected before compilation; limits (timeout, row cap, memory semaphore); streaming exports CSV/TSV/Parquet to S3 + presigned URL + audit; result cache keyed by sqlHash + release IDs; `pnpm bench:query` generating 5M and 50M-row synthetic tables and timing typical specs.
 Definition of done:
-- [ ] Compiler tests incl. injection attempts in column names, values and operators
-- [ ] Integration tests: filter, join (incl. a LEFT join with a per-join filter), explode, sort, paginate match hand-written SQL on fixtures
-- [ ] A differential-abundance release joins to `sample` metadata (dose, time, cell line) and is scoped to the caller's programs (test)
-- [ ] Benchmark p50/p95 recorded in ARCHITECTURE §6 (local numbers, labelled as such)
-- [ ] Export equals page rows for the same spec (test)
-- [ ] `pnpm check` exits 0
+- [x] Compiler tests incl. injection attempts in column names, values and operators
+- [x] Integration tests: filter, join (incl. a LEFT join with a per-join filter), explode, sort, paginate match hand-written SQL on fixtures
+- [x] A differential-abundance release joins to `sample` metadata (dose, time, cell line) and is scoped to the caller's programs (test)
+- [x] Benchmark p50/p95 recorded in ARCHITECTURE §6 (local numbers, labelled as such)
+- [x] Export equals page rows for the same spec (test)
+- [x] `pnpm check` exits 0
 
 ## Phase 13 — Data Explorer UI
 Status: todo

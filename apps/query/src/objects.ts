@@ -37,7 +37,12 @@ export class Objects {
   }
 
   /** Uploads a local file; returns its sha256 and size. Release keys are written once (immutable). */
-  async upload(bucket: string, key: string, file: string): Promise<{ sha256: string; size_bytes: number }> {
+  async upload(
+    bucket: string,
+    key: string,
+    file: string,
+    contentType = 'application/vnd.apache.parquet',
+  ): Promise<{ sha256: string; size_bytes: number }> {
     const hash = createHash('sha256');
     await pipeline(createReadStream(file), hash);
     const sha256 = hash.digest('hex');
@@ -48,7 +53,7 @@ export class Objects {
         Key: key,
         Body: createReadStream(file),
         ContentLength: size,
-        ContentType: 'application/vnd.apache.parquet',
+        ContentType: contentType,
         Metadata: { sha256 },
       }),
     );

@@ -149,8 +149,38 @@ DuckDB attaches to it the same way it attaches to S3 Tables.
 - Importers execute here (read raw outputs with `read_csv`/`read_parquet`, map, check rules, write releases).
 - Benchmark locally in Phase 12 and in-region in Phase 22 (no published benchmark exists for DuckDB 2.0
   against S3 Tables at this scale).
-- Metadata kinds (SPEC §6.2) are read live from program-scoped Postgres views through DuckDB's postgres
-  extension, using a separate read-only database role.
+- Metadata kinds (SPEC §6.2) are read live from program-scoped Postgres views (`query_meta.*`) as the
+  read-only role `tributary_query_ro`. The DuckDB postgres extension is not installable in the build (ADR 0019),
+  so apps/query loads each scoped view into a per-request temp table.
+- Query semantics (Phase 12): negations (`!=`, `notIn`, `doesNotContain`, `notBetween`, NOT groups) keep rows
+  whose value is NULL; explode emits one row per accession with `explode_value` and `explode_ambiguous`
+  (= the group has more than one member, whether or not the others matched), matching accessions exactly
+  (no isoform or case folding); kind sources use each dataset's latest published release, across all
+  published versions unless `latestPublishedOnly`; metadata views include draft versions (filter on
+  `experiment_version.status`); pages are ordered by the spec's order then release file and row number, and
+  exports run the same SQL, so they equal the pages; totals are counted up to 1,000,000 (`totalCapped`).
+
+**Benchmark (local, Phase 12 — not in-region numbers).** `pnpm bench:query`: one synthetic
+differential-abundance release (10 contrasts, ~5 % two-protein groups, zstd Parquet), compiler + DuckDB 2.0.0
+in-process, 4 vCPU / 16 GiB container, local disk, 10 runs after a warm-up; each figure is one page of 100 rows
+plus the capped count (page 3 includes the two pages before it).
+
+| Rows (file) | Query | p50 ms | p95 ms |
+|---|---|---:|---:|
+| 5 M (190 MiB) | first page, no filter | 181 | 188 |
+| 5 M | contrast + adj_p < 0.05, sort by log2_fc, page 1 | 270 | 316 |
+| 5 M | same, page 3 | 832 | 864 |
+| 5 M | gene contains + adj_p, sort, page 1 | 310 | 387 |
+| 5 M | explode join to 20k annotations, sort | 561 | 679 |
+| 50 M (1.9 GiB) | first page, no filter | 1637 | 1686 |
+| 50 M | contrast + adj_p < 0.05, sort by log2_fc, page 1 | 2331 | 2641 |
+| 50 M | same, page 3 | 7293 | 7737 |
+| 50 M | gene contains + adj_p, sort, page 1 | 2741 | 2847 |
+| 50 M | explode join to 20k annotations, sort | 4828 | 5330 |
+
+Reading: 5M-row releases meet the SPEC M6 "page 3 in < 2 s" check; 50M rows in one file do not. Each page
+re-scans and re-sorts (offset pagination), and the count is a separate scan. Phase 22 options: keyset cursors
+on the sort column, a cached sorted result per sqlHash, Parquet sorted/partitioned by contrast, more vCPUs.
 
 ## 7. Compute service (apps/compute)
 

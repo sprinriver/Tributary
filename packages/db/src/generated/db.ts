@@ -477,6 +477,80 @@ export interface QcOverride {
   updated_at: Generated<Timestamp>;
 }
 
+export interface QueryMetaExperimentVersion {
+  assay_type: string | null;
+  experiment_date: string | null;
+  experiment_id: string | null;
+  experiment_name: string | null;
+  experiment_version_id: string | null;
+  program_id: string | null;
+  published_at: Timestamp | null;
+  species_id: string | null;
+  species_label: string | null;
+  status: string | null;
+  urn: string | null;
+  version_number: number | null;
+}
+
+export interface QueryMetaFileObject {
+  bucket: string | null;
+  created_at: Timestamp | null;
+  experiment_version_id: string | null;
+  file_id: string | null;
+  format: string | null;
+  ingest_status: string | null;
+  key: string | null;
+  program_id: string | null;
+  sha256: string | null;
+  size_bytes: number | null;
+}
+
+export interface QueryMetaPipelineRun {
+  experiment_version_id: string | null;
+  finished_at: Timestamp | null;
+  pipeline_key: string | null;
+  pipeline_run_id: string | null;
+  program_id: string | null;
+  runner: string | null;
+  started_at: Timestamp | null;
+  status: string | null;
+  triggered_by: string | null;
+}
+
+export interface QueryMetaSample {
+  biological_replicate: number | null;
+  cell_line: string | null;
+  cell_line_id: string | null;
+  cell_type: string | null;
+  cell_type_id: string | null;
+  compound_id: string | null;
+  condition: string | null;
+  disease: string | null;
+  disease_id: string | null;
+  dose_display: string | null;
+  dose_molar: number | null;
+  experiment_version_id: string | null;
+  fraction: string | null;
+  instrument_run: string | null;
+  label_channel: string | null;
+  organism: string | null;
+  organism_id: string | null;
+  plate: string | null;
+  position: number | null;
+  program_id: string | null;
+  raw_file: string | null;
+  replicate_group: string | null;
+  sample_key: string | null;
+  source_name: string | null;
+  technical_replicate: number | null;
+  time_display: string | null;
+  time_hours: number | null;
+  tissue: string | null;
+  tissue_id: string | null;
+  vehicle: string | null;
+  well: string | null;
+}
+
 export interface RoleBinding {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -581,6 +655,10 @@ export interface DB {
   pipeline_run_event: PipelineRunEvent;
   program: Program;
   qc_override: QcOverride;
+  "query_meta.experiment_version": QueryMetaExperimentVersion;
+  "query_meta.file_object": QueryMetaFileObject;
+  "query_meta.pipeline_run": QueryMetaPipelineRun;
+  "query_meta.sample": QueryMetaSample;
   role_binding: RoleBinding;
   sample: Sample;
   sample_file: SampleFile;

@@ -327,6 +327,9 @@
             "protein_ids",
             "gene_names"
           ]
+        },
+        "advanced": {
+          "type": "boolean"
         }
       },
       "required": [

@@ -90,6 +90,8 @@ export const JoinSchema = z
     where: RuleGroupSchema.optional(),
     /** Explode a list column of the primary source before joining (one row per accession / gene). */
     explode: z.enum(['protein_ids', 'gene_names']).optional(),
+    /** Advanced mode: any column pair and operator, not only declared join keys with `=` (role-gated). */
+    advanced: z.boolean().optional(),
   })
   .meta({ id: 'Join' });
 export type Join = z.infer<typeof JoinSchema>;
