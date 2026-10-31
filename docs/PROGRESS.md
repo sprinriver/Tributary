@@ -567,4 +567,4 @@ Entry template:
   option tests were written after the code.
 - Gaps: volcano facets (panel encoding); 200k-point WebGL pan smoothness not measured in e2e (scattergl is used);
   long-format heatmaps pivot in TS (fine to ~200k cells, the point cap).
-- Commit: (pending)
+- Commit: 6197c84, b304508
