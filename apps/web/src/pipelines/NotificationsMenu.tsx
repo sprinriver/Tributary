@@ -42,6 +42,9 @@ export function NotificationsMenu() {
         // Private windows: the count resets on reload.
       }
       setSeen(now);
+    } else {
+      // Opening shows current statuses, not the last 10-second poll.
+      void runs.refetch();
     }
     setOpen(!open);
   };
