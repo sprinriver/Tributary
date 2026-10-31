@@ -18,7 +18,22 @@ function manifestRows(): Record<string, string>[] {
 }
 
 /** A published ONC experiment with a published limma differential-abundance release (via the API). */
-export async function daRelease(page: Page, name: string): Promise<{ version: string; release: string }> {
+export const daRelease = (page: Page, name: string) =>
+  publishedRelease(page, name, { file: 'toptable.tsv', importer: 'limma_toptable', contrast: true });
+
+/** The same, with the DIA-NN protein-group matrix imported as a protein_quant release (one row per protein × run). */
+export const pqRelease = (page: Page, name: string) =>
+  publishedRelease(page, name, {
+    file: 'report.pg_matrix.tsv',
+    importer: 'diann_pg_matrix',
+    contrast: false,
+  });
+
+async function publishedRelease(
+  page: Page,
+  name: string,
+  what: { file: string; importer: string; contrast: boolean },
+): Promise<{ version: string; release: string }> {
   const programs = await apiCall<{ items: { id: string; code: string }[] }>(page, 'GET', '/v1/programs');
   const created = await apiCall<{ id: string; versions: { id: string }[] }>(page, 'POST', '/v1/experiments', {
     program_id: programs.body.items.find((p) => p.code === 'ONC')!.id,
@@ -35,14 +50,14 @@ export async function daRelease(page: Page, name: string): Promise<{ version: st
       contrasts: [CONTRAST],
     },
   );
-  const bytes = readFileSync(`${FIXTURES}/toptable.tsv`);
+  const bytes = readFileSync(`${FIXTURES}/${what.file}`);
   const started = await apiCall<{ file: { id: string }; parts: { url: string }[] }>(
     page,
     'POST',
     '/v1/files/uploads',
     {
       experiment_version_id: version,
-      name: 'toptable.tsv',
+      name: what.file,
       size_bytes: bytes.length,
       role: 'processed',
     },
@@ -66,9 +81,9 @@ export async function daRelease(page: Page, name: string): Promise<{ version: st
   );
   const imported = await apiCall<{ id: string }>(page, 'POST', '/v1/imports', {
     file_id: started.body.file.id,
-    importer: 'limma_toptable',
+    importer: what.importer,
     dataset_name: name,
-    contrast_id: contrasts.body.items[0]!.id,
+    ...(what.contrast ? { contrast_id: contrasts.body.items[0]!.id } : {}),
   });
   expect(imported.status).toBe(201);
   const release = imported.body.id;
