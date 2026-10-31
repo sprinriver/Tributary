@@ -23,6 +23,7 @@ export function Layout() {
         <nav aria-label="Main" style={{ display: 'flex', gap: 12, flex: 1 }}>
           <Link to="/experiments">Experiments</Link>
           <Link to="/datasets">Datasets</Link>
+          <Link to="/explore">Explore</Link>
           {me.data?.roles.some((r) => r.role === 'system_admin') && (
             <Link to="/admin/pipelines">Pipelines</Link>
           )}

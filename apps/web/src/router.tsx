@@ -1,6 +1,7 @@
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 import { ForbiddenPage, Layout } from './components/Layout.tsx';
 import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
+import { ExplorerPage, type ExplorerSearch } from './explorer/ExplorerPage.tsx';
 import { ReleasePage } from './datasets/ReleasePage.tsx';
 import { AdminPipelinesPage } from './pipelines/AdminPipelinesPage.tsx';
 import { RunPage } from './pipelines/RunPage.tsx';
@@ -52,6 +53,15 @@ const releaseRoute = createRoute({
   path: '/releases/$id',
   component: ReleasePage,
 });
+const explorerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/explore',
+  component: ExplorerPage,
+  validateSearch: (search: Record<string, unknown>): ExplorerSearch =>
+    Object.fromEntries(
+      ['q', 'view'].map((k) => [k, str(search[k])]).filter(([, v]) => v !== undefined),
+    ) as ExplorerSearch,
+});
 const runRoute = createRoute({ getParentRoute: () => rootRoute, path: '/runs/$id', component: RunPage });
 const adminPipelinesRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -71,6 +81,7 @@ export const router = createRouter({
     newExperimentRoute,
     experimentRoute,
     datasetsRoute,
+    explorerRoute,
     releaseRoute,
     runRoute,
     adminPipelinesRoute,

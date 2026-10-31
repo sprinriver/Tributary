@@ -4,6 +4,7 @@ import { DATASET_ROUTES } from './routes-datasets.ts';
 import { FILE_ROUTES } from './routes-files.ts';
 import { PIPELINE_ROUTES } from './routes-pipelines.ts';
 import { QUERY_ROUTES } from './routes-query.ts';
+import { VIEW_ROUTES } from './routes-views.ts';
 import type { ApiRoute } from './route.ts';
 import {
   AccessTokenSchema,
@@ -266,6 +267,7 @@ export const API_ROUTES = {
   ...DATASET_ROUTES,
   ...PIPELINE_ROUTES,
   ...QUERY_ROUTES,
+  ...VIEW_ROUTES,
 } as const satisfies Record<string, ApiRoute>;
 
 export type ApiOperation = keyof typeof API_ROUTES;

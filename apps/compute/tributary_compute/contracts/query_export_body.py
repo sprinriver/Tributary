@@ -36,7 +36,7 @@ class ReleaseId(RootModel[UUID]):
     ]
 
 
-class SourceRef5(BaseModel):
+class SourceRef7(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -146,7 +146,7 @@ class Rule(BaseModel):
     value: Any | None = None
 
 
-class SourceRef6(BaseModel):
+class SourceRef8(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -154,8 +154,8 @@ class SourceRef6(BaseModel):
     scope: Scope
 
 
-class SourceRef(RootModel[SourceRef5 | SourceRef6]):
-    root: SourceRef5 | SourceRef6
+class SourceRef(RootModel[SourceRef7 | SourceRef8]):
+    root: SourceRef7 | SourceRef8
 
 
 class RuleGroup(BaseModel):

@@ -78,16 +78,20 @@ async function daRelease(page: Page, name: string): Promise<{ version: string; r
 /** Cell texts of one column in display order. */
 async function column(page: Page, colId: string): Promise<string[]> {
   return page.evaluate((id) => {
-    const rows = [...document.querySelectorAll('.ag-center-cols-container .ag-row')];
+    const rows = [...document.querySelectorAll('[role="row"][row-index]')].filter((r) =>
+      r.querySelector(`[role="gridcell"][col-id="${id}"]`),
+    );
     rows.sort((a, b) => Number(a.getAttribute('row-index')) - Number(b.getAttribute('row-index')));
-    return rows.map((r) => r.querySelector(`[col-id="${id}"]`)?.textContent ?? '');
+    return rows.map((r) => r.querySelector(`[role="gridcell"][col-id="${id}"]`)?.textContent ?? '');
   }, colId);
 }
 
 async function pickRelease(page: Page, name: string) {
   const picker = page.getByRole('region', { name: 'Dataset' });
   await picker.getByLabel('Dataset kind').selectOption('differential_abundance');
-  await picker.getByLabel('Release').selectOption({ label: new RegExp(name) });
+  const release = picker.getByLabel('Release');
+  const label = await release.locator('option', { hasText: name }).textContent();
+  await release.selectOption({ label: label! });
 }
 
 async function addRule(
@@ -215,7 +219,7 @@ test('EXP-05: copy as Python, R or QuerySpec JSON', async ({ page }) => {
   const dialog = page.getByRole('dialog', { name: 'Copy as code' });
   await expect(dialog.getByRole('code')).toContainText('requests.post(');
   await expect(dialog.getByRole('code')).toContainText('/v1/query');
-  await dialog.getByRole('tab', { name: 'R' }).click();
+  await dialog.getByRole('tab', { name: 'R', exact: true }).click();
   await expect(dialog.getByRole('code')).toContainText('httr2::request(');
   await dialog.getByRole('tab', { name: 'QuerySpec JSON' }).click();
   const spec = JSON.parse((await dialog.getByRole('code').textContent())!) as { source: { kind: string } };

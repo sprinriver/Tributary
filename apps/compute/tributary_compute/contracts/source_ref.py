@@ -16,7 +16,7 @@ class ReleaseId(RootModel[UUID]):
     ]
 
 
-class SourceRef11(BaseModel):
+class SourceRef13(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -90,7 +90,7 @@ class DatasetKind(
     ]
 
 
-class SourceRef12(BaseModel):
+class SourceRef14(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -98,8 +98,8 @@ class SourceRef12(BaseModel):
     scope: Scope
 
 
-class SourceRef(RootModel[SourceRef11 | SourceRef12]):
-    root: SourceRef11 | SourceRef12
+class SourceRef(RootModel[SourceRef13 | SourceRef14]):
+    root: SourceRef13 | SourceRef14
 
 
 class Model(RootModel[SourceRef]):

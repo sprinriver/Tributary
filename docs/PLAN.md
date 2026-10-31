@@ -227,15 +227,15 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 13 — Data Explorer UI
-Status: todo
+Status: done
 Goal: v1 Data Explorer parity plus typed filters, declared joins, saved views and copy-as-code.
 Spec: M6, REFERENCE_V1 §6   Features: EXP-01 … EXP-05
 In scope: dataset picker (by experiment / by kind across experiments / reference / metadata tables); react-querybuilder with typed value editors, AND/OR, nesting, NOT; join builder blocks (type, conditions, per-join filters, explode toggle, advanced pairs); AG Grid server-side datasource; column chooser; number formatting; export menu; saved views (private/program) + share links; copy as Python / R / QuerySpec JSON; state in the URL.
 **Suggested split:** 13a = picker, filter builder, grid, export, URL state · 13b = join builder, saved views, share links, copy-as-code.
 Definition of done:
-- [ ] e2e: SPEC M6 check end to end; screenshots
-- [ ] Playwright MCP exploratory pass; issues fixed and listed
-- [ ] `pnpm check` exits 0
+- [x] e2e: SPEC M6 check end to end; screenshots
+- [x] Playwright MCP exploratory pass; issues fixed and listed
+- [x] `pnpm check` exits 0
 
 ## Phase 14 — Chart framework, compute service and reference charts
 Status: todo

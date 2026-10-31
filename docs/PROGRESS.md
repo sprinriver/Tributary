@@ -487,3 +487,38 @@ Entry template:
 - Gaps: 50M-row single-file pages take 1.6–7.3 s locally (SPEC M6 target met at 5M only; Phase 22); Iceberg
   sources still unread (Phase 8 gap); count is a second scan.
 - Commit: 0aa1edb
+
+## 2026-10-31 — Phase 13: Data Explorer UI — done
+- Built: `/explore` (nav "Explore"): dataset picker (kind grouped as experiment / reference / metadata tables; a
+  single published release or every release of the kind in my programs; latest published versions only);
+  react-querybuilder filters with typed operators from the contract matrix, AND/OR, nested groups, NOT, typed
+  value editors (number/date/checkbox), empty values caught before running; join builder blocks (type, kind,
+  alias, conditions limited to declared keys unless "Advanced", per-join filters, explode toggle); AG Grid
+  results (server order, header click = server sort, first column pinned, scientific notation for p/q values
+  and tiny numbers, auto height for 25-row pages), pager with cursors, column chooser, export menu
+  (CSV/TSV/Parquet → presigned download link); saved views (`/v1/views`: private or program; 404 for anyone
+  who may not see one; owner-only soft delete; audited) and share links (`/explore?view=<id>`); copy as
+  Python (requests + pandas, paging), R (httr2) or QuerySpec JSON; state in the URL (`?q=` base64url spec).
+- Decisions (and why):
+  - Pagination in our own pager (cursor stack) with AG Grid's client row model per page: the server cursor is
+    opaque and bound to the query, so AG Grid's infinite model (arbitrary block offsets) does not fit.
+  - New joins default to the `sample` metadata kind on the first shared declared key (the common case: results
+    → sample factors); any kind can be picked.
+  - Views store the QuerySpec only; data is always re-scoped to the viewer's programs when a link is opened.
+- Dependencies added: react-querybuilder 8.25.0 (MIT; pinned in ARCHITECTURE). Note: published 2026-10-12, i.e.
+  younger than the 90-day rule — taken because ARCHITECTURE pins this exact version; please confirm or name an
+  older pin.
+- Evidence: `pnpm check` ✓ · `pnpm run test:api EXP` ✓ (2) · `pnpm run test:web EXP` ✓ (5) · `pnpm e2e` ✓ (21);
+  screenshots in `artifacts/phase-13/`.
+- Exploratory pass: the Playwright MCP could not start (it expects Google Chrome at /opt/google/chrome; only
+  the bundled Chromium exists here), so the pass was scripted with Playwright on the same engine. Fixed:
+  rows/columns hidden by grid virtualisation; identifier column scrolling away after sort (pinned);
+  ambiguous builder control titles; an empty numeric filter left the page on "Loading…" while 400s were
+  retried (now: inline message, no retry on 4xx); "between" label promised comma input but shows two boxes.
+- Test amendments (before first green, mechanics only): e2e `selectOption` with a RegExp label is not
+  supported (helper resolves the option text first); tab locator `R` needed `exact`; grid column reader
+  uses row-index/col-id instead of AG Grid container classes; API views test ordered audit rows by a
+  non-existent `created_at` (column is `at`). Web unit tests (`spec.test.ts`) were written after the code.
+- Gaps: no "share token" links for people outside the program (column exists, unused); saved views cannot be
+  renamed/updated yet; chart part of views comes with Phase 14.
+- Commit: (pending)

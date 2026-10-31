@@ -87,7 +87,8 @@ describe('saved views', () => {
       .selectFrom('audit_log')
       .select('action')
       .where('entity_id', '=', view.id)
-      .orderBy('created_at')
+      .orderBy('at')
+      .orderBy('id')
       .execute();
     expect(actions.map((a) => a.action)).toEqual(['view.create', 'view.delete']);
   });
