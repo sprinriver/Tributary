@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ClusterRequest",
+  "$defs": {
+    "ClusterRequest": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          }
+        },
+        "row_labels": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "column_labels": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "axis": {
+          "type": "string",
+          "enum": [
+            "rows",
+            "columns",
+            "both"
+          ]
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "average",
+            "single",
+            "complete",
+            "weighted",
+            "centroid",
+            "median",
+            "ward.D2"
+          ]
+        },
+        "metric": {
+          "type": "string",
+          "enum": [
+            "euclidean",
+            "manhattan",
+            "maximum",
+            "canberra",
+            "cosine",
+            "correlation"
+          ]
+        },
+        "leaf_ordering": {
+          "type": "string",
+          "enum": [
+            "default",
+            "optimal"
+          ]
+        },
+        "bootstrap_n": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "values",
+        "row_labels",
+        "column_labels",
+        "axis",
+        "method",
+        "metric",
+        "leaf_ordering",
+        "bootstrap_n",
+        "seed"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "code": "ONC",
+    "description": "Synthetic oncology programme for demos and tests.",
+    "name": "Oncology demo"
+  },
+  {
+    "code": "IMM",
+    "description": "Synthetic immunology programme for demos and tests.",
+    "name": "Immunology demo"
+  }
+]

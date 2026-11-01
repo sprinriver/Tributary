@@ -1,0 +1,5 @@
+sample_key	condition	instrument_run	raw_file
+TOOLS-S01	DMSO	TOOLS_run01	s3://raw/tools/TOOLS_run01.raw
+TOOLS-S02	DMSO	TOOLS_run02	s3://raw/tools/TOOLS_run02.raw
+TOOLS-S03	CPD-000001@1 µM	TOOLS_run03	s3://raw/tools/TOOLS_run03.raw
+TOOLS-S04	CPD-000001@1 µM	TOOLS_run04	s3://raw/tools/TOOLS_run04.raw

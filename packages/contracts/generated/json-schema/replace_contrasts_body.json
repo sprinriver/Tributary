@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ReplaceContrastsBody",
+  "$defs": {
+    "ReplaceContrastsBody": {
+      "type": "object",
+      "properties": {
+        "contrasts": {
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "numerator": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "denominator": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 300
+              },
+              "method_hint": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "maxLength": 100
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "numerator",
+              "denominator"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "contrasts"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,168 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/CompoundPage",
+  "$defs": {
+    "CompoundPage": {
+      "type": "object",
+      "properties": {
+        "compound": {
+          "type": "object",
+          "properties": {
+            "compound_id": {
+              "type": "string"
+            },
+            "batch_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "name": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "smiles": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "inchikey": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "program_code": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "compound_id",
+            "batch_id",
+            "name",
+            "smiles",
+            "inchikey",
+            "program_code"
+          ],
+          "additionalProperties": false
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "property": {
+                "type": "string"
+              },
+              "value": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "unit": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "qualifier": {
+                "type": "string"
+              },
+              "assay_category": {
+                "type": "string"
+              },
+              "assay_name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "batch_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "property",
+              "value",
+              "unit",
+              "qualifier",
+              "assay_category",
+              "assay_name",
+              "batch_id"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "contrasts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "contrast_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "label": {
+                "type": "string"
+              },
+              "experiment_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "experiment_name": {
+                "type": "string"
+              },
+              "experiment_version_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "version_number": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "release_id": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "contrast_id",
+              "label",
+              "experiment_id",
+              "experiment_name",
+              "experiment_version_id",
+              "version_number",
+              "release_id"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "compound",
+        "properties",
+        "contrasts"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

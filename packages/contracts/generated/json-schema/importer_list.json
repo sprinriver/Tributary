@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ImporterList",
+  "$defs": {
+    "ImporterList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "kind": {
+                "$ref": "#/$defs/DatasetKind"
+              },
+              "tool": {
+                "type": "string"
+              },
+              "formats": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "kinds": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/DatasetKind"
+                }
+              },
+              "needs": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "experiment_version",
+                    "contrast",
+                    "contrasts",
+                    "mapping",
+                    "source_release",
+                    "doses"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "key",
+              "label",
+              "kind",
+              "tool",
+              "formats",
+              "kinds",
+              "needs"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "additionalProperties": false
+    },
+    "DatasetKind": {
+      "type": "string",
+      "enum": [
+        "protein_quant",
+        "precursor_quant",
+        "differential_abundance",
+        "dose_response",
+        "qc_metrics",
+        "rnaseq_counts",
+        "crispr_gene_summary",
+        "compound",
+        "compound_property",
+        "target_annotation",
+        "id_mapping",
+        "experiment_version",
+        "sample",
+        "file_object",
+        "pipeline_run"
+      ]
+    }
+  }
+}

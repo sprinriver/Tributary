@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/DatasetKind",
+  "$defs": {
+    "DatasetKind": {
+      "type": "string",
+      "enum": [
+        "protein_quant",
+        "precursor_quant",
+        "differential_abundance",
+        "dose_response",
+        "qc_metrics",
+        "rnaseq_counts",
+        "crispr_gene_summary",
+        "compound",
+        "compound_property",
+        "target_annotation",
+        "id_mapping",
+        "experiment_version",
+        "sample",
+        "file_object",
+        "pipeline_run"
+      ]
+    }
+  }
+}

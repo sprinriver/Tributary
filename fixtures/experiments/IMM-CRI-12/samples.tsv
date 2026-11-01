@@ -1,0 +1,5 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+IMM-CRI-12-S01	K-562 culture 1	Homo sapiens	K-562	vehicle	DMSO	not applicable	14 d	T0	T0	1	not applicable	not applicable	not applicable	IMM-CRI-12-S01_R1.fastq.gz	IMM-CRI-12_lib01
+IMM-CRI-12-S02	K-562 culture 2	Homo sapiens	K-562	vehicle	DMSO	not applicable	14 d	T0	T0	2	not applicable	not applicable	not applicable	IMM-CRI-12-S02_R1.fastq.gz	IMM-CRI-12_lib02
+IMM-CRI-12-S03	K-562 culture 3	Homo sapiens	K-562	vehicle	DMSO	not applicable	14 d	T14	T14	1	not applicable	not applicable	not applicable	IMM-CRI-12-S03_R1.fastq.gz	IMM-CRI-12_lib03
+IMM-CRI-12-S04	K-562 culture 4	Homo sapiens	K-562	vehicle	DMSO	not applicable	14 d	T14	T14	2	not applicable	not applicable	not applicable	IMM-CRI-12-S04_R1.fastq.gz	IMM-CRI-12_lib04

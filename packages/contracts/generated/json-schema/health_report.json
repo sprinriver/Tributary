@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/HealthReport",
+  "$defs": {
+    "HealthReport": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "degraded",
+            "down"
+          ]
+        },
+        "checked_at": {
+          "type": "string"
+        },
+        "checks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ok",
+                  "degraded",
+                  "down"
+                ]
+              },
+              "detail": {
+                "type": "string"
+              },
+              "latency_ms": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "name",
+              "label",
+              "status",
+              "detail",
+              "latency_ms"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "runners": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "configured": {
+                "type": "boolean"
+              },
+              "detail": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "kind",
+              "configured",
+              "detail"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "ai": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "provider": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "enabled",
+            "provider"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "status",
+        "checked_at",
+        "checks",
+        "runners",
+        "ai"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

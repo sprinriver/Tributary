@@ -1,0 +1,7 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+IMM-DIA-06-S01	K-562 culture 1	Homo sapiens	K-562	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	1	IMM-DIA-06-P1	A01	not applicable	IMM-DIA-06_run01.raw	IMM-DIA-06_run01
+IMM-DIA-06-S02	K-562 culture 2	Homo sapiens	K-562	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	2	IMM-DIA-06-P1	A02	not applicable	IMM-DIA-06_run02.raw	IMM-DIA-06_run02
+IMM-DIA-06-S03	K-562 culture 3	Homo sapiens	K-562	vehicle	DMSO	not applicable	24 h	DMSO	DMSO	3	IMM-DIA-06-P1	A03	not applicable	IMM-DIA-06_run03.raw	IMM-DIA-06_run03
+IMM-DIA-06-S04	K-562 culture 4	Homo sapiens	K-562	CPD-000006	DMSO	1 µM	24 h	CPD-000006@1 µM	CPD-000006@1 µM	1	IMM-DIA-06-P1	A04	not applicable	IMM-DIA-06_run04.raw	IMM-DIA-06_run04
+IMM-DIA-06-S05	K-562 culture 5	Homo sapiens	K-562	CPD-000006	DMSO	1 µM	24 h	CPD-000006@1 µM	CPD-000006@1 µM	2	IMM-DIA-06-P1	A05	not applicable	IMM-DIA-06_run05.raw	IMM-DIA-06_run05
+IMM-DIA-06-S06	K-562 culture 6	Homo sapiens	K-562	CPD-000006	DMSO	1 µM	24 h	CPD-000006@1 µM	CPD-000006@1 µM	3	IMM-DIA-06-P1	A06	not applicable	IMM-DIA-06_run06.raw	IMM-DIA-06_run06

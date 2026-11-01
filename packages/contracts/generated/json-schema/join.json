@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Join",
+  "$defs": {
+    "Join": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "inner",
+            "left",
+            "right"
+          ]
+        },
+        "target": {
+          "$ref": "#/$defs/SourceRef"
+        },
+        "alias": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "on": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "left": {
+                "type": "string",
+                "pattern": "^([a-z][a-z0-9_]*\\.)?[a-z][a-z0-9_]*$"
+              },
+              "op": {
+                "type": "string",
+                "enum": [
+                  "=",
+                  "!=",
+                  ">",
+                  "<",
+                  "startsWith"
+                ]
+              },
+              "right": {
+                "type": "string",
+                "pattern": "^([a-z][a-z0-9_]*\\.)?[a-z][a-z0-9_]*$"
+              }
+            },
+            "required": [
+              "left",
+              "op",
+              "right"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "where": {
+          "$ref": "#/$defs/RuleGroup"
+        },
+        "explode": {
+          "type": "string",
+          "enum": [
+            "protein_ids",
+            "gene_names"
+          ]
+        },
+        "advanced": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "type",
+        "target",
+        "alias",
+        "on"
+      ],
+      "additionalProperties": false
+    },
+    "SourceRef": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "releaseIds": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+              }
+            }
+          },
+          "required": [
+            "releaseIds"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "kind": {
+              "$ref": "#/$defs/DatasetKind"
+            },
+            "scope": {
+              "type": "object",
+              "properties": {
+                "programIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                  }
+                },
+                "experimentVersionIds": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-7[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12})$"
+                  }
+                },
+                "latestPublishedOnly": {
+                  "type": "boolean"
+                }
+              },
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "kind",
+            "scope"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "DatasetKind": {
+      "type": "string",
+      "enum": [
+        "protein_quant",
+        "precursor_quant",
+        "differential_abundance",
+        "dose_response",
+        "qc_metrics",
+        "rnaseq_counts",
+        "crispr_gene_summary",
+        "compound",
+        "compound_property",
+        "target_annotation",
+        "id_mapping",
+        "experiment_version",
+        "sample",
+        "file_object",
+        "pipeline_run"
+      ]
+    },
+    "RuleGroup": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "combinator": {
+          "type": "string",
+          "enum": [
+            "and",
+            "or"
+          ]
+        },
+        "not": {
+          "type": "boolean"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Rule"
+              },
+              {
+                "$ref": "#/$defs/RuleGroup"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "combinator",
+        "rules"
+      ],
+      "additionalProperties": false
+    },
+    "Rule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string",
+          "pattern": "^([a-z][a-z0-9_]*\\.)?[a-z][a-z0-9_]*$"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "=",
+            "!=",
+            "<",
+            "<=",
+            ">",
+            ">=",
+            "contains",
+            "doesNotContain",
+            "beginsWith",
+            "endsWith",
+            "in",
+            "notIn",
+            "between",
+            "notBetween",
+            "null",
+            "notNull"
+          ]
+        },
+        "value": {}
+      },
+      "required": [
+        "field",
+        "operator"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

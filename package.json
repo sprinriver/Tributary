@@ -1,0 +1,50 @@
+{
+  "name": "tributary",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.15.0",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "check": "turbo run typecheck test && tsc -p e2e && pnpm run lint && pnpm run test:compute && pnpm run lint:compute",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "dev": "turbo run dev",
+    "test:web": "node scripts/vitest-pattern.mjs apps/web",
+    "test:api": "node scripts/vitest-pattern.mjs apps/api",
+    "eval:ai": "node scripts/vitest-pattern.mjs apps/api AI-05",
+    "test:query": "node scripts/vitest-pattern.mjs apps/query",
+    "bench:query": "node apps/query/scripts/bench.ts",
+    "build:web": "pnpm --dir apps/web run build",
+    "test:contracts": "node scripts/vitest-pattern.mjs packages/contracts",
+    "test:db": "node scripts/vitest-pattern.mjs packages/db",
+    "test:importers": "node scripts/vitest-pattern.mjs packages/importers",
+    "test:ui": "node scripts/vitest-pattern.mjs packages/ui",
+    "test:compute": "cd apps/compute && uv run --locked pytest",
+    "lint:compute": "cd apps/compute && uv run --locked ruff check . && uv run --locked ruff format --check . && uv run --locked pyright",
+    "e2e": "node scripts/e2e-pattern.mjs",
+    "db:migrate": "node packages/db/scripts/migrate.ts",
+    "db:seed": "node packages/db/scripts/seed.ts",
+    "gen": "node packages/contracts/scripts/gen.ts && node packages/db/scripts/gen-types.ts && pnpm run gen:python",
+    "synth": "cd apps/compute && uv run --locked python -m tributary_compute.synth",
+    "compute:sync": "cd apps/compute && uv sync",
+    "bootstrap": "pnpm install --frozen-lockfile && cd apps/compute && uv sync --frozen",
+    "licence:scan": "node scripts/licence-scan.mjs",
+    "e2e:install-browsers": "playwright install --with-deps chromium",
+    "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.64.1",
+    "@types/node": "24.19.2",
+    "eslint": "10.13.0",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
+    "turbo": "2.11.10",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.0"
+  }
+}

@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/Fit4plResult",
+  "$defs": {
+    "Fit4plResult": {
+      "type": "object",
+      "properties": {
+        "top": {
+          "type": "number"
+        },
+        "bottom": {
+          "type": "number"
+        },
+        "ec50_molar": {
+          "type": "number"
+        },
+        "pec50": {
+          "type": "number"
+        },
+        "hill_slope": {
+          "type": "number"
+        },
+        "r2": {
+          "type": "number"
+        },
+        "ec50_in_range": {
+          "type": "boolean"
+        },
+        "compute_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "top",
+        "bottom",
+        "ec50_molar",
+        "pec50",
+        "hill_slope",
+        "r2",
+        "ec50_in_range",
+        "compute_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/GroupMappings",
+  "$defs": {
+    "GroupMappings": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GroupMapping"
+          }
+        },
+        "from_config": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/GroupMapping"
+          }
+        }
+      },
+      "required": [
+        "items",
+        "from_config"
+      ],
+      "additionalProperties": false
+    },
+    "GroupMapping": {
+      "type": "object",
+      "properties": {
+        "group": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "role": {
+          "type": "string",
+          "enum": [
+            "viewer",
+            "contributor",
+            "approver",
+            "admin",
+            "system_admin"
+          ]
+        },
+        "programs": {
+          "maxItems": 100,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50
+          }
+        }
+      },
+      "required": [
+        "group",
+        "role",
+        "programs"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

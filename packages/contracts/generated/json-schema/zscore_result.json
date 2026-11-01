@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ZScoreResult",
+  "$defs": {
+    "ZScoreResult": {
+      "type": "object",
+      "properties": {
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          }
+        },
+        "compute_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "values",
+        "compute_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

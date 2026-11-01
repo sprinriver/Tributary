@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/FileFormat",
+  "$defs": {
+    "FileFormat": {
+      "type": "string",
+      "enum": [
+        "fastq",
+        "vcf",
+        "bam",
+        "csv",
+        "tsv",
+        "parquet",
+        "zip",
+        "mzml",
+        "thermo_raw",
+        "bruker_tdf",
+        "bruker_tdf_bin",
+        "bruker_baf",
+        "sciex_wiff",
+        "sciex_wiff_scan",
+        "text",
+        "binary"
+      ]
+    }
+  }
+}

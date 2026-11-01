@@ -1,0 +1,35 @@
+uniprot_accession	gene_symbol	family	key	value
+P04637	TP53	transcription factor	subcellular_location	nucleus
+P00533	EGFR	receptor	subcellular_location	cell membrane
+P31749	AKT1	signalling	subcellular_location	cytoplasm
+P01116	KRAS	signalling	subcellular_location	cell membrane
+P15056	BRAF	signalling	subcellular_location	cytoplasm
+P60484	PTEN	enzyme	subcellular_location	cytoplasm
+P06493	CDK1	cell cycle	subcellular_location	nucleus
+P24941	CDK2	cell cycle	subcellular_location	nucleus
+P11802	CDK4	cell cycle	subcellular_location	nucleus
+Q00534	CDK6	cell cycle	subcellular_location	nucleus
+P04626	ERBB2	receptor	subcellular_location	cell membrane
+P00519	ABL1	signalling	subcellular_location	cytoplasm
+P12931	SRC	signalling	subcellular_location	cell membrane
+P28482	MAPK1	signalling	subcellular_location	cytoplasm
+P27361	MAPK3	signalling	subcellular_location	cytoplasm
+Q02750	MAP2K1	signalling	subcellular_location	cytoplasm
+P07900	HSP90AA1	chaperone	subcellular_location	cytoplasm
+P08238	HSP90AB1	chaperone	subcellular_location	cytoplasm
+P60709	ACTB	cytoskeleton	subcellular_location	cytoplasm
+P04406	GAPDH	metabolic enzyme	subcellular_location	cytoplasm
+P14618	PKM	metabolic enzyme	subcellular_location	cytoplasm
+P06733	ENO1	metabolic enzyme	subcellular_location	cytoplasm
+P01106	MYC	transcription factor	subcellular_location	nucleus
+P42345	MTOR	signalling	subcellular_location	cytoplasm
+O60674	JAK2	signalling	subcellular_location	cytoplasm
+P40763	STAT3	transcription factor	subcellular_location	nucleus
+P10415	BCL2	apoptosis regulator	subcellular_location	mitochondrion
+Q07820	MCL1	apoptosis regulator	subcellular_location	mitochondrion
+O60885	BRD4	epigenetic regulator	subcellular_location	nucleus
+P09874	PARP1	DNA repair	subcellular_location	nucleus
+Q15910	EZH2	epigenetic regulator	subcellular_location	nucleus
+Q13547	HDAC1	epigenetic regulator	subcellular_location	nucleus
+P08670	VIM	cytoskeleton	subcellular_location	cytoplasm
+P07437	TUBB	cytoskeleton	subcellular_location	cytoplasm

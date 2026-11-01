@@ -1,0 +1,33 @@
+# dependencies and builds
+node_modules/
+dist/
+build/
+.turbo/
+coverage/
+playwright-report/
+test-results/
+
+# secrets and personal settings
+.env*
+!.env.example
+CLAUDE.local.md
+.claude/settings.local.json
+.claude/worktrees/
+
+# python
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# data engines and infra state
+*.duckdb
+*.duckdb.wal
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+.DS_Store
+.runs/

@@ -1,0 +1,226 @@
+{
+  "version": 1,
+  "scoring": "The experiment keys (name before ':') of the top k results of the last search_experiments call, k = number of expected experiments, must equal expected_experiments; for an empty expectation the search must return nothing and the answer must say so.",
+  "questions": [
+    {
+      "id": "G01",
+      "question": "Find experiments with HEK293",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-DIA-04", "IMM-TMT-08"]
+    },
+    {
+      "id": "G02",
+      "question": "Which experiments use HeLa cells?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-DIA-01", "ONC-RNA-09"]
+    },
+    {
+      "id": "G03",
+      "question": "Find experiments with A-549",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-CRI-11", "ONC-DIA-02", "ONC-TMT-07"]
+    },
+    {
+      "id": "G04",
+      "question": "Which experiments use K-562?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-CRI-12", "IMM-DIA-03", "IMM-DIA-06", "IMM-RNA-10"]
+    },
+    {
+      "id": "G05",
+      "question": "Find experiments with MCF-7",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-DIA-05"]
+    },
+    {
+      "id": "G06",
+      "question": "Find experiments with A549",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-CRI-11", "ONC-DIA-02", "ONC-TMT-07"],
+      "note": "synonym / de-hyphenated form"
+    },
+    {
+      "id": "G07",
+      "question": "Find experiments with K562",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-CRI-12", "IMM-DIA-03", "IMM-DIA-06", "IMM-RNA-10"],
+      "note": "synonym"
+    },
+    {
+      "id": "G08",
+      "question": "Find experiments with MCF7",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-DIA-05"],
+      "note": "synonym"
+    },
+    {
+      "id": "G09",
+      "question": "Which experiments are CRISPR screens?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-CRI-12", "ONC-CRI-11"]
+    },
+    {
+      "id": "G10",
+      "question": "Find RNA-seq experiments",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-RNA-10", "ONC-RNA-09"]
+    },
+    {
+      "id": "G11",
+      "question": "Find TMT experiments",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-TMT-08", "ONC-TMT-07"]
+    },
+    {
+      "id": "G12",
+      "question": "Which experiments used compound CPD-000001?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-DIA-01", "ONC-RNA-09"]
+    },
+    {
+      "id": "G13",
+      "question": "Which experiments used compound CPD-000003?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-DIA-03", "IMM-RNA-10"]
+    },
+    {
+      "id": "G14",
+      "question": "Which experiments used compound CPD-000005?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-DIA-05"]
+    },
+    {
+      "id": "G15",
+      "question": "Which experiments used compound CPD-000008?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-TMT-08"]
+    },
+    {
+      "id": "G16",
+      "question": "Find experiments with human embryonic kidney cells",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-DIA-04", "IMM-TMT-08"],
+      "note": "ontology synonym of HEK293"
+    },
+    {
+      "id": "G17",
+      "question": "Find experiments with HEK293",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": [],
+      "note": "IMM only: an ONC viewer must get nothing"
+    },
+    {
+      "id": "G18",
+      "question": "Which experiments use K-562?",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": [],
+      "note": "IMM only"
+    },
+    {
+      "id": "G19",
+      "question": "Which experiments used compound CPD-000008?",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": [],
+      "note": "IMM only"
+    },
+    {
+      "id": "G20",
+      "question": "Find experiments with HeLa",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-DIA-01", "ONC-RNA-09"]
+    },
+    {
+      "id": "G21",
+      "question": "Which experiments are CRISPR screens?",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-CRI-11"],
+      "note": "IMM screen hidden"
+    },
+    {
+      "id": "G22",
+      "question": "Find TMT experiments",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-TMT-07"],
+      "note": "IMM TMT hidden"
+    },
+    {
+      "id": "G23",
+      "question": "Find RNA-seq experiments",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-RNA-09"]
+    },
+    {
+      "id": "G24",
+      "question": "Find experiments with A-549",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-CRI-11", "ONC-DIA-02", "ONC-TMT-07"]
+    },
+    {
+      "id": "G25",
+      "question": "Which experiments used compound CPD-000002?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-DIA-02"]
+    },
+    {
+      "id": "G26",
+      "question": "Which experiments used compound CPD-000004?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-DIA-04"]
+    },
+    {
+      "id": "G27",
+      "question": "Which experiments used compound CPD-000006?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["IMM-DIA-06"]
+    },
+    {
+      "id": "G28",
+      "question": "Which experiments used compound CPD-000007?",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-TMT-07"]
+    },
+    {
+      "id": "G29",
+      "question": "Find experiments with zebrafish retina",
+      "user": "both",
+      "tool": "search_experiments",
+      "expected_experiments": [],
+      "note": "nothing matches: the answer must say so, not invent"
+    },
+    {
+      "id": "G30",
+      "question": "Find experiments with MCF-7",
+      "user": "onc_viewer",
+      "tool": "search_experiments",
+      "expected_experiments": ["ONC-DIA-05"]
+    }
+  ]
+}

@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/RuleGroup",
+  "$defs": {
+    "RuleGroup": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "combinator": {
+          "type": "string",
+          "enum": [
+            "and",
+            "or"
+          ]
+        },
+        "not": {
+          "type": "boolean"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "anyOf": [
+              {
+                "$ref": "#/$defs/Rule"
+              },
+              {
+                "$ref": "#/$defs/RuleGroup"
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "combinator",
+        "rules"
+      ],
+      "additionalProperties": false
+    },
+    "Rule": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "field": {
+          "type": "string",
+          "pattern": "^([a-z][a-z0-9_]*\\.)?[a-z][a-z0-9_]*$"
+        },
+        "operator": {
+          "type": "string",
+          "enum": [
+            "=",
+            "!=",
+            "<",
+            "<=",
+            ">",
+            ">=",
+            "contains",
+            "doesNotContain",
+            "beginsWith",
+            "endsWith",
+            "in",
+            "notIn",
+            "between",
+            "notBetween",
+            "null",
+            "notNull"
+          ]
+        },
+        "value": {}
+      },
+      "required": [
+        "field",
+        "operator"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

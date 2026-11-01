@@ -1,0 +1,145 @@
+import { CHART_REGISTRY, type ChartType } from '@tributary/contracts';
+import { z } from 'zod';
+
+/** One form control derived from a registry option schema (the registry is the only source of truth). */
+export type Control =
+  | { kind: 'number'; name: string; min?: number; max?: number; integer: boolean; optional: boolean }
+  | { kind: 'boolean'; name: string }
+  | { kind: 'enum'; name: string; values: string[] }
+  | { kind: 'multi'; name: string; values: string[] };
+
+export const OPTION_LABELS: Record<string, string> = {
+  fc_threshold: 'Fold-change threshold',
+  p_threshold: 'p threshold',
+  y_transform: 'Y transform',
+  label_top: 'Label top hits',
+  pseudolog_x: 'Pseudolog X',
+  pseudolog_y: 'Pseudolog Y',
+  pseudolog_base: 'Pseudolog base',
+  standardize_x: 'Standardise X (z-score)',
+  webgl: 'WebGL (large tables)',
+  scale: 'Standardise',
+  standardize: 'Standardise',
+  min: 'Colour minimum',
+  max: 'Colour maximum',
+  centered: 'Centred colour scale',
+  cluster_rows: 'Cluster rows',
+  cluster_columns: 'Cluster columns',
+  dendrograms: 'Dendrograms',
+  method: 'Clustering method',
+  metric: 'Distance metric',
+  leaf_ordering: 'Leaf ordering',
+  axis: 'Cluster',
+  orientation: 'Root position',
+  interpolation: 'Links',
+  color_scheme: 'Colours',
+  color_threshold: 'Colour threshold',
+  bootstrap_n: 'Bootstrap iterations',
+  seed: 'Random seed',
+  attach_heatmap: 'Attach heatmap',
+  point_label: 'Point labels',
+  smoothing: 'Smoothing',
+  window: 'Window',
+  aggregate: 'Aggregate',
+  error_bars: 'Error bars',
+  p_values: 'p-values',
+  kind: 'Kind',
+  points: 'Points',
+  bins: 'Bins',
+  stats: 'Mean and median lines',
+  sort: 'Sort',
+  size_min: 'Smallest bubble',
+  size_max: 'Largest bubble',
+  hole: 'Donut hole',
+  textinfo: 'Text',
+  textposition: 'Text position',
+  direction: 'Direction',
+  rotation: 'Start angle',
+  pull: 'Explode slices',
+  pseudolog_values: 'Pseudolog values',
+  pseudolog_z: 'Pseudolog Z',
+  components: 'Components',
+  pc_x: 'PC on X',
+  pc_y: 'PC on Y',
+  log2: 'log2 intensities',
+  show_ids: 'IDs per run',
+  show_completeness: 'Missing values',
+  show_cv: 'CVs',
+  show_intensity: 'Intensity distributions',
+  regulation: 'Regulation',
+  fdr_max: 'FDR at most',
+  max_curves: 'Curves',
+  show_fit: 'Fitted curves',
+  log_dose: 'Log dose axis',
+};
+
+/** Same option name, different meaning per chart. */
+const OPTION_LABELS_BY_TYPE: Partial<Record<ChartType, Record<string, string>>> = {
+  dendrogram: { orientation: 'Root position' },
+  pca: { scale: 'Unit variance (scale)' },
+};
+export const optionLabel = (type: ChartType, name: string) =>
+  OPTION_LABELS_BY_TYPE[type]?.[name] ?? OPTION_LABELS[name] ?? name;
+
+export const SLOT_LABELS: Record<string, string> = {
+  x: 'X',
+  y: 'Y',
+  label: 'Label',
+  color: 'Colour',
+  opacity: 'Opacity',
+  hover: 'Hover',
+  values: 'Values',
+  rowLabel: 'Row label',
+  z: 'Z',
+  size: 'Size',
+  shape: 'Shape',
+  panel: 'Panels',
+  categories: 'Categories',
+};
+const SLOT_LABELS_BY_TYPE: Partial<Record<ChartType, Record<string, string>>> = {
+  heatmap: { x: 'Column category' },
+  dendrogram: { x: 'Column category' },
+  pca: { x: 'Feature (long data)', color: 'Colour (per observation)' },
+  qc_panel: { x: 'Run', color: 'Group (for CVs)' },
+  ma: { z: 'Adjusted p' },
+};
+export const slotLabel = (type: ChartType, slot: string) =>
+  SLOT_LABELS_BY_TYPE[type]?.[slot] ?? SLOT_LABELS[slot] ?? slot;
+
+function unwrap(schema: z.ZodType): { base: z.ZodType; optional: boolean } {
+  let s = schema;
+  let optional = false;
+  for (;;) {
+    if (s instanceof z.ZodDefault) s = s.unwrap() as z.ZodType;
+    else if (s instanceof z.ZodOptional) {
+      optional = true;
+      s = s.unwrap() as z.ZodType;
+    } else return { base: s, optional };
+  }
+}
+
+export function controlsOf(type: ChartType): Control[] {
+  const options = CHART_REGISTRY[type]?.options;
+  if (!(options instanceof z.ZodObject)) return [];
+  return Object.entries(options.shape as Record<string, z.ZodType>).flatMap(([name, schema]): Control[] => {
+    const { base, optional } = unwrap(schema);
+    if (base instanceof z.ZodNumber) {
+      return [
+        {
+          kind: 'number',
+          name,
+          integer: base.format === 'safeint' || base.isInt,
+          optional,
+          ...(Number.isFinite(base.minValue) ? { min: base.minValue! } : {}),
+          ...(Number.isFinite(base.maxValue) ? { max: base.maxValue! } : {}),
+        },
+      ];
+    }
+    if (base instanceof z.ZodBoolean) return [{ kind: 'boolean', name }];
+    if (base instanceof z.ZodEnum) return [{ kind: 'enum', name, values: base.options as string[] }];
+    // Arrays of choices (e.g. regulation classes) render as checkbox groups; free-form lists are set by pages.
+    if (base instanceof z.ZodArray && base.element instanceof z.ZodEnum)
+      return [{ kind: 'multi', name, values: base.element.options as string[] }];
+    return [];
+  });
+}

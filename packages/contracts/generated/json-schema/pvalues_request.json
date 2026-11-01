@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/PValuesRequest",
+  "$defs": {
+    "PValuesRequest": {
+      "type": "object",
+      "properties": {
+        "p_values": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "BH",
+            "BY"
+          ]
+        }
+      },
+      "required": [
+        "p_values",
+        "method"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

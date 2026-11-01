@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/SampleValidation",
+  "$defs": {
+    "SampleValidation": {
+      "type": "object",
+      "properties": {
+        "saved": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ContractError"
+          }
+        }
+      },
+      "required": [
+        "saved",
+        "errors"
+      ],
+      "additionalProperties": false
+    },
+    "ContractError": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "minLength": 1
+        },
+        "field": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

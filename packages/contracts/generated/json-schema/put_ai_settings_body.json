@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/PutAiSettingsBody",
+  "$defs": {
+    "PutAiSettingsBody": {
+      "type": "object",
+      "properties": {
+        "assistant_enabled": {
+          "type": "boolean"
+        },
+        "write_tools_enabled": {
+          "type": "boolean"
+        },
+        "monthly_token_budget": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 10000000000
+        }
+      },
+      "required": [
+        "assistant_enabled",
+        "write_tools_enabled",
+        "monthly_token_budget"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

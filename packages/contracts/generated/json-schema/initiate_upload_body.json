@@ -1,0 +1,71 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/InitiateUploadBody",
+  "$defs": {
+    "InitiateUploadBody": {
+      "type": "object",
+      "properties": {
+        "experiment_version_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[^/\\\\\\0]+$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 5497558138880
+        },
+        "role": {
+          "default": "raw",
+          "$ref": "#/$defs/FileRole"
+        },
+        "declared_format": {
+          "$ref": "#/$defs/FileFormat"
+        }
+      },
+      "required": [
+        "experiment_version_id",
+        "name",
+        "size_bytes",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "FileRole": {
+      "type": "string",
+      "enum": [
+        "raw",
+        "processed",
+        "metadata",
+        "other"
+      ]
+    },
+    "FileFormat": {
+      "type": "string",
+      "enum": [
+        "fastq",
+        "vcf",
+        "bam",
+        "csv",
+        "tsv",
+        "parquet",
+        "zip",
+        "mzml",
+        "thermo_raw",
+        "bruker_tdf",
+        "bruker_tdf_bin",
+        "bruker_baf",
+        "sciex_wiff",
+        "sciex_wiff_scan",
+        "text",
+        "binary"
+      ]
+    }
+  }
+}

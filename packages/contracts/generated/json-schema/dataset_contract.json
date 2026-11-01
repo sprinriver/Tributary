@@ -1,0 +1,254 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/DatasetContract",
+  "$defs": {
+    "DatasetContract": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/DatasetKind"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "experiment",
+            "reference",
+            "metadata"
+          ]
+        },
+        "description": {
+          "type": "string"
+        },
+        "columns": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "pattern": "^[a-z][a-z0-9_]*$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "text",
+                  "uuid",
+                  "double",
+                  "integer",
+                  "boolean",
+                  "date",
+                  "timestamp",
+                  "text[]",
+                  "double[]",
+                  "json"
+                ]
+              },
+              "nullable": {
+                "type": "boolean"
+              },
+              "description": {
+                "type": "string"
+              },
+              "unit": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "name",
+              "type",
+              "nullable"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "joinKeys": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "qualityRules": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "columns": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "error",
+                      "warn"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "range"
+                  },
+                  "min": {
+                    "type": "number"
+                  },
+                  "minInclusive": {
+                    "type": "boolean"
+                  },
+                  "max": {
+                    "type": "number"
+                  },
+                  "maxInclusive": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "columns",
+                  "severity",
+                  "source",
+                  "kind",
+                  "minInclusive",
+                  "maxInclusive"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "columns": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "error",
+                      "warn"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "enum"
+                  },
+                  "values": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "id",
+                  "columns",
+                  "severity",
+                  "source",
+                  "kind",
+                  "values"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[a-z][a-z0-9_]*$"
+                  },
+                  "columns": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "severity": {
+                    "type": "string",
+                    "enum": [
+                      "error",
+                      "warn"
+                    ]
+                  },
+                  "source": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "kind": {
+                    "type": "string",
+                    "const": "unique"
+                  }
+                },
+                "required": [
+                  "id",
+                  "columns",
+                  "severity",
+                  "source",
+                  "kind"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "kind",
+        "version",
+        "category",
+        "description",
+        "columns",
+        "joinKeys",
+        "qualityRules"
+      ],
+      "additionalProperties": false
+    },
+    "DatasetKind": {
+      "type": "string",
+      "enum": [
+        "protein_quant",
+        "precursor_quant",
+        "differential_abundance",
+        "dose_response",
+        "qc_metrics",
+        "rnaseq_counts",
+        "crispr_gene_summary",
+        "compound",
+        "compound_property",
+        "target_annotation",
+        "id_mapping",
+        "experiment_version",
+        "sample",
+        "file_object",
+        "pipeline_run"
+      ]
+    }
+  }
+}

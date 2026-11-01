@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/SearchReindexResponse",
+  "$defs": {
+    "SearchReindexResponse": {
+      "type": "object",
+      "properties": {
+        "documents": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "embedded": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "provider": {
+          "type": "string",
+          "enum": [
+            "none",
+            "bedrock_titan_v2",
+            "voyage_4",
+            "local"
+          ]
+        }
+      },
+      "required": [
+        "documents",
+        "embedded",
+        "provider"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

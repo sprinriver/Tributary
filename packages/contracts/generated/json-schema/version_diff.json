@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/VersionDiff",
+  "$defs": {
+    "VersionDiff": {
+      "type": "object",
+      "properties": {
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "before": {},
+              "after": {}
+            },
+            "required": [
+              "field",
+              "before",
+              "after"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "custom": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "field": {
+                "type": "string"
+              },
+              "before": {},
+              "after": {}
+            },
+            "required": [
+              "field",
+              "before",
+              "after"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "custom_fields": {
+          "type": "object",
+          "properties": {
+            "added": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "added",
+            "removed"
+          ],
+          "additionalProperties": false
+        },
+        "samples": {
+          "type": "object",
+          "properties": {
+            "added": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "changed": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "sample_key": {
+                    "type": "string"
+                  },
+                  "fields": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "field": {
+                          "type": "string"
+                        },
+                        "before": {},
+                        "after": {}
+                      },
+                      "required": [
+                        "field",
+                        "before",
+                        "after"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "sample_key",
+                  "fields"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "added",
+            "removed",
+            "changed"
+          ],
+          "additionalProperties": false
+        },
+        "contrasts": {
+          "type": "object",
+          "properties": {
+            "added": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "removed": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "added",
+            "removed"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "fields",
+        "custom",
+        "custom_fields",
+        "samples",
+        "contrasts"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

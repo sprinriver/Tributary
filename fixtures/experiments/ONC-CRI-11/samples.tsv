@@ -1,0 +1,5 @@
+sample_key	source_name	organism	cell_line	compound_id	vehicle	dose	time	condition	replicate_group	biological_replicate	plate	well	label_channel	raw_file	instrument_run
+ONC-CRI-11-S01	A-549 culture 1	Homo sapiens	A-549	vehicle	DMSO	not applicable	14 d	T0	T0	1	not applicable	not applicable	not applicable	ONC-CRI-11-S01_R1.fastq.gz	ONC-CRI-11_lib01
+ONC-CRI-11-S02	A-549 culture 2	Homo sapiens	A-549	vehicle	DMSO	not applicable	14 d	T0	T0	2	not applicable	not applicable	not applicable	ONC-CRI-11-S02_R1.fastq.gz	ONC-CRI-11_lib02
+ONC-CRI-11-S03	A-549 culture 3	Homo sapiens	A-549	vehicle	DMSO	not applicable	14 d	T14	T14	1	not applicable	not applicable	not applicable	ONC-CRI-11-S03_R1.fastq.gz	ONC-CRI-11_lib03
+ONC-CRI-11-S04	A-549 culture 4	Homo sapiens	A-549	vehicle	DMSO	not applicable	14 d	T14	T14	2	not applicable	not applicable	not applicable	ONC-CRI-11-S04_R1.fastq.gz	ONC-CRI-11_lib04

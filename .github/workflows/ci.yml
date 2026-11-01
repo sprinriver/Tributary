@@ -1,0 +1,83 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable pnpm
+      - uses: astral-sh/setup-uv@v10.3.2
+      - run: pnpm run bootstrap
+      - run: pnpm check
+      - name: Generated contracts are up to date
+        run: pnpm gen && git diff --exit-code
+      - run: pnpm run licence:scan
+
+  e2e:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: corepack enable pnpm
+      - uses: astral-sh/setup-uv@v10.3.2
+      - run: pnpm run bootstrap
+      - name: Start local stack
+        run: docker compose up -d --wait --wait-timeout 300
+      - run: pnpm db:migrate
+      - run: pnpm db:seed
+      - run: pnpm run e2e:install-browsers
+      - run: pnpm e2e
+      - if: always()
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: e2e-artifacts
+          path: |
+            artifacts/
+            playwright-report/
+          if-no-files-found: ignore
+      # The page snapshot of each failed test, readable in the job log without downloading artifacts.
+      - if: failure()
+        run: find test-results -name error-context.md -exec sh -c 'echo "=== $1"; cat "$1"' _ {} \;
+      - if: failure()
+        run: docker compose logs --no-color
+
+  # Needs Dependency graph + GitHub Advanced Security on the repo (Settings → Code security). Once enabled,
+  # set the repository variable DEPENDENCY_REVIEW=true. Until then licences are enforced by `licence:scan`.
+  dependency-review:
+    if: github.event_name == 'pull_request' && vars.DEPENDENCY_REVIEW == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/dependency-review-action@v5.0.0
+        with:
+          fail-on-severity: high
+          deny-licenses: GPL-2.0-only, GPL-2.0-or-later, GPL-3.0-only, GPL-3.0-or-later, AGPL-3.0-only, AGPL-3.0-or-later, BUSL-1.1, SSPL-1.0
+
+  sbom:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: anchore/sbom-action@v0.24.3
+        with:
+          format: spdx-json
+          artifact-name: tributary-sbom.spdx.json

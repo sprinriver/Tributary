@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ProteinPage",
+  "$defs": {
+    "ProteinPage": {
+      "type": "object",
+      "properties": {
+        "accession": {
+          "type": "string"
+        },
+        "gene_symbol": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "annotations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "value": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "family": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "key",
+              "value",
+              "family"
+            ],
+            "additionalProperties": false
+          }
+        }
+      },
+      "required": [
+        "accession",
+        "gene_symbol",
+        "annotations"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

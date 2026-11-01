@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ReleaseReadRequest",
+  "$defs": {
+    "ReleaseReadRequest": {
+      "type": "object",
+      "properties": {
+        "storage": {
+          "$ref": "#/$defs/ReleaseStorage"
+        },
+        "limit": {
+          "default": 50,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "order_by": {
+          "maxItems": 10,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]*$"
+          }
+        }
+      },
+      "required": [
+        "storage",
+        "limit"
+      ],
+      "additionalProperties": false
+    },
+    "ReleaseStorage": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "const": "parquet"
+        },
+        "bucket": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "format",
+        "bucket",
+        "key",
+        "sha256",
+        "size_bytes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

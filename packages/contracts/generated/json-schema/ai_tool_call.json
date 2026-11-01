@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/AiToolCall",
+  "$defs": {
+    "AiToolCall": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "tool": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "error",
+            "pending_approval",
+            "rejected"
+          ]
+        },
+        "input": {},
+        "output": {},
+        "error": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "tool",
+        "status",
+        "input",
+        "output",
+        "error"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

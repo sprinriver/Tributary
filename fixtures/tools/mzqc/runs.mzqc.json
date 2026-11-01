@@ -1,0 +1,239 @@
+{
+  "mzQC": {
+    "controlledVocabularies": [
+      {
+        "name": "Proteomics Standards Initiative Mass Spectrometry Ontology",
+        "uri": "https://github.com/HUPO-PSI/psi-ms-CV/releases/download/v4.1.130/psi-ms.obo",
+        "version": "4.1.130"
+      }
+    ],
+    "creationDate": "2026-03-02T00:00:00Z",
+    "runQualities": [
+      {
+        "metadata": {
+          "analysisSoftware": [
+            {
+              "accession": "MS:1000799",
+              "name": "custom unreleased software tool",
+              "version": "0"
+            }
+          ],
+          "inputFiles": [
+            {
+              "fileFormat": {
+                "accession": "MS:1000563",
+                "name": "Thermo RAW format"
+              },
+              "location": "file:///data/TOOLS_run01.raw",
+              "name": "TOOLS_run01.raw"
+            }
+          ]
+        },
+        "qualityMetrics": [
+          {
+            "accession": "MS:4000059",
+            "name": "number of MS1 spectra",
+            "value": 5266
+          },
+          {
+            "accession": "MS:4000060",
+            "name": "number of MS2 spectra",
+            "value": 56441
+          },
+          {
+            "accession": "MS:4000053",
+            "name": "chromatography duration",
+            "unit": {
+              "accession": "UO:0000031",
+              "name": "minute"
+            },
+            "value": 55.79
+          },
+          {
+            "accession": "MS:4000999",
+            "name": "synthetic table metric",
+            "value": {
+              "x": [
+                1,
+                2
+              ],
+              "y": [
+                3,
+                4
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "metadata": {
+          "analysisSoftware": [
+            {
+              "accession": "MS:1000799",
+              "name": "custom unreleased software tool",
+              "version": "0"
+            }
+          ],
+          "inputFiles": [
+            {
+              "fileFormat": {
+                "accession": "MS:1000563",
+                "name": "Thermo RAW format"
+              },
+              "location": "file:///data/TOOLS_run02.raw",
+              "name": "TOOLS_run02.raw"
+            }
+          ]
+        },
+        "qualityMetrics": [
+          {
+            "accession": "MS:4000059",
+            "name": "number of MS1 spectra",
+            "value": 5746
+          },
+          {
+            "accession": "MS:4000060",
+            "name": "number of MS2 spectra",
+            "value": 46219
+          },
+          {
+            "accession": "MS:4000053",
+            "name": "chromatography duration",
+            "unit": {
+              "accession": "UO:0000031",
+              "name": "minute"
+            },
+            "value": 63.1
+          },
+          {
+            "accession": "MS:4000999",
+            "name": "synthetic table metric",
+            "value": {
+              "x": [
+                1,
+                2
+              ],
+              "y": [
+                3,
+                4
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "metadata": {
+          "analysisSoftware": [
+            {
+              "accession": "MS:1000799",
+              "name": "custom unreleased software tool",
+              "version": "0"
+            }
+          ],
+          "inputFiles": [
+            {
+              "fileFormat": {
+                "accession": "MS:1000563",
+                "name": "Thermo RAW format"
+              },
+              "location": "file:///data/TOOLS_run03.raw",
+              "name": "TOOLS_run03.raw"
+            }
+          ]
+        },
+        "qualityMetrics": [
+          {
+            "accession": "MS:4000059",
+            "name": "number of MS1 spectra",
+            "value": 5326
+          },
+          {
+            "accession": "MS:4000060",
+            "name": "number of MS2 spectra",
+            "value": 47825
+          },
+          {
+            "accession": "MS:4000053",
+            "name": "chromatography duration",
+            "unit": {
+              "accession": "UO:0000031",
+              "name": "minute"
+            },
+            "value": 62.75
+          },
+          {
+            "accession": "MS:4000999",
+            "name": "synthetic table metric",
+            "value": {
+              "x": [
+                1,
+                2
+              ],
+              "y": [
+                3,
+                4
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "metadata": {
+          "analysisSoftware": [
+            {
+              "accession": "MS:1000799",
+              "name": "custom unreleased software tool",
+              "version": "0"
+            }
+          ],
+          "inputFiles": [
+            {
+              "fileFormat": {
+                "accession": "MS:1000563",
+                "name": "Thermo RAW format"
+              },
+              "location": "file:///data/TOOLS_run04.raw",
+              "name": "TOOLS_run04.raw"
+            }
+          ]
+        },
+        "qualityMetrics": [
+          {
+            "accession": "MS:4000059",
+            "name": "number of MS1 spectra",
+            "value": 4598
+          },
+          {
+            "accession": "MS:4000060",
+            "name": "number of MS2 spectra",
+            "value": 58461
+          },
+          {
+            "accession": "MS:4000053",
+            "name": "chromatography duration",
+            "unit": {
+              "accession": "UO:0000031",
+              "name": "minute"
+            },
+            "value": 63.08
+          },
+          {
+            "accession": "MS:4000999",
+            "name": "synthetic table metric",
+            "value": {
+              "x": [
+                1,
+                2
+              ],
+              "y": [
+                3,
+                4
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "version": "1.0.0"
+  }
+}
