@@ -964,4 +964,4 @@ Entry template:
   - AI-02: audit redaction unit test.
 - Test infrastructure: `startTestApi` takes an `aiProvider` (a scripted model, used for the refusal test).
 - Still waiting on you: approval of the model SDKs (see 19a). The real-provider eval is not run until then.
-- Commit: (pending)
+- Commit: f76df73
