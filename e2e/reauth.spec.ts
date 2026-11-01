@@ -50,7 +50,8 @@ test('AUD-02: publishing with an old sign-in asks to confirm identity at the IdP
   await page.waitForURL(/\/realms\//);
   expect(page.url()).toContain('prompt=login');
   expect(page.url()).toContain('max_age=0');
-  await page.getByLabel(/username/i).fill('scientist');
+  // Keycloak keeps the user and only asks for the password again.
+  await expect(page.getByText('Please re-authenticate to continue')).toBeVisible();
   await page.getByLabel('Password', { exact: true }).fill('scientist');
   await page.getByRole('button', { name: /sign in/i }).click();
   await page.waitForURL(new RegExp(`/experiments/${created.body.id}`));
