@@ -755,3 +755,25 @@ Entry template:
   sources, roles and group mapping, runner configuration, lifecycle, AI placeholder, health). AUD-02 stays
   open until re-auth is done.
 - Commit: 4f3e8da
+
+## 2026-11-01 — README and Celeste design alignment (owner request, between Phases 18a and 18b)
+- README: a product README for GitHub (what it does, architecture, prerequisites, install, run, test,
+  configuration, layout, common tasks, deployment, security, troubleshooting). The build-kit README moved to
+  `docs/BUILD_KIT.md`.
+- UI (ADR 0014): the web app adopts the Celeste design system from the owner's MFGAIStudio repository.
+  - Tokens with light and dark themes, a dark grouped sidebar (collapsible, drawer on mobile, ⌘K trigger, user
+    card), a top bar (page title, theme toggle, runs, account), cards, tables, tabs, pill badges, dialogs and a
+    line-icon set.
+  - The home page is now a dashboard: welcome, health, area cards and your recent runs.
+  - Hard-coded colours were swept to tokens.
+- Accessibility and speed fixes found while checking:
+  - REG-07 (axe) failed on colour contrast with Celeste's exact muted and badge colours, so they were darkened
+    to pass WCAG AA.
+  - A dialog backdrop blur slowed the e2e suite from 4.4 to 6.1 min and made MAN-03 time out; it was removed.
+    Base and final runs were compared.
+- Evidence: `pnpm check` ✓ · full `pnpm e2e` ✓ (38 passed, 4.2 min) · screenshots in `artifacts/ui-refresh/`
+  (home, experiments, experiment, datasets, explore, search, dark, mobile, drawer).
+- Test changes: none.
+- Gaps:
+  - Plotly charts and AG Grid stay light in dark mode.
+  - Earlier phases' screenshots show the old look; they are kept as phase records.

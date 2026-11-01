@@ -11,7 +11,7 @@ export function UserMenu({ me }: { me: MeResponse }) {
       </button>
       {open && (
         <div role="menu" style={POPOVER_STYLE}>
-          <p style={{ margin: '0 0 8px', color: '#57606a' }}>{me.user.email}</p>
+          <p style={{ margin: '0 0 8px', color: 'var(--muted)' }}>{me.user.email}</p>
           <button type="button" role="menuitem" onClick={() => void signOut(me)}>
             Sign out
           </button>

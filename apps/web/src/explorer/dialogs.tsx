@@ -121,7 +121,13 @@ export function CopyCodeDialog({ spec, onClose }: { spec: QuerySpec; onClose: ()
         <div role="tabpanel" id={`panel-${lang}`} aria-labelledby={`tab-${lang}`}>
           <pre
             role="code"
-            style={{ maxHeight: 420, overflow: 'auto', background: '#f6f8fa', padding: 12, margin: 0 }}
+            style={{
+              maxHeight: 420,
+              overflow: 'auto',
+              background: 'var(--surface-2)',
+              padding: 12,
+              margin: 0,
+            }}
           >
             {code}
           </pre>

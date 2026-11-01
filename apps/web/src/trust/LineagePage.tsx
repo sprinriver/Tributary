@@ -18,7 +18,7 @@ export const KIND_LABEL: Record<LineageKind, string> = {
   chart: 'Saved chart',
 };
 const KIND_COLOUR: Record<LineageKind, string> = {
-  file: '#57606a',
+  file: 'var(--muted)',
   pipeline_run: '#8250df',
   experiment_version: '#0969da',
   dataset_release: '#1a7f37',
@@ -92,7 +92,7 @@ function Lineage() {
   return (
     <main className="stack">
       <h1>Lineage{root ? ` — ${root.label}` : ''}</h1>
-      <p style={{ margin: 0, color: '#57606a' }}>
+      <p style={{ margin: 0, color: 'var(--muted)' }}>
         Upstream (inputs) on the left, downstream (what was made from it) on the right. Select a node to
         centre on it.
       </p>
@@ -164,7 +164,7 @@ function Graph({ graph, onSelect }: { graph: LineageGraph; onSelect: (n: Lineage
             markerHeight="7"
             orient="auto"
           >
-            <path d="M0,0 L10,5 L0,10 z" fill="#8c959f" />
+            <path d="M0,0 L10,5 L0,10 z" fill="var(--faint)" />
           </marker>
         </defs>
         {graph.edges.map((e) => {
@@ -181,7 +181,7 @@ function Graph({ graph, onSelect }: { graph: LineageGraph; onSelect: (n: Lineage
               key={`${e.from}-${e.to}-${e.relation}`}
               d={`M${x1 + 2},${y1 + 2} C${mid},${y1 + 2} ${mid},${y2 + 2} ${x2 + 2},${y2 + 2}`}
               fill="none"
-              stroke="#8c959f"
+              stroke="var(--faint)"
               strokeWidth={1.5}
               markerEnd="url(#arrow)"
             >
@@ -202,7 +202,7 @@ function Graph({ graph, onSelect }: { graph: LineageGraph; onSelect: (n: Lineage
                 width={W}
                 height={H}
                 rx={6}
-                fill={n.depth === 0 ? '#ddf4ff' : '#fff'}
+                fill={n.depth === 0 ? 'var(--brand-50)' : 'var(--surface)'}
                 stroke={KIND_COLOUR[n.kind]}
                 strokeWidth={n.depth === 0 ? 2.5 : 1.5}
               />
@@ -210,10 +210,10 @@ function Graph({ graph, onSelect }: { graph: LineageGraph; onSelect: (n: Lineage
                 {KIND_LABEL[n.kind]}
                 {n.status ? ` · ${n.status}` : ''}
               </text>
-              <text x={10} y={34} fontSize={13} fill="#1f2328">
+              <text x={10} y={34} fontSize={13} fill="var(--text)">
                 {truncate(n.label, 30)}
               </text>
-              <text x={10} y={50} fontSize={11} fill="#57606a">
+              <text x={10} y={50} fontSize={11} fill="var(--muted)">
                 {truncate(n.detail, 34)}
               </text>
               <title>{`${KIND_LABEL[n.kind]}: ${n.label} — ${n.detail}`}</title>

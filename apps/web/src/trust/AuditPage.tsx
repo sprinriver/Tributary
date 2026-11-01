@@ -62,7 +62,7 @@ function Audit() {
   return (
     <main className="stack">
       <h1>Audit log</h1>
-      <p style={{ margin: 0, color: '#57606a' }}>
+      <p style={{ margin: 0, color: 'var(--muted)' }}>
         Every change and export, newest first. Times are recorded by the server in UTC.
       </p>
       <form

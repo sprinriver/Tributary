@@ -155,7 +155,7 @@ function Search() {
       <SearchForm key={search.q ?? ''} q={search.q ?? ''} type={search.type} set={set} />
       <ErrorMessage error={results.error} />
       {first && first.expansions.length > 0 && (
-        <p style={{ margin: 0, color: '#57606a' }}>
+        <p style={{ margin: 0, color: 'var(--muted)' }}>
           Also searched:{' '}
           {first.expansions.map((e) => `${e.label} (for “${e.matched}”, ${e.term_id})`).join('; ')}
         </p>
@@ -186,7 +186,7 @@ function Search() {
             <p>Type a cell line, compound, assay or sample key. Press ⌘K (Ctrl+K) anywhere to search.</p>
           )}
           {first && (
-            <p style={{ margin: 0, color: '#57606a' }}>
+            <p style={{ margin: 0, color: 'var(--muted)' }}>
               {first.total}
               {first.capped ? '+' : ''} {first.total === 1 ? 'hit' : 'hits'} ·{' '}
               {first.mode === 'hybrid' ? 'full-text and semantic' : 'full-text'}
@@ -197,7 +197,7 @@ function Search() {
             {groupByExperiment(hits).map((g) => (
               <li key={g.experiment_id} className="card" style={{ padding: 12 }}>
                 <div>
-                  <small style={{ color: '#57606a', textTransform: 'uppercase', letterSpacing: 0.5 }}>
+                  <small style={{ color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: 0.5 }}>
                     experiment
                   </small>{' '}
                   <Link to="/experiments/$id" params={{ id: g.experiment_id }} style={{ fontWeight: 600 }}>
@@ -206,7 +206,7 @@ function Search() {
                 </div>
                 {g.experiment && (
                   <>
-                    <div style={{ color: '#57606a', fontSize: 13 }}>
+                    <div style={{ color: 'var(--muted)', fontSize: 13 }}>
                       {g.experiment.subtitle} · {g.experiment.status}
                     </div>
                     <div style={{ fontSize: 14 }}>
@@ -216,7 +216,7 @@ function Search() {
                 )}
                 {g.samples.length > 0 && (
                   <div style={{ fontSize: 13, marginTop: 4 }}>
-                    <span style={{ color: '#57606a' }}>
+                    <span style={{ color: 'var(--muted)' }}>
                       {g.samples.length} matching {g.samples.length === 1 ? 'sample' : 'samples'}:
                     </span>{' '}
                     {g.samples.map((h) => h.title).join(', ')}

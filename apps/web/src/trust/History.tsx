@@ -44,7 +44,7 @@ export function AuditTable({
             </td>
             {showEntity && (
               <td>
-                {r.entity_type} <small style={{ color: '#57606a' }}>{r.entity_id}</small>
+                {r.entity_type} <small style={{ color: 'var(--muted)' }}>{r.entity_id}</small>
               </td>
             )}
             <td>{r.reason ?? '—'}</td>

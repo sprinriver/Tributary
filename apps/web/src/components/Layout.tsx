@@ -1,62 +1,32 @@
-import { Link, Outlet, useRouterState } from '@tanstack/react-router';
-import { loginHref, useMe } from '../auth.ts';
-import { NotificationsMenu } from '../pipelines/NotificationsMenu.tsx';
+import { Link, Outlet } from '@tanstack/react-router';
+import { useState } from 'react';
+import { useMe } from '../auth.ts';
 import { SearchPalette } from '../search/SearchPalette.tsx';
-import { UserMenu } from './UserMenu.tsx';
+import { Sidebar } from '../shell/Sidebar.tsx';
+import { TopBar } from '../shell/TopBar.tsx';
+import { useCollapsed } from '../shell/theme.ts';
 
+/** App shell (Celeste layout, ADR 0014): dark grouped sidebar, top bar with page title and account controls. */
 export function Layout() {
   const me = useMe();
-  const path = useRouterState({ select: (s) => s.location.href });
+  const [collapsed, toggleCollapsed] = useCollapsed();
+  const [drawer, setDrawer] = useState(false);
   return (
-    <div style={{ fontFamily: 'system-ui, sans-serif' }}>
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 16,
-          padding: '8px 24px',
-          borderBottom: '1px solid #d0d7de',
-        }}
-      >
-        <Link to="/" style={{ fontWeight: 700, textDecoration: 'none', color: 'inherit' }}>
-          Tributary
-        </Link>
-        <nav aria-label="Main" style={{ display: 'flex', gap: 12, flex: 1 }}>
-          <Link to="/experiments">Experiments</Link>
-          <Link to="/datasets">Datasets</Link>
-          <Link to="/explore">Explore</Link>
-          <Link to="/compare">Compare</Link>
-          <Link to="/search">Search</Link>
-          {me.data?.roles.some((r) => r.role === 'system_admin') && (
-            <>
-              <Link to="/admin/pipelines">Pipelines</Link>
-              <Link to="/admin/audit">Audit</Link>
-            </>
-          )}
-        </nav>
-        {me.data && (
-          <button
-            type="button"
-            title="Search (⌘K / Ctrl+K)"
-            onClick={() => document.dispatchEvent(new Event('tributary:search'))}
-          >
-            Search… <kbd>⌘K</kbd>
-          </button>
-        )}
-        {me.data && <NotificationsMenu />}
-        {me.data ? (
-          <UserMenu me={me.data} />
-        ) : me.isPending ? null : me.isError ? (
-          // Not "Sign in": the user may well be signed in; the API did not answer.
-          <button type="button" onClick={() => void me.refetch()} title={me.error.message}>
-            Account unavailable — retry
-          </button>
-        ) : (
-          <a href={loginHref(path)}>Sign in</a>
-        )}
-      </header>
-      {me.data && <SearchPalette />}
-      <Outlet />
+    <div className={`app${drawer ? ' drawer-open' : ''}`}>
+      <Sidebar
+        me={me.data}
+        collapsed={collapsed}
+        onToggle={toggleCollapsed}
+        onNavigate={() => setDrawer(false)}
+      />
+      <div className="scrim" onClick={() => setDrawer(false)} aria-hidden="true" />
+      <div className="app-body">
+        <TopBar onOpenNav={() => setDrawer(true)} />
+        {me.data && <SearchPalette />}
+        <div className="app-main">
+          <Outlet />
+        </div>
+      </div>
     </div>
   );
 }

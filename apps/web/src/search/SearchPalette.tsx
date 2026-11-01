@@ -77,7 +77,7 @@ export function SearchPalette() {
         aria-modal="true"
         aria-label="Search"
         className="card stack"
-        style={{ maxWidth: 640, margin: '10vh auto 0', background: '#fff', padding: 16 }}
+        style={{ maxWidth: 640, margin: '10vh auto 0', background: 'var(--surface)', padding: 16 }}
       >
         <input
           ref={input}
@@ -132,21 +132,21 @@ export function SearchPalette() {
                 padding: '6px 8px',
                 borderRadius: 4,
                 cursor: 'pointer',
-                background: i === active ? '#ddf4ff' : undefined,
+                background: i === active ? 'var(--brand-50)' : undefined,
               }}
             >
               <strong>{hit.title}</strong>{' '}
-              <small style={{ color: '#57606a' }}>
+              <small style={{ color: 'var(--muted)' }}>
                 {hit.type === 'sample' ? `Sample in ${hit.subtitle}` : `Experiment · ${hit.subtitle}`}
               </small>
-              <div style={{ fontSize: 13, color: '#57606a' }}>
+              <div style={{ fontSize: 13, color: 'var(--muted)' }}>
                 <Snippet text={hit.snippet} />
               </div>
             </li>
           ))}
         </ul>
         {debounced && results.isSuccess && !items.length && <p style={{ margin: 0 }}>No matches.</p>}
-        <p style={{ margin: 0, fontSize: 13, color: '#57606a' }}>
+        <p style={{ margin: 0, fontSize: 13, color: 'var(--muted)' }}>
           ↑↓ to move · Enter to open · Esc to close
           {q.trim() && (
             <>

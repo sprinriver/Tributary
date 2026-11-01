@@ -119,7 +119,7 @@ function ProvenanceDialog({ provenance, onClose }: { provenance: ChartProvenance
         <dd>{new Date(provenance.rendered_at).toLocaleString()}</dd>
         <dt>Chart spec</dt>
         <dd>
-          <pre style={{ maxHeight: 240, overflow: 'auto', background: '#f6f8fa', padding: 8 }}>
+          <pre style={{ maxHeight: 240, overflow: 'auto', background: 'var(--surface-2)', padding: 8 }}>
             {JSON.stringify(provenance.chart_spec, null, 2)}
           </pre>
         </dd>
