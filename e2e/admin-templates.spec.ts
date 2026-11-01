@@ -13,7 +13,7 @@ function rows(): Record<string, string>[] {
 }
 
 /** A DDA experiment (no other test uses that assay type, so template changes stay local to this test). */
-async function ddaExperiment(page: Page, name: string) {
+async function ddaExperiment(page: Page, name: string, fillRequired = true) {
   const programs = await apiCall<{ items: { id: string; code: string }[] }>(page, 'GET', '/v1/programs');
   const created = await apiCall<{ id: string; versions: { id: string }[] }>(page, 'POST', '/v1/experiments', {
     program_id: programs.body.items.find((p) => p.code === 'ONC')!.id,
@@ -27,7 +27,7 @@ async function ddaExperiment(page: Page, name: string) {
     'GET',
     '/v1/templates?assay_type=proteomics_dda',
   );
-  const required = (templates.body.items.find((t) => t.status === 'published')?.fields ?? []).filter(
+  const required = (fillRequired ? templates.body.items : []).find((t) => t.status === 'published')?.fields ?? []).filter(
     (f) => f.scope === 'sample' && f.required,
   );
   const filled = rows().map((r) => ({
@@ -92,7 +92,7 @@ test('ADM-01: admin publishes a template version with a required field; publishe
   );
   expect(old.body).toMatchObject({ status: 'published', template_version: before.template });
   // New drafts pin the new version and must provide the field.
-  const after = await ddaExperiment(scientist, uniqueName('TPL-new'));
+  const after = await ddaExperiment(scientist, uniqueName('TPL-new'), false);
   expect(after.template).toBe(next);
   const blocked = await apiCall(scientist, 'POST', `/v1/versions/${after.version}/publish`, {
     reason: 'ready',
