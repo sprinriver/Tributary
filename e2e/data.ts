@@ -35,10 +35,16 @@ export const pqRelease = (page: Page, name: string) =>
     contrast: false,
   });
 
-interface Upload {
-  /** Path under fixtures/ (experiments/ONC-DIA-05 by default). */
+export interface Upload {
+  /** Path under fixtures/ (experiments/ONC-DIA-05 by default), or the file name when `buffer` is given. */
   file: string;
-  importer: string;
+  /** Without an importer the file is only uploaded (e.g. raw files). */
+  importer?: string;
+  /** File content instead of a fixture path. */
+  buffer?: Buffer;
+  role?: 'raw' | 'processed';
+  /** Leave the imported release staged (default: publish it). */
+  publish?: boolean;
   contrast?: boolean;
   options?: Record<string, unknown>;
   dataset?: string;
@@ -46,7 +52,7 @@ interface Upload {
 
 async function upload(page: Page, version: string, what: Upload): Promise<string> {
   const path = what.file.includes('/') ? resolve(FIXTURES, '../..', what.file) : `${FIXTURES}/${what.file}`;
-  const bytes = readFileSync(path);
+  const bytes = what.buffer ?? readFileSync(path);
   const started = await apiCall<{ file: { id: string }; parts: { url: string }[] }>(
     page,
     'POST',
@@ -55,7 +61,7 @@ async function upload(page: Page, version: string, what: Upload): Promise<string
       experiment_version_id: version,
       name: path.split('/').pop(),
       size_bytes: bytes.length,
-      role: 'processed',
+      role: what.role ?? 'processed',
     },
   );
   const put = await fetch(started.body.parts[0]!.url, { method: 'PUT', body: bytes });
@@ -100,6 +106,7 @@ export async function publishedExperiment(page: Page, name: string, files: Uploa
   );
   const releases: string[] = [];
   for (const [i, f] of files.entries()) {
+    if (!f.importer) continue;
     const imported = await apiCall<{ id: string }>(page, 'POST', '/v1/imports', {
       file_id: fileIds[i],
       importer: f.importer,
@@ -108,10 +115,11 @@ export async function publishedExperiment(page: Page, name: string, files: Uploa
       ...(f.options ? { options: f.options } : {}),
     });
     expect(imported.status, JSON.stringify(imported.body)).toBe(201);
+    releases.push(imported.body.id);
+    if (f.publish === false) continue;
     expect(
       (await apiCall(page, 'POST', `/v1/releases/${imported.body.id}/publish`, { reason: 'checked' })).status,
     ).toBe(200);
-    releases.push(imported.body.id);
   }
   return { experiment: created.body.id, version, releases, contrast: contrasts.body.items[0]!.id };
 }
@@ -126,8 +134,8 @@ async function publishedRelease(
 }
 
 /** Launches the seeded demo pipeline on a new published experiment and waits for its outputs to be published. */
-export async function demoRun(page: Page, name: string) {
-  const made = await publishedExperiment(page, name);
+export async function demoRun(page: Page, name: string, files: Upload[] = []) {
+  const made = await publishedExperiment(page, name, files);
   const pipelines = await apiCall<{ items: { id: string; key: string }[] }>(page, 'GET', '/v1/pipelines');
   const run = await apiCall<{ id: string }>(page, 'POST', '/v1/runs', {
     pipeline_definition_id: pipelines.body.items.find((p) => p.key === 'demo')!.id,
