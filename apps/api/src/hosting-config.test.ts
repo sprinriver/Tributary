@@ -42,3 +42,28 @@ describe('hosting configuration (Render)', () => {
     expect(() => loadConfig({ ...PROD, DATABASE_URL: 'postgres://x@y/z' })).toThrow(/OIDC_ISSUER/);
   });
 });
+
+describe('private service addresses (Render hostport)', () => {
+  it('OSS-01: QUERY_HOSTPORT and COMPUTE_HOSTPORT stand in for QUERY_URL and COMPUTE_URL', async () => {
+    const config = loadConfig({
+      ...PROD,
+      DATABASE_URL: 'postgres://x@y/z',
+      BUNDLED_KEYCLOAK: 'true',
+      QUERY_HOSTPORT: 'tributary-query-ab12:3100',
+      COMPUTE_HOSTPORT: 'tributary-compute-cd34:8000',
+    });
+    expect(config.queryUrl).toBe('http://tributary-query-ab12:3100');
+    expect(config.computeUrl).toBe('http://tributary-compute-cd34:8000');
+    const { loadQueryConfig } = await import('@tributary/query/config');
+    expect(
+      loadQueryConfig({
+        NODE_ENV: 'production',
+        QUERY_INTERNAL_TOKEN: 't',
+        DATABASE_URL: 'postgres://x@y/z',
+        S3_HOSTPORT: 'tributary-s3-ef56:8333',
+        S3_ACCESS_KEY_ID: 'a',
+        S3_SECRET_ACCESS_KEY: 'b',
+      }).s3.endpoint,
+    ).toBe('http://tributary-s3-ef56:8333');
+  });
+});
