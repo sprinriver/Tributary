@@ -9,6 +9,8 @@ from pydantic import BaseModel
 from tributary_compute import __version__
 from tributary_compute.contracts.cluster_request import ClusterRequest
 from tributary_compute.contracts.cluster_result import ClusterResult
+from tributary_compute.contracts.embed_request import EmbedRequest
+from tributary_compute.contracts.embed_response import EmbedResponse
 from tributary_compute.contracts.fit4pl_request import Fit4plRequest
 from tributary_compute.contracts.fit4pl_result import Fit4plResult
 from tributary_compute.contracts.group_summary_request import GroupSummaryRequest
@@ -23,6 +25,7 @@ from tributary_compute.contracts.pvalues_request import PValuesRequest
 from tributary_compute.contracts.pvalues_result import PValuesResult
 from tributary_compute.contracts.zscore_request import ZScoreRequest
 from tributary_compute.contracts.zscore_result import ZScoreResult
+from tributary_compute.embed import embed
 from tributary_compute.sdrf import ExportResult, ImportResult, export_sdrf, import_sdrf
 from tributary_compute.stats import cluster, groups, simple
 from tributary_compute.stats.errors import ComputeError
@@ -109,3 +112,9 @@ def stats_group_test(request: GroupTestRequest) -> GroupTestResult:
 @app.post("/stats/group-summary")
 def stats_group_summary(request: GroupSummaryRequest) -> GroupSummaryResult:
     return groups.group_summary(request)
+
+
+@app.post("/embed")
+def embed_texts(request: EmbedRequest) -> EmbedResponse:
+    """The `local` search embedding provider (hashing, not a semantic model)."""
+    return embed(request)

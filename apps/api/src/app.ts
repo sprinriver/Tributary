@@ -27,6 +27,9 @@ import { registerPresetRoutes, registerProgramRoutes } from './routes/programs.t
 import { registerSampleRoutes } from './routes/samples.ts';
 import { registerSdrfRoutes } from './routes/sdrf.ts';
 import { registerVersionRoutes } from './routes/versions.ts';
+import { registerSearchRoutes } from './routes/search.ts';
+import { embeddingProvider } from './search/embeddings.ts';
+import { searchIndex } from './search/index-service.ts';
 
 export const API_VERSION = '0.0.0';
 
@@ -74,6 +77,8 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     }
   });
   void app.register(cookie, { secret: config.cookieSecret });
+  const provider = embeddingProvider(config.search, { fetch: fetchImpl, computeUrl: config.computeUrl });
+  const index = searchIndex(db, provider, app.log);
   void app.register(async (scoped) => {
     registerAuth(scoped, db, config);
 
@@ -92,8 +97,8 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
 
     registerAuthRoutes(scoped, db, config, new OidcClient(config));
     registerProgramRoutes(scoped, db);
-    registerExperimentRoutes(scoped, db);
-    registerVersionRoutes(scoped, db);
+    registerExperimentRoutes(scoped, db, index);
+    registerVersionRoutes(scoped, db, index);
     registerSampleRoutes(scoped, db);
     registerPresetRoutes(scoped, db);
     registerOntologyRoutes(scoped, db, config, fetchImpl);
@@ -104,6 +109,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerImportRoutes(scoped, db, config, storage, fetchImpl);
     registerQueryRoutes(scoped, db, config, storage, fetchImpl);
     registerViewRoutes(scoped, db);
+    registerSearchRoutes(scoped, { db, config, provider, index });
     registerChartRoutes(scoped, { db, config, fetch: fetchImpl });
     registerResultRoutes(scoped, { db, config, fetch: fetchImpl });
     registerDatasetRoutes(scoped, db, config, fetchImpl);

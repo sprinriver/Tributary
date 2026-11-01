@@ -8,6 +8,7 @@ import {
   VersionSummarySchema,
 } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
+import type { SearchIndex } from '../search/index-service.ts';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { writeAudit } from '../audit.ts';
 import { authorize, readablePrograms, requirePrincipal } from '../auth/plugin.ts';
@@ -21,7 +22,7 @@ import { respond } from '../respond.ts';
 type IdParams = FastifyRequest<{ Params: { id: string } }>;
 const json = (value: unknown) => JSON.stringify(value);
 
-export function registerExperimentRoutes(app: FastifyInstance, db: Database): void {
+export function registerExperimentRoutes(app: FastifyInstance, db: Database, index: SearchIndex): void {
   const load = async (id: string) => {
     const row = await db
       .selectFrom('experiment')
@@ -119,7 +120,7 @@ export function registerExperimentRoutes(app: FastifyInstance, db: Database): vo
 
   app.patch('/v1/experiments/:id', async (request: IdParams) => {
     const before = await load(request.params.id);
-    authorize(request, 'update', 'Experiment', before.program_id);
+    const principal = authorize(request, 'update', 'Experiment', before.program_id);
     const body = parse(UpdateExperimentBodySchema, request.body);
     await db.transaction().execute(async (trx) => {
       const after = await trx
@@ -135,7 +136,9 @@ export function registerExperimentRoutes(app: FastifyInstance, db: Database): vo
         before,
         after,
       });
+      await index.experiment(trx as unknown as Database, before.id, principal.userId);
     });
+    index.afterCommit(principal.userId);
     return respond(ExperimentDetailSchema, await experimentDetail(db, before.id));
   });
 
@@ -145,7 +148,7 @@ export function registerExperimentRoutes(app: FastifyInstance, db: Database): vo
   ] as const) {
     app.post(`/v1/experiments/:id/${path}`, async (request: IdParams) => {
       const before = await load(request.params.id);
-      authorize(request, 'update', 'Experiment', before.program_id);
+      const principal = authorize(request, 'update', 'Experiment', before.program_id);
       await db.transaction().execute(async (trx) => {
         const after = await trx
           .updateTable('experiment')
@@ -160,7 +163,9 @@ export function registerExperimentRoutes(app: FastifyInstance, db: Database): vo
           before,
           after,
         });
+        await index.experiment(trx as unknown as Database, before.id, principal.userId);
       });
+      index.afterCommit(principal.userId);
       return respond(ExperimentDetailSchema, await experimentDetail(db, before.id));
     });
   }

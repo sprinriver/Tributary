@@ -273,14 +273,14 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 17 — Search
-Status: todo
+Status: done
 Goal: Hybrid search over experiments and samples with ontology synonyms and strict permission filtering.
 Spec: M9   Features: SRCH-01 … SRCH-03
 In scope: search documents (searchable fields + names + ontology labels/synonyms); tsvector + GIN; embeddings table with provider abstraction (`none` default, `bedrock_titan_v2`, `voyage_4`, `local`) + HNSW with iterative scans; reciprocal-rank fusion; facets; ⌘K palette + search page; reindex on publish.
 Definition of done:
-- [ ] Golden queries on the seeded corpus: top-3 hit rate ≥ 90% with full-text only
-- [ ] Cross-program permission leak test at API level
-- [ ] `pnpm check` exits 0
+- [x] Golden queries on the seeded corpus: top-3 hit rate ≥ 90% with full-text only
+- [x] Cross-program permission leak test at API level
+- [x] `pnpm check` exits 0
 
 ## Phase 18 — Lineage, audit, admin and Part 11-ready controls
 Status: todo

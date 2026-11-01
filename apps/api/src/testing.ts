@@ -65,7 +65,13 @@ function withQueryService(queryApp: FastifyInstance, queryUrl: string, next: typ
 }
 
 export async function startTestApi(
-  options: { fetch?: typeof fetch; s3?: boolean; query?: boolean; runners?: Runners } = {},
+  options: {
+    fetch?: typeof fetch;
+    s3?: boolean;
+    query?: boolean;
+    runners?: Runners;
+    config?: Partial<ApiConfig>;
+  } = {},
 ): Promise<TestApi> {
   const [testDb, testS3] = await Promise.all([
     startTestDatabase(),
@@ -75,6 +81,7 @@ export async function startTestApi(
   await migrateToLatest(db);
   const base = testConfig();
   const config = testConfig({
+    ...options.config,
     s3: {
       ...base.s3,
       endpoint: testS3?.endpoint ?? 'http://127.0.0.1:1',

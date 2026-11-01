@@ -1,3 +1,6 @@
+export { COUNTED_TABLES, type SeedCounts } from './counts.ts';
+import { reindexAll } from '../search-index.ts';
+import { countRows, type SeedCounts } from './counts.ts';
 import { manifestRowToSample, SEED_PROTEOMICS_TEMPLATE, type ManifestRow } from '@tributary/contracts';
 import { sql, type Transaction } from 'kysely';
 import type { Database } from '../client.ts';
@@ -27,24 +30,6 @@ export interface SeedOptions {
   staging?: StagingTarget;
   tenantId?: string;
 }
-
-export const COUNTED_TABLES = [
-  'app_user',
-  'assay_type',
-  'metadata_template',
-  'metadata_field_def',
-  'program',
-  'experiment',
-  'experiment_version',
-  'sample',
-  'contrast',
-  'file_object',
-  'compound',
-  'compound_property',
-  'target_annotation',
-  'audit_log',
-] as const satisfies readonly (keyof DB)[];
-export type SeedCounts = Record<(typeof COUNTED_TABLES)[number], number>;
 
 const json = (value: unknown) => JSON.stringify(value);
 const ASSAY_TYPES = [
@@ -167,6 +152,9 @@ export async function seedDatabase(db: Database, options: SeedOptions): Promise<
     });
   }
   await seedDemoPipeline(db, tenant, seedActor);
+  // Search documents are derived; rebuilding them every run also indexes a database seeded before Phase 17.
+  const indexer = await db.transaction().execute((trx) => seedActor(trx, tenant));
+  await reindexAll(db, indexer);
   return countRows(db);
 }
 
@@ -395,16 +383,4 @@ async function seedReference(
       compound_properties: properties.filter((p) => p.program_code === code).length,
     });
   }
-}
-
-async function countRows(db: Database): Promise<SeedCounts> {
-  const counts = {} as SeedCounts;
-  for (const table of COUNTED_TABLES) {
-    const { count } = await db
-      .selectFrom(table)
-      .select(db.fn.countAll<string>().as('count'))
-      .executeTakeFirstOrThrow();
-    counts[table] = Number(count);
-  }
-  return counts;
 }

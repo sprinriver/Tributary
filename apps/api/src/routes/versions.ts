@@ -7,6 +7,7 @@ import {
   type ContractError,
 } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
+import type { SearchIndex } from '../search/index-service.ts';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { changeReason, writeAudit } from '../audit.ts';
 import { inProgram } from '../auth/abilities.ts';
@@ -72,7 +73,7 @@ export async function publishBlockers(db: Database, version: LoadedVersion): Pro
   );
 }
 
-export function registerVersionRoutes(app: FastifyInstance, db: Database): void {
+export function registerVersionRoutes(app: FastifyInstance, db: Database, index: SearchIndex): void {
   app.get('/v1/versions/:id', async (request: IdParams) => {
     const detail = await versionDetail(db, request.params.id);
     authorize(request, 'read', 'ExperimentVersion', detail.program_id);
@@ -176,13 +177,15 @@ export function registerVersionRoutes(app: FastifyInstance, db: Database): void 
         after,
         reason,
       });
+      await index.experiment(trx as unknown as Database, version.experiment_id, principal.userId);
     });
+    index.afterCommit(principal.userId);
     return respond(VersionDetailSchema, await versionDetail(db, version.id));
   });
 
   app.post('/v1/versions/:id/archive', async (request: IdParams) => {
     const version = await loadVersion(db, request.params.id);
-    authorize(request, 'publish', 'ExperimentVersion', version.program_id);
+    const principal = authorize(request, 'publish', 'ExperimentVersion', version.program_id);
     if (version.status !== 'published')
       throw new HttpError(409, 'not_published', 'Only published versions can be archived.');
     await db.transaction().execute(async (trx) => {
@@ -198,7 +201,9 @@ export function registerVersionRoutes(app: FastifyInstance, db: Database): void 
         before: { status: 'published' },
         after: { status: 'archived' },
       });
+      await index.experiment(trx as unknown as Database, version.experiment_id, principal.userId);
     });
+    index.afterCommit(principal.userId);
     return respond(VersionDetailSchema, await versionDetail(db, version.id));
   });
 

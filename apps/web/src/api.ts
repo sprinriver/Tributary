@@ -46,7 +46,8 @@ export function buildUrl(
   const filled = path.replace(/\{(\w+)\}/g, (_, key: string) => encodeURIComponent(params[key] ?? ''));
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(query)) {
-    if (value !== undefined && value !== null && value !== '') search.set(key, String(value));
+    if (Array.isArray(value)) for (const v of value) search.append(key, String(v));
+    else if (value !== undefined && value !== null && value !== '') search.set(key, String(value));
   }
   const qs = search.toString();
   return `/api${filled}${qs ? `?${qs}` : ''}`;

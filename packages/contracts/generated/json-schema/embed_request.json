@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/EmbedRequest",
+  "$defs": {
+    "EmbedRequest": {
+      "type": "object",
+      "properties": {
+        "texts": {
+          "minItems": 1,
+          "maxItems": 256,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "maxLength": 20000
+          }
+        },
+        "dims": {
+          "type": "integer",
+          "minimum": 8,
+          "maximum": 1024
+        }
+      },
+      "required": [
+        "texts",
+        "dims"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

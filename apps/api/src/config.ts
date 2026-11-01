@@ -18,6 +18,8 @@ export interface ApiConfig {
   cookieSecret: string;
   /** Internal Python service (statistics, SDRF). */
   computeUrl: string;
+  /** Search embeddings (SPEC M9, ADR 0020); `none` = full-text only, the default. */
+  search: SearchConfig;
   /** Internal DuckDB service (importers, queries) and the token it requires. */
   queryUrl: string;
   queryInternalToken: string;
@@ -45,6 +47,41 @@ export interface S3Config {
   presignTtlSeconds: number;
   /** Key prefixes that may be registered with "link existing objects" (never the managed `programs/` area). */
   linkablePrefixes: string[];
+}
+
+export type EmbeddingProviderKind = 'none' | 'bedrock_titan_v2' | 'voyage_4' | 'local';
+export interface SearchConfig {
+  provider: EmbeddingProviderKind;
+  /** Embedding size (≤ 1024; shorter vectors are zero-padded to the stored 1024, which keeps cosine). */
+  dims: number;
+  /** Vector hits below this cosine similarity are dropped (unrelated texts still get a nearest neighbour). */
+  minSimilarity: number;
+  voyageApiKey?: string;
+  bedrockRegion?: string;
+}
+
+const PROVIDERS: EmbeddingProviderKind[] = ['none', 'bedrock_titan_v2', 'voyage_4', 'local'];
+
+function searchConfig(env: NodeJS.ProcessEnv): SearchConfig {
+  const provider = (env.SEARCH_EMBEDDINGS ?? 'none') as EmbeddingProviderKind;
+  if (!PROVIDERS.includes(provider))
+    throw new Error(`SEARCH_EMBEDDINGS must be one of ${PROVIDERS.join(', ')}`);
+  const dims = Number(env.SEARCH_EMBEDDING_DIMS ?? 1024);
+  if (!Number.isInteger(dims) || dims < 8 || dims > 1024)
+    throw new Error('SEARCH_EMBEDDING_DIMS must be 8–1024');
+  // Sizes the hosted models offer (Titan Text Embeddings V2: 256/512/1024; voyage-4: 256/512/1024/2048, and the
+  // index stores at most 1024).
+  if ((provider === 'bedrock_titan_v2' || provider === 'voyage_4') && ![256, 512, 1024].includes(dims))
+    throw new Error(`SEARCH_EMBEDDING_DIMS must be 256, 512 or 1024 for ${provider}`);
+  if (provider === 'voyage_4' && !env.VOYAGE_API_KEY)
+    throw new Error('VOYAGE_API_KEY must be set for voyage_4');
+  return {
+    provider,
+    dims,
+    minSimilarity: Number(env.SEARCH_MIN_SIMILARITY ?? 0.3),
+    ...(env.VOYAGE_API_KEY ? { voyageApiKey: env.VOYAGE_API_KEY } : {}),
+    ...(env.BEDROCK_REGION ? { bedrockRegion: env.BEDROCK_REGION } : {}),
+  };
 }
 
 const DEV_GROUP_ROLE_MAP: GroupRoleMapping[] = [
@@ -75,6 +112,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     },
     cookieSecret: required('COOKIE_SECRET', 'dev-only-cookie-secret-change-me-0123456789'),
     computeUrl: env.COMPUTE_URL ?? 'http://127.0.0.1:8000',
+    search: searchConfig(env),
     queryUrl: env.QUERY_URL ?? 'http://127.0.0.1:3100',
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',

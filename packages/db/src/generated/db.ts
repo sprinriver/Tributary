@@ -611,6 +611,44 @@ export interface SavedView {
   visibility: Generated<string>;
 }
 
+export interface SearchDocument {
+  assay_type: string;
+  body: Generated<string>;
+  compounds: Generated<string[]>;
+  content_hash: string;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  entity_id: string;
+  entity_type: string;
+  expansions: Generated<string>;
+  experiment_id: string;
+  experiment_version_id: string;
+  id: Generated<string>;
+  program_id: string;
+  species: Generated<string[]>;
+  status: string;
+  subtitle: Generated<string>;
+  tenant_id: string;
+  title: string;
+  tsv: Generated<string | null>;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface SearchEmbedding {
+  content_hash: string;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  document_id: string;
+  embedding: string;
+  id: Generated<string>;
+  model: string;
+  provider: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface TargetAnnotation {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -663,5 +701,7 @@ export interface DB {
   sample: Sample;
   sample_file: SampleFile;
   saved_view: SavedView;
+  search_document: SearchDocument;
+  search_embedding: SearchEmbedding;
   target_annotation: TargetAnnotation;
 }

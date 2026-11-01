@@ -7,6 +7,7 @@ export * from './api/pipelines.ts';
 export * from './api/query.ts';
 export * from './api/results.ts';
 export * from './api/views.ts';
+export * from './api/search.ts';
 export * from './api/registry.ts';
 export * from './api/routes.ts';
 export * from './charts.ts';

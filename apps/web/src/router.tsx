@@ -11,6 +11,7 @@ import { RunPage } from './pipelines/RunPage.tsx';
 import { ExperimentPage } from './routes/ExperimentPage.tsx';
 import { ExperimentsPage, type ExperimentsSearch } from './routes/ExperimentsPage.tsx';
 import { HomePage } from './routes/HomePage.tsx';
+import { SearchPage, type SearchPageSearch } from './search/SearchPage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
 
 const str = (v: unknown) => (typeof v === 'string' && v !== '' ? v : undefined);
@@ -95,6 +96,20 @@ const adminPipelinesRoute = createRoute({
   path: '/admin/pipelines',
   component: AdminPipelinesPage,
 });
+const searchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/search',
+  component: SearchPage,
+  validateSearch: (search: Record<string, unknown>): SearchPageSearch => {
+    const out = Object.fromEntries(
+      ['q', 'assay_type', 'program_id', 'species', 'compound', 'status']
+        .map((k) => [k, str(search[k])])
+        .filter(([, v]) => v !== undefined),
+    ) as SearchPageSearch;
+    const type = str(search.type);
+    return type === 'experiment' || type === 'sample' ? { ...out, type } : out;
+  },
+});
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/forbidden',
@@ -116,6 +131,7 @@ export const router = createRouter({
     releaseRoute,
     runRoute,
     adminPipelinesRoute,
+    searchRoute,
     forbiddenRoute,
   ]),
 });

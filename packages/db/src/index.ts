@@ -9,6 +9,7 @@ export {
   type SeedOptions,
   type StagingTarget,
 } from './seed/index.ts';
+export { dehyphenated, reindexAll, reindexExperiment } from './search-index.ts';
 export { METADATA_KINDS, QUERY_RO_ROLE, readMetadata, type MetadataKind } from './query-meta.ts';
 export { listMigrationNames, migrateDownAll, migrateToLatest, MIGRATIONS_DIR } from './migrator.ts';
 

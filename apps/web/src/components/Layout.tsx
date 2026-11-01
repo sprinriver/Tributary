@@ -1,6 +1,7 @@
 import { Link, Outlet, useRouterState } from '@tanstack/react-router';
 import { loginHref, useMe } from '../auth.ts';
 import { NotificationsMenu } from '../pipelines/NotificationsMenu.tsx';
+import { SearchPalette } from '../search/SearchPalette.tsx';
 import { UserMenu } from './UserMenu.tsx';
 
 export function Layout() {
@@ -25,10 +26,20 @@ export function Layout() {
           <Link to="/datasets">Datasets</Link>
           <Link to="/explore">Explore</Link>
           <Link to="/compare">Compare</Link>
+          <Link to="/search">Search</Link>
           {me.data?.roles.some((r) => r.role === 'system_admin') && (
             <Link to="/admin/pipelines">Pipelines</Link>
           )}
         </nav>
+        {me.data && (
+          <button
+            type="button"
+            title="Search (⌘K / Ctrl+K)"
+            onClick={() => document.dispatchEvent(new Event('tributary:search'))}
+          >
+            Search… <kbd>⌘K</kbd>
+          </button>
+        )}
         {me.data && <NotificationsMenu />}
         {me.data ? (
           <UserMenu me={me.data} />
@@ -41,6 +52,7 @@ export function Layout() {
           <a href={loginHref(path)}>Sign in</a>
         )}
       </header>
+      {me.data && <SearchPalette />}
       <Outlet />
     </div>
   );
