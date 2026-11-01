@@ -1,4 +1,7 @@
 import type { AiProvider } from '@tributary/contracts';
+import Anthropic from '@anthropic-ai/sdk';
+import AnthropicBedrock from '@anthropic-ai/bedrock-sdk';
+import { anthropicProvider, type MessagesResponse } from './anthropic.ts';
 import { stubProvider } from './stub.ts';
 
 /** Deployment AI settings (SPEC §11.1): the provider is chosen in the deployment, never in the browser. */
@@ -9,6 +12,8 @@ export interface AiConfig {
   monthlyTokenBudget: number;
   /** Region for Amazon Bedrock. */
   bedrockRegion?: string;
+  /** True when AI_MODEL was given (Bedrock model ids differ per account and region). */
+  bedrockModelSet?: boolean;
 }
 
 /** A JSON-Schema tool definition as the model sees it. */
@@ -64,12 +69,26 @@ export function providerFor(config: AiConfig): ModelProvider | null {
       return null;
     case 'stub':
       return stubProvider(config.model);
-    case 'anthropic':
-    case 'bedrock':
-      // The SDK clients are not installed yet (dependency approval pending, docs/PROGRESS.md). Once approved, the
-      // client's messages.create is passed to anthropicProvider({ model, create }).
-      throw new Error(
-        `AI_PROVIDER=${config.provider} needs ${config.provider === 'anthropic' ? '@anthropic-ai/sdk' : '@anthropic-ai/bedrock-sdk (and @anthropic-ai/sdk)'}, which is not installed in this build.`,
-      );
+    case 'anthropic': {
+      // Claude API: ANTHROPIC_API_KEY from the environment (or Secrets Manager in production).
+      const client = new Anthropic();
+      return anthropicProvider({
+        model: config.model,
+        create: (body) => client.messages.create(body as never) as unknown as Promise<MessagesResponse>,
+      });
+    }
+    case 'bedrock': {
+      // Amazon Bedrock in the customer's account (SPEC §11.1): IAM role credentials; AI_MODEL is the Bedrock id.
+      if (!config.bedrockModelSet)
+        throw new Error(
+          'AI_PROVIDER=bedrock needs AI_MODEL set to the Bedrock model id enabled in your account.',
+        );
+      const client = new AnthropicBedrock(config.bedrockRegion ? { awsRegion: config.bedrockRegion } : {});
+      return anthropicProvider({
+        name: 'bedrock',
+        model: config.model,
+        create: (body) => client.messages.create(body as never) as unknown as Promise<MessagesResponse>,
+      });
+    }
   }
 }

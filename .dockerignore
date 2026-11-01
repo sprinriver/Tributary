@@ -1,0 +1,21 @@
+# Keep build contexts small and free of local state and secrets.
+**/node_modules
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/.turbo
+**/dist
+.git
+.github
+.claude
+.runs
+artifacts
+e2e
+test-results
+playwright-report
+coverage
+infra/terraform
+**/.env
+**/.env.*
+!**/.env.example

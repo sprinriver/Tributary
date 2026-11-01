@@ -1,0 +1,76 @@
+# Try the Render deployment on your machine before deploying: the same Dockerfiles and environment variables as
+# render.yaml, wired the way Render wires them. Local only (fixed, non-secret passwords).
+#   docker compose -f deploy/local-trial/compose.yml up -d --build   →  http://tributary.localhost:8080
+name: tributary-trial
+
+x-shared: &shared
+  NODE_ENV: production
+  TRIBUTARY_TENANT_ID: 00000000-0000-7000-8000-000000000001
+  DATABASE_USER: tributary
+  DATABASE_NAME: tributary
+  S3_REGION: us-east-1
+  S3_ACCESS_KEY_ID: trial-access-key
+  S3_SECRET_ACCESS_KEY: trial-secret/with+base64=chars
+  QUERY_INTERNAL_TOKEN: trial-query-token
+  OIDC_CLIENT_SECRET: trial-oidc-secret
+  DEMO_MODE: 'true'
+  INSTANCE_NAME: Tributary demo (local trial)
+  DEMO_NOTICE: Local trial of the Render deployment.
+  DEMO_LOGINS: scientist:scientist,viewer:viewer
+  PUBLIC_URL: http://tributary.localhost:8080
+  DATABASE_HOST: db
+  DATABASE_PASSWORD: trial/db+password=
+x-build: &build
+  context: ../..
+
+services:
+  web:
+    build: { <<: *build, dockerfile: deploy/render/web.Dockerfile }
+    environment: { PORT: '8080', API_UPSTREAM: 'api:3000', KEYCLOAK_UPSTREAM: 'keycloak:8080' }
+    ports: ['8080:8080']
+    networks: { default: { aliases: [tributary.localhost] } }
+
+  s3:
+    build: { <<: *build, dockerfile: deploy/render/seaweedfs.Dockerfile }
+    environment: { <<: *shared, PORT: '8333' }
+    ports: ['8333:8333']
+    networks: { default: { aliases: [s3.tributary.localhost] } }
+
+  api:
+    build: { <<: *build, dockerfile: deploy/render/node.Dockerfile }
+    environment:
+      <<: *shared
+      BUNDLED_KEYCLOAK: 'true'
+      OIDC_CLIENT_ID: tributary-api
+      AUTH_GROUP_ROLE_MAP: '[{"group":"admin","role":"system_admin"},{"group":"scientist","role":"contributor","programs":["*"]},{"group":"viewer","role":"viewer","programs":["*"]}]'
+      COOKIE_SECRET: trial-cookie-secret-trial-cookie-secret-0123
+      QUERY_HOSTPORT: query:3100
+      COMPUTE_HOSTPORT: compute:8000
+      S3_ENDPOINT: http://s3.tributary.localhost:8333
+      AI_PROVIDER: none
+    # Render runs api-predeploy.sh before each deploy; here it runs before the server starts.
+    command: ['sh', '-c', 'sh deploy/render/api-predeploy.sh && exec node apps/api/src/server.ts']
+    depends_on: [db, s3, keycloak]
+
+  query:
+    build: { <<: *build, dockerfile: deploy/render/node.Dockerfile }
+    command: ['node', 'apps/query/src/server.ts']
+    environment: { <<: *shared, S3_HOSTPORT: 's3:8333' }
+    depends_on: [db]
+
+  compute:
+    build: { <<: *build, dockerfile: apps/compute/Dockerfile }
+
+  keycloak:
+    build: { <<: *build, dockerfile: deploy/render/keycloak.Dockerfile }
+    environment:
+      <<: *shared
+      KEYCLOAK_DB_PASSWORD: trial-keycloak-db
+      KEYCLOAK_ADMIN_PASSWORD: trial-keycloak-admin
+      TRIBUTARY_ADMIN_PASSWORD: trial-admin
+    depends_on: [db]
+    restart: on-failure
+
+  db:
+    build: { <<: *build, dockerfile: deploy/render/postgres.Dockerfile }
+    environment: { POSTGRES_PASSWORD: 'trial/db+password=', KEYCLOAK_DB_PASSWORD: trial-keycloak-db }

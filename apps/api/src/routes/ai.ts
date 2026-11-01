@@ -13,14 +13,14 @@ import {
   type AiMessage,
 } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
-import type { FastifyInstance, FastifyRequest, InjectOptions } from 'fastify';
+import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { sql } from 'kysely';
 import { getSetting, putSetting } from '../admin/settings.ts';
 import { auditCall, runApproved, runTurn } from '../ai/assistant.ts';
 import { suggestTerms } from '../ai/curation.ts';
+import { requestContext } from '../ai/context.ts';
 import type { ModelMessage, ModelProvider } from '../ai/provider.ts';
 import { aiSettings } from '../ai/settings.ts';
-import { ToolError, type ToolContext } from '../ai/tools.ts';
 import { insertAudit, requestActor } from '../audit.ts';
 import { requirePrincipal, requireSystemAdmin } from '../auth/plugin.ts';
 import type { ApiConfig } from '../config.ts';
@@ -37,33 +37,6 @@ interface Deps {
 
 type IdParams = FastifyRequest<{ Params: { id: string } }>;
 type CallParams = FastifyRequest<{ Params: { id: string; callId: string } }>;
-
-/** Credentials of the original request, so every tool call is authorised exactly as the user (SPEC §11.2). */
-function toolContext(root: FastifyInstance, request: FastifyRequest): ToolContext {
-  const headers: Record<string, string> = {};
-  for (const h of ['authorization', 'cookie', 'x-csrf-token'] as const) {
-    const v = request.headers[h];
-    if (typeof v === 'string') headers[h] = v;
-  }
-  return {
-    async call(method, url, payload, extra) {
-      const options: InjectOptions = {
-        method,
-        url,
-        headers: extra?.reason ? { ...headers, 'x-change-reason': extra.reason } : headers,
-      };
-      if (payload !== undefined) options.payload = payload as NonNullable<InjectOptions['payload']>;
-      const res = await root.inject(options);
-      const body = res.body ? (JSON.parse(res.body) as Record<string, unknown>) : null;
-      // The assistant does not tell apart "missing" from "not yours": both read as not found to the model.
-      if (res.statusCode === 404 || (res.statusCode === 403 && method === 'GET'))
-        throw new ToolError('Not found, or not in a program you can read.');
-      if (res.statusCode >= 400)
-        throw new ToolError(String(body?.message ?? `The API answered ${res.statusCode}.`));
-      return body;
-    },
-  };
-}
 
 function messageRow(m: {
   id: string;
@@ -206,7 +179,7 @@ export function registerAiRoutes(app: FastifyInstance, { root, db, config, provi
       conversationId: conversation.id,
       history,
       text,
-      ctx: toolContext(root, request),
+      ctx: requestContext(root, request),
       writeToolsEnabled: current.write_tools_enabled,
       tokenBudgetLeft: current.monthly_token_budget - current.tokens_used_this_month,
     });
@@ -286,7 +259,7 @@ export function registerAiRoutes(app: FastifyInstance, { root, db, config, provi
     });
     if (!approve) return respond(AiToolCallSchema, claimed.next);
     // 2. Run the write as the user. 3. Record its outcome.
-    const result = await runApproved(toolContext(root, request), claimed.call, conversation.id);
+    const result = await runApproved(requestContext(root, request), claimed.call, conversation.id);
     const decided = await db.transaction().execute(async (trx) => {
       const { message, calls } = await locate(trx);
       await store(trx, message.id, calls, result);
@@ -302,7 +275,7 @@ export function registerAiRoutes(app: FastifyInstance, { root, db, config, provi
     const body = parse(CurationSuggestBodySchema, request.body);
     return respond(
       CurationSuggestResponseSchema,
-      await suggestTerms(toolContext(root, request), body.ontology, body.values),
+      await suggestTerms(requestContext(root, request), body.ontology, body.values),
     );
   });
 }

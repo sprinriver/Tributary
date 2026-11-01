@@ -1,4 +1,11 @@
-export { APP_ROLE, createDb, DEFAULT_DATABASE_URL, IMMUTABLE_SQLSTATE, type Database } from './client.ts';
+export {
+  APP_ROLE,
+  createDb,
+  databaseUrlFromEnv,
+  DEFAULT_DATABASE_URL,
+  IMMUTABLE_SQLSTATE,
+  type Database,
+} from './client.ts';
 export type { DB } from './generated/db.ts';
 export {
   COUNTED_TABLES,

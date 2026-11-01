@@ -306,15 +306,15 @@ Definition of done:
 Deferred (recorded 2026-11-01): streaming assistant turns, and the `run_analysis` compute tool. The panel shows each turn's tool calls when the turn returns. Statistics stay available through results pages and `/v1/charts/render`.
 
 ## Phase 20 — MCP server, SDK and webhooks
-Status: todo
+Status: done (ece946d)
 Goal: External assistants and notebooks use the platform with the same permissions.
 Spec: M12, M13   Features: MCP-01, MCP-02, MCP-03, API-01, API-02
 In scope: MCP server (TypeScript SDK v2, Streamable HTTP via the Fastify adapter) at `/mcp` exposing registry tools (summarised outputs < 25k tokens; write tools marked as requiring user interaction); OAuth 2.1 metadata + audience-validated tokens (customer IdP or platform-issued), PAT fallback for local clients; an Agent Skill bundle (`integrations/claude-skill/SKILL.md`) teaching a customer's Claude to use the MCP tools (explore an experiment, compare compounds, build a QuerySpec, cite releases); generated Python SDK wheel with examples; HMAC-signed webhooks for run status.
 Definition of done:
-- [ ] Integration test: list tools; call `search_experiments` as two users → different results
-- [ ] Python SDK pytest against the local stack (list experiments, run a QuerySpec)
-- [ ] Webhook signature verification test
-- [ ] `pnpm check` exits 0
+- [x] Integration test: list tools; call `search_experiments` as two users → different results
+- [x] Python SDK pytest against the local stack (list experiments, run a QuerySpec)
+- [x] Webhook signature verification test
+- [x] `pnpm check` exits 0
 
 ## Phase 21 — Infrastructure as code (plan only)
 Status: todo

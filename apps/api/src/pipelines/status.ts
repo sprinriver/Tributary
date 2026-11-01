@@ -22,7 +22,7 @@ export async function applyRunStatus(
   actor: AuditActor,
   runId: string,
   obs: StatusObservation,
-): Promise<{ changed: boolean; status: RunStatus }> {
+): Promise<{ changed: boolean; status: RunStatus; previous: RunStatus }> {
   return db.transaction().execute(async (trx) => {
     const run = await trx
       .selectFrom('pipeline_run')
@@ -51,7 +51,7 @@ export async function applyRunStatus(
       .onConflict((oc) => oc.columns(['pipeline_run_id', 'external_status', 'event_time']).doNothing())
       .returning('id')
       .executeTakeFirst();
-    if (!inserted || !apply) return { changed: false, status: current };
+    if (!inserted || !apply) return { changed: false, status: current, previous: current };
     await trx
       .updateTable('pipeline_run')
       .set({
@@ -71,6 +71,6 @@ export async function applyRunStatus(
       after: { status: obs.status, external_status: obs.externalStatus, source: obs.source },
       reason: obs.reason ?? null,
     });
-    return { changed: true, status: obs.status };
+    return { changed: true, status: obs.status, previous: current };
   });
 }

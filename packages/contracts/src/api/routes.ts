@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { HealthStatusSchema } from '../health.ts';
+import { InstanceInfoSchema } from './instance.ts';
 import { CHART_ROUTES } from './routes-charts.ts';
 import { DATASET_ROUTES } from './routes-datasets.ts';
 import { FILE_ROUTES } from './routes-files.ts';
@@ -10,6 +11,7 @@ import { SEARCH_ROUTES } from './routes-search.ts';
 import { TRUST_ROUTES } from './routes-trust.ts';
 import { ADMIN_ROUTES } from './routes-admin.ts';
 import { AI_ROUTES } from './routes-ai.ts';
+import { WEBHOOK_ROUTES } from './routes-webhooks.ts';
 import { VIEW_ROUTES } from './routes-views.ts';
 import type { ApiRoute } from './route.ts';
 import {
@@ -55,6 +57,12 @@ import {
  */
 export const API_ROUTES = {
   health: { method: 'get', path: '/healthz', summary: 'Liveness', response: HealthStatusSchema },
+  getInstance: {
+    method: 'get',
+    path: '/v1/instance',
+    summary: 'This installation: name, version, and whether it is a public demo (with its demo logins)',
+    response: InstanceInfoSchema,
+  },
   me: {
     method: 'get',
     path: '/v1/auth/me',
@@ -280,6 +288,7 @@ export const API_ROUTES = {
   ...CHART_ROUTES,
   ...RESULT_ROUTES,
   ...AI_ROUTES,
+  ...WEBHOOK_ROUTES,
 } as const satisfies Record<string, ApiRoute>;
 
 export type ApiOperation = keyof typeof API_ROUTES;

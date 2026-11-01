@@ -1,5 +1,5 @@
 import { AI_PROVIDERS, type AiProvider } from '@tributary/contracts';
-import { DEFAULT_DATABASE_URL, DEV_TENANT_ID } from '@tributary/db';
+import { databaseUrlFromEnv, DEFAULT_DATABASE_URL, DEV_TENANT_ID } from '@tributary/db';
 import type { AiConfig } from './ai/provider.ts';
 
 /** IdP group → role mapping (SPEC §10). `programs` are program codes; `*` means every program. */
@@ -34,6 +34,10 @@ export interface ApiConfig {
   s3: S3Config;
   /** AI assistant (SPEC §11); `none`, the default, means no assistant. */
   ai: AiConfig;
+  /** This installation as the SPA shows it (public demo mode, SPEC §12 open-source hosting). */
+  instance: InstanceConfig;
+  /** The MCP endpoint's resource identifier: IdP access tokens must name it in `aud` (RFC 8707/9728). */
+  mcpResource: string;
 }
 
 /** Object storage (SPEC M3). Locally SeaweedFS (docker-compose.yml); on AWS the endpoint is left unset. */
@@ -101,7 +105,38 @@ function aiConfig(env: NodeJS.ProcessEnv): AiConfig {
     provider,
     model: env.AI_MODEL ?? (provider === 'stub' ? 'stub-1' : 'claude-opus-5-5'),
     monthlyTokenBudget: budget,
+    bedrockModelSet: !!env.AI_MODEL,
     ...(env.BEDROCK_REGION ? { bedrockRegion: env.BEDROCK_REGION } : {}),
+  };
+}
+
+export interface InstanceConfig {
+  name: string;
+  demo: boolean;
+  demoLogins: { username: string; password: string }[];
+  notice: string | null;
+}
+
+function instanceConfig(env: NodeJS.ProcessEnv): InstanceConfig {
+  const demo = env.DEMO_MODE === 'true';
+  const demoLogins = demo
+    ? (env.DEMO_LOGINS ?? '')
+        .split(',')
+        .map((pair) => pair.trim())
+        .filter(Boolean)
+        .map((pair) => {
+          const at = pair.indexOf(':');
+          return { username: pair.slice(0, at).trim(), password: pair.slice(at + 1) };
+        })
+    : [];
+  // Published demo logins are for low-privilege users only; an admin password must never appear on the page.
+  if (demoLogins.some((l) => !l.username || /admin/i.test(l.username)))
+    throw new Error('DEMO_LOGINS must list "user:password" pairs for non-admin users only');
+  return {
+    name: env.INSTANCE_NAME ?? 'Tributary',
+    demo,
+    demoLogins,
+    notice: env.DEMO_NOTICE?.trim() || null,
   };
 }
 
@@ -123,19 +158,29 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
   return {
     production,
     tenantId: required('TRIBUTARY_TENANT_ID', DEV_TENANT_ID),
-    databaseUrl: required('DATABASE_URL', DEFAULT_DATABASE_URL),
+    databaseUrl: databaseUrlFromEnv(env) ?? required('DATABASE_URL', DEFAULT_DATABASE_URL),
     publicUrl: required('PUBLIC_URL', 'http://localhost:5173'),
     oidc: {
-      issuer: required('OIDC_ISSUER', 'http://localhost:8080/realms/tributary'),
+      // BUNDLED_KEYCLOAK: Keycloak is served at PUBLIC_URL/auth (deploy/render), so the issuer follows the URL.
+      issuer:
+        env.OIDC_ISSUER ??
+        (env.BUNDLED_KEYCLOAK === 'true' && env.PUBLIC_URL
+          ? `${env.PUBLIC_URL.replace(/\/$/, '')}/auth/realms/tributary`
+          : required('OIDC_ISSUER', 'http://localhost:8080/realms/tributary')),
       clientId: required('OIDC_CLIENT_ID', 'tributary-api'),
       clientSecret: required('OIDC_CLIENT_SECRET', 'tributary-api-dev-secret'),
       groupsClaim: env.OIDC_GROUPS_CLAIM ?? 'groups',
     },
     cookieSecret: required('COOKIE_SECRET', 'dev-only-cookie-secret-change-me-0123456789'),
-    computeUrl: env.COMPUTE_URL ?? 'http://127.0.0.1:8000',
+    // *_HOSTPORT: a private-network host:port (Render Blueprints reference these, not URLs).
+    computeUrl:
+      env.COMPUTE_URL ?? (env.COMPUTE_HOSTPORT ? `http://${env.COMPUTE_HOSTPORT}` : 'http://127.0.0.1:8000'),
     search: searchConfig(env),
     ai: aiConfig(env),
-    queryUrl: env.QUERY_URL ?? 'http://127.0.0.1:3100',
+    instance: instanceConfig(env),
+    mcpResource: env.MCP_RESOURCE ?? `${env.PUBLIC_URL ?? 'http://localhost:5173'}/api/mcp`,
+    queryUrl:
+      env.QUERY_URL ?? (env.QUERY_HOSTPORT ? `http://${env.QUERY_HOSTPORT}` : 'http://127.0.0.1:3100'),
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 12),

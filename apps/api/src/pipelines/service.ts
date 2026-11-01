@@ -7,6 +7,7 @@ import { batchStatus, omicsStatus } from './aws.ts';
 import { processRunOutputs } from './outputs.ts';
 import type { Runners } from './runner.ts';
 import { applyRunStatus, type StatusObservation } from './status.ts';
+import { notifyRunStatus } from '../webhooks/dispatch.ts';
 
 export interface PipelineDeps {
   db: Database;
@@ -19,8 +20,38 @@ export interface PipelineDeps {
 async function observe(deps: PipelineDeps, run: { id: string; tenant_id: string }, obs: StatusObservation) {
   const actor = { ...(await serviceActor(deps.db, run.tenant_id, 'pipelines')), requestId: `run:${run.id}` };
   const result = await applyRunStatus(deps.db, actor, run.id, obs);
+  if (result.changed) void announce(deps, run, result.status, result.previous);
   if (result.status === 'succeeded') await processRunOutputs(deps, run.id);
   return result;
+}
+
+/** Run-status webhooks (SPEC M13). Delivery never blocks or fails status handling; outcomes are recorded. */
+async function announce(
+  deps: PipelineDeps,
+  run: { id: string; tenant_id: string },
+  status: string,
+  previous: string,
+) {
+  try {
+    const row = await deps.db
+      .selectFrom('pipeline_run as r')
+      .leftJoin('pipeline_definition as d', 'd.id', 'r.pipeline_definition_id')
+      .select(['r.experiment_version_id', 'd.key'])
+      .where('r.id', '=', run.id)
+      .executeTakeFirst();
+    await notifyRunStatus(
+      { db: deps.db, fetch: deps.fetch, tenantId: run.tenant_id, production: deps.config.production },
+      {
+        run_id: run.id,
+        status,
+        previous_status: previous,
+        pipeline_key: row?.key ?? null,
+        experiment_version_id: row?.experiment_version_id ?? null,
+      },
+    );
+  } catch {
+    // Deliveries record their own failures; a lookup failure here must not affect the run.
+  }
 }
 
 /** Poller fallback (SPEC M4): asks each runner for every non-terminal run's status. */

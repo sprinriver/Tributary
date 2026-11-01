@@ -110,7 +110,8 @@ export const TOOLS: AiTool[] = [
             program: h.program_code,
             assay_type: h.assay_type,
             status: h.status,
-            matched: h.snippet,
+            // The UI highlights between \u0001 and \u0002; tool output is plain text.
+            matched: h.snippet.replaceAll('\u0001', '').replaceAll('\u0002', ''),
           });
       return { experiments: [...seen.values()].slice(0, input.limit ?? 10) };
     },

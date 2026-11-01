@@ -1,0 +1,16 @@
+[project]
+name = "tributary-sdk"
+version = "0.1.0"
+description = "Python client for the Tributary experiment data platform API (notebooks and scripts)."
+readme = "README.md"
+requires-python = ">=3.12"
+license = "Apache-2.0"
+# Standard library only, so it installs anywhere a notebook runs.
+dependencies = []
+
+[build-system]
+requires = ["hatchling==1.27.0"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/tributary_sdk"]

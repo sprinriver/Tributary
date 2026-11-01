@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useMe } from '../auth.ts';
 import { AssistantPanel } from '../assistant/AssistantPanel.tsx';
 import { SearchPalette } from '../search/SearchPalette.tsx';
+import { DemoBanner } from '../shell/DemoBanner.tsx';
 import { ReauthDialog } from '../shell/ReauthDialog.tsx';
 import { Sidebar } from '../shell/Sidebar.tsx';
 import { TopBar } from '../shell/TopBar.tsx';
@@ -26,6 +27,7 @@ export function Layout() {
       </div>
       <div className="scrim" onClick={() => setDrawer(false)} aria-hidden="true" />
       <div className="app-body">
+        <DemoBanner />
         <TopBar
           onOpenNav={() => setDrawer(true)}
           onAssistant={() => setAssistant((a) => !a)}

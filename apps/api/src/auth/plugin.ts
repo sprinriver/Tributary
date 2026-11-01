@@ -7,6 +7,7 @@ import { safeEqual } from './crypto.ts';
 import { loadPrincipal, type Principal } from './principal.ts';
 import { findSession, SESSION_COOKIE } from './sessions.ts';
 import { findToken } from './tokens.ts';
+import { ASSERTION_HEADER, verifyAssertion } from './assertion.ts';
 
 declare module 'fastify' {
   interface FastifyRequest {
@@ -17,10 +18,17 @@ declare module 'fastify' {
   interface FastifyContextConfig {
     /** Routes reachable without signing in (health, login callback). */
     public?: boolean;
+    /** Routes that authenticate the caller themselves (the MCP endpoint: OAuth access tokens or PATs). */
+    selfAuth?: boolean;
   }
 }
 
 const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+/** POST endpoints that only read: a read-scoped token may call them. */
+const READ_ONLY_POSTS = new Set(['/v1/query', '/v1/charts/render', '/v1/ai/curation/suggest']);
+const isRead = (request: FastifyRequest) =>
+  SAFE_METHODS.has(request.method) ||
+  (request.method === 'POST' && READ_ONLY_POSTS.has(request.routeOptions.url ?? ''));
 
 /**
  * Resolves the caller from a Bearer personal access token or the session cookie, enforces PAT scopes and the
@@ -32,8 +40,20 @@ export function registerAuth(app: FastifyInstance, db: Database, config: ApiConf
 
   app.addHook('onRequest', async (request) => {
     request.reauthMaxAgeSeconds = config.reauthMaxAgeSeconds;
+    if (request.routeOptions.config.selfAuth) return;
     const header = request.headers.authorization;
-    if (header?.startsWith('Bearer ')) {
+    const assertion = request.headers[ASSERTION_HEADER];
+    if (typeof assertion === 'string') {
+      // An in-process call for a user the MCP endpoint authenticated (signed with a per-process key, 60 s).
+      const claim = verifyAssertion(assertion);
+      if (claim)
+        request.principal =
+          (await loadPrincipal(db, config, claim.u, { type: 'token', tokenId: 'mcp', scopes: claim.s })) ??
+          null;
+      if (!request.principal) throw unauthenticated();
+      if (!isRead(request) && !claim!.s.includes('write'))
+        throw new HttpError(403, 'insufficient_scope', 'This access token is read-only.');
+    } else if (header?.startsWith('Bearer ')) {
       const token = await findToken(db, header.slice('Bearer '.length).trim());
       if (token) {
         request.principal =
@@ -44,7 +64,7 @@ export function registerAuth(app: FastifyInstance, db: Database, config: ApiConf
           })) ?? null;
       }
       if (!request.principal) throw unauthenticated();
-      if (!SAFE_METHODS.has(request.method) && !token?.scopes.includes('write')) {
+      if (!isRead(request) && !token?.scopes.includes('write')) {
         throw new HttpError(403, 'insufficient_scope', 'This access token is read-only.');
       }
     } else {

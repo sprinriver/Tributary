@@ -993,3 +993,116 @@ Entry template:
   - Full local `pnpm e2e` after the fix: 45 passed, and the query service logged no errors. RES-03 failed only on
     this machine: the protein page's "Measured in" table is capped, and hundreds of earlier local runs push the
     new experiment past the cap. CI starts from an empty database.
+
+## 2026-11-01 — Phase 20: MCP server, Python SDK and webhooks
+- **Dependencies**, approved by the owner on 2026-11-01 ("whatever you suggest"):
+  - `@anthropic-ai/sdk` 0.115.0 (MIT; earlier entries said Apache-2.0, which was wrong)
+  - `@anthropic-ai/bedrock-sdk` 0.32.0 (MIT)
+  - `@modelcontextprotocol/sdk` 1.30.0 (MIT)
+  - All are exact-pinned and over 90 days old. `pnpm run licence:scan` passes (196 dependencies).
+- Built (SPEC M12/M13; ADR 0023):
+  - **MCP server** at `POST /mcp` (Streamable HTTP, stateless, JSON responses):
+    - Exposes the assistant's tool registry. Read tools are `readOnlyHint`. Write tools carry
+      `tributary/requiresUserInteraction` and need a write scope and admin permission.
+    - Tool errors come back as MCP tool errors. Results are cut at 90k characters. Every call is audited as
+      `mcp.tool_call` (`ai_assistant_on_behalf_of`).
+  - **OAuth 2.1:**
+    - RFC 9728 metadata at `/.well-known/oauth-protected-resource[/mcp]`; a 401 carries
+      `WWW-Authenticate … resource_metadata`.
+    - IdP access tokens are introspected (RFC 7662) and must name `MCP_RESOURCE` in `aud` (no passthrough).
+    - PATs of any scope work as a fallback.
+    - Tools reach the API in-process through a 2-minute HMAC-signed assertion, so permissions, validation and audit
+      stay the API's own.
+  - **Read-scoped tokens** may now call the three POST endpoints that only read: `/v1/query`, `/v1/charts/render`
+    and `/v1/ai/curation/suggest`.
+  - **Agent Skill:** `integrations/claude-skill/SKILL.md` covers connecting, ground rules (QuerySpecs only, cite
+    releases, statistics as stored, writes need the user), and workflows (explore an experiment, pull rows,
+    compare compounds, charts, failures).
+  - **Python SDK** (`packages/sdk-python`, standard library only):
+    - `list_experiments` (cursor), `get_experiment`, `list_datasets`, `search`, `run_query`, `iter_rows` and
+      `verify_webhook`.
+    - Notebook and webhook-receiver examples.
+    - `pnpm dev:token` prints a local PAT for it.
+  - **Webhooks** (migration 0019):
+    - Admin endpoints: create (the `whsec_` secret is shown once), list, delete, ping, deliveries.
+    - https only (http to localhost outside production).
+    - Signed as `X-Tributary-Signature: t=…,v1=HMAC-SHA256(secret, "t.body")`, with a 5-minute replay tolerance.
+    - 3 attempts with backoff, no redirects, every attempt recorded.
+    - Run status changes from events or polls notify subscribers without blocking them.
+  - **Assistant providers:** `AI_PROVIDER=anthropic` uses the Claude API (`ANTHROPIC_API_KEY`).
+    `AI_PROVIDER=bedrock` uses Amazon Bedrock (task role; `AI_MODEL` must be set to the account's Bedrock model id).
+  - README: AI and MCP settings, an Integrations section and new tasks.
+- Evidence:
+  - `pnpm check` ✓ (api 188 tests, compute 78 passed and 1 skipped).
+  - `pnpm run test:api "MCP-0|API-02"` ✓
+  - Against the local stack: `TRIBUTARY_API_URL=http://127.0.0.1:3000 TRIBUTARY_TOKEN=$(pnpm -s dev:token)
+    pnpm run test:compute -k API_0` → 4 passed.
+  - `test -f integrations/claude-skill/SKILL.md` ✓
+- Test amendments (own commit b8cafb9):
+  - The AI-01 provider test now expects real providers to build (the SDKs are approved) and Bedrock to require
+    `AI_MODEL`.
+  - The API-01 fake API routed `/v1/experiments/{id}` to the list handler.
+- Gaps:
+  - The real-provider eval is still not run: it needs an `ANTHROPIC_API_KEY` or Bedrock access.
+  - No wheel build script: install with `pip install ./packages/sdk-python`.
+  - The SDK is hand-written, not generated (ADR 0023).
+  - IdPs without token introspection need JWKS validation.
+  - The live-stack SDK test is skipped in CI's `check` job, which has no stack.
+- Security review (plan-reviewer), fixed:
+  - **Assertions:** the in-process assertion is signed with a random key generated per process (not
+    `COOKIE_SECRET`), lives 60 s, and is tested against forging, tampering, expiry and scope escalation.
+  - **OAuth tokens:** introspected once (an IdP error is a 401) and must carry `tributary:read`.
+  - **Webhook SSRF guard:** in production, hosts must resolve to public addresses, at creation and before each
+    delivery. Raw network errors are no longer returned.
+  - **MCP tool output:** search snippets no longer carry the UI's highlight control characters.
+  - Recorded, not fixed: plaintext webhook secrets (KMS in Phase 22). The SDK is 1.x, not "v2" (ADR 0023).
+- Commit: ece946d
+
+## 2026-11-01 — Open source (Apache-2.0) and Render hosting for a public demo
+- **Owner decisions:**
+  - Licence: Apache-2.0.
+  - Hosting: Render only (first proposed as a VPS; changed by the owner mid-way).
+  - Purpose: a public demo.
+- **Branch housekeeping:** PR #1 was merged before the Phase 20 commits were pushed, so Phase 20 was not in
+  `main`. The branch was restored from the remote and `main` merged into it (no force-push). Phase 20 goes into
+  `main` with this PR.
+- Built (ADR 0024):
+  - **Open-source files:** `LICENSE` (Apache-2.0, canonical text), `NOTICE`, `CONTRIBUTING.md`,
+    `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue and PR templates. README has the licence, a "Deploy to Render"
+    button and the deployment options.
+  - **Demo mode:** a public `GET /v1/instance` and a banner on every page with the demo logins.
+    - Configured by `DEMO_MODE`, `DEMO_LOGINS` (an admin login is refused at startup), `INSTANCE_NAME` and
+      `DEMO_NOTICE`.
+  - **Render Blueprint** (`render.yaml`): seven services, one Dockerfile each, in `deploy/render/`.
+    - Caddy for the web (SPA, `/api`, `/auth`), SeaweedFS S3 on a disk, the API with a pre-deploy step, query,
+      compute, Keycloak with a setup script, and pgvector Postgres on a disk.
+    - Generated secrets come from an environment group.
+  - **Configuration for hosts that cannot compose values:**
+    - the database URL in parts (URL-encoded)
+    - `QUERY_HOSTPORT`, `COMPUTE_HOSTPORT` and `S3_HOSTPORT`
+    - `BUNDLED_KEYCLOAK`, so the issuer follows `PUBLIC_URL`
+    - plain-HTTP issuers in production only on `localhost`/`*.localhost`
+  - **Local trial** (`deploy/local-trial/compose.yml`): the same Dockerfiles and variables, at
+    `http://tributary.localhost:8080`.
+  - **Guide:** `docs/DEPLOY_RENDER.md` covers deploy, checks, custom domain, configuration, updates, resetting the
+    demo, backups, real use, the local trial and troubleshooting.
+- Evidence:
+  - All seven images build (`docker build` with each Dockerfile).
+  - **Local trial:** the pre-deploy migrated, created the buckets and seeded the demo data. Keycloak setup printed
+    `configured for http://tributary.localhost:8080`.
+  - **Browser smoke test:**
+    - the banner shows both demo logins
+    - scientist and viewer sign in through Keycloak
+    - the Experiments page lists the demo data, and the Explorer returns 25 rows
+    - a browser upload to `s3.tributary.localhost:8333` through a presigned URL returned 200 with an ETag, and
+      the upload completed
+    - screenshots in `artifacts/deploy/`
+  - `pnpm run test:api OSS-01` ✓ (7).
+  - A first version targeting a single VPS (Caddy with automatic HTTPS) was also built and smoke-tested over
+    HTTPS before the owner chose Render. It was removed to keep one deployment path.
+- Not verified here: applying `render.yaml` on Render itself, which needs the owner's account. The first deploy
+  is the check, and `docs/DEPLOY_RENDER.md` → "Checking it works" lists what to look at.
+- For the owner to fill in: the code-of-conduct contact address (`CODE_OF_CONDUCT.md`,
+  `conduct@REPLACE-WITH-YOUR-DOMAIN`). Enable GitHub private vulnerability reporting (Settings → Security) for
+  `SECURITY.md`.
+- Commit: 72bddce
