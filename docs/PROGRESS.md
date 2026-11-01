@@ -982,3 +982,14 @@ Entry template:
   earlier run's value. It is now unique per run (`<n> min`).
 - Evidence: `CI=1 pnpm e2e` 45 passed and 1 failed (ADM-02, the collision above); after the fix,
   `CI=1 pnpm e2e ADM-0` ✓ (4); web unit tests ✓ (30).
+- Follow-up: RES-01 then failed in CI with "The query service answered HTTP 500" on the volcano chart (also seen
+  once locally in Phase 19).
+  - With the query service's log captured, the cause was a race in its release cache: two charts on one page
+    downloaded the same release at once into the same `<sha>.parquet.partial`, and the second rename failed
+    (ENOENT).
+  - Fix (`apps/query/src/objects.ts`): concurrent readers share one in-flight download, and each download writes
+    a uniquely named temp file. New test `QRY-05: concurrent reads of one release share a single download`.
+    It failed with the CI error before the fix and passes after.
+  - Full local `pnpm e2e` after the fix: 45 passed, and the query service logged no errors. RES-03 failed only on
+    this machine: the protein page's "Measured in" table is capped, and hundreds of earlier local runs push the
+    new experiment past the cap. CI starts from an empty database.

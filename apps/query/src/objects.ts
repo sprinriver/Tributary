@@ -1,5 +1,5 @@
 import { GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import { createReadStream, createWriteStream, existsSync, mkdirSync, renameSync, statSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { Readable } from 'node:stream';
@@ -10,6 +10,8 @@ import type { QueryConfig } from './config.ts';
 export class Objects {
   readonly client: S3Client;
   readonly #dir: string;
+  /** Downloads in flight, by cache path: concurrent readers of one release share one download. */
+  readonly #pending = new Map<string, Promise<string>>();
 
   constructor(config: QueryConfig, workDir: string) {
     this.client = new S3Client({
@@ -31,7 +33,8 @@ export class Objects {
   async download(bucket: string, key: string, target: string): Promise<void> {
     const res = await this.client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
     if (!res.Body) throw new Error(`Object ${key} has no body`);
-    const partial = `${target}.partial`;
+    // A unique temporary name, so an interrupted or parallel download never renames another's file.
+    const partial = `${target}.${randomUUID()}.partial`;
     await pipeline(res.Body as Readable, createWriteStream(partial));
     renameSync(partial, target);
   }
@@ -66,7 +69,14 @@ export class Objects {
    */
   async cached(bucket: string, key: string, sha256: string): Promise<string> {
     const target = this.path('cache', `${sha256}.parquet`);
-    if (!existsSync(target)) await this.download(bucket, key, target);
-    return target;
+    if (existsSync(target)) return target;
+    let pending = this.#pending.get(target);
+    if (!pending) {
+      pending = this.download(bucket, key, target)
+        .then(() => target)
+        .finally(() => this.#pending.delete(target));
+      this.#pending.set(target, pending);
+    }
+    return pending;
   }
 }
