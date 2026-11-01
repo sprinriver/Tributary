@@ -114,7 +114,7 @@ describe('admin settings (SPEC M11)', () => {
     });
     expect(put.statusCode, put.body).toBe(200);
     const after = (await as(admin, 'GET', '/v1/admin/ontology-sources')).json() as Json;
-    expect((after.sources as Json[]).find((s) => s.prefix === 'EFO').enabled).toBe(false);
+    expect((after.sources as Json[]).find((s) => s.prefix === 'EFO')!.enabled).toBe(false);
     const lookup = await as(contributor, 'GET', '/v1/ontology/search?ontology=EFO&q=asthma');
     expect(lookup.statusCode).toBe(422);
     expect((lookup.json() as Json).code).toBe('ontology_disabled');
