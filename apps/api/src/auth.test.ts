@@ -3,6 +3,7 @@ import { startTestDatabase, type TestDatabase } from '@tributary/db/testing';
 import type { FastifyInstance } from 'fastify';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildApp } from './app.ts';
+import { upsertLoginUser } from './auth/login-user.ts';
 import { createSession } from './auth/sessions.ts';
 import { createPersonalAccessToken, revokePersonalAccessToken } from './auth/tokens.ts';
 import { testConfig } from './testing.ts';
@@ -247,5 +248,40 @@ describe('authentication, roles and audit', () => {
       .select(db.fn.countAll<string>().as('n'))
       .executeTakeFirstOrThrow();
     expect(after.n).toBe(before.n);
+  });
+
+  it('AUTH-01: simultaneous sign-ins of the same user (first login included) both succeed', async () => {
+    // Two browser tabs or tests completing the OIDC callback at once used to collide on the unique user, group and
+    // membership keys (HTTP 409 on the callback page).
+    const login = {
+      sub: 'kc|parallel',
+      email: 'parallel@example.test',
+      name: 'Parallel Person',
+      groups: ['parallel-a', 'parallel-b'],
+    };
+    // Every transaction is open before any of them writes, so the callbacks really overlap.
+    const n = 6;
+    let ready = 0;
+    let release!: () => void;
+    const barrier = new Promise<void>((resolve) => (release = resolve));
+    const ids = await Promise.all(
+      Array.from({ length: n }, () =>
+        db.transaction().execute(async (trx) => {
+          await trx.selectFrom('app_user').select('id').limit(1).execute();
+          if (++ready === n) release();
+          await barrier;
+          return upsertLoginUser(trx, DEV_TENANT_ID, login);
+        }),
+      ),
+    );
+    expect(new Set(ids).size).toBe(1);
+    const members = await db
+      .selectFrom('group_member as m')
+      .innerJoin('app_group as g', 'g.id', 'm.group_id')
+      .select('g.name')
+      .where('m.user_id', '=', ids[0]!)
+      .where('m.deleted_at', 'is', null)
+      .execute();
+    expect(members.map((m) => m.name).sort()).toEqual(['parallel-a', 'parallel-b']);
   });
 });

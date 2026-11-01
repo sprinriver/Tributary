@@ -1,5 +1,6 @@
 import { CreateTokenBodySchema } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
+import { upsertLoginUser } from '../auth/login-user.ts';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { writeAudit } from '../audit.ts';
 import type { OidcClient, LoginFlow } from '../auth/oidc.ts';
@@ -58,36 +59,9 @@ export function registerAuthRoutes(
     const query = request.url.includes('?') ? request.url.slice(request.url.indexOf('?')) : '';
     const login = await oidc.finishLogin(query, flow);
 
-    const userId = await db.transaction().execute(async (trx) => {
-      const tenantId = config.tenantId;
-      const existing = await trx
-        .selectFrom('app_user')
-        .select('id')
-        .where('sub', '=', login.sub)
-        .executeTakeFirst();
-      const id =
-        existing?.id ??
-        (
-          await trx
-            .insertInto('app_user')
-            .values({
-              tenant_id: tenantId,
-              created_by: tenantId,
-              sub: login.sub,
-              email: login.email,
-              name: login.name,
-            })
-            .returning('id')
-            .executeTakeFirstOrThrow()
-        ).id;
-      await trx
-        .updateTable('app_user')
-        .set({ email: login.email, name: login.name, last_login_at: new Date() })
-        .where('id', '=', id)
-        .execute();
-      await syncGroups(trx as unknown as Database, tenantId, id, login.groups);
-      return id;
-    });
+    const userId = await db
+      .transaction()
+      .execute((trx) => upsertLoginUser(trx as unknown as Database, config.tenantId, login));
 
     const session = await createSession(db, userId, {
       idToken: login.idToken,
@@ -203,45 +177,4 @@ export function registerAuthRoutes(
     });
     return reply.status(204).send();
   });
-}
-
-/** Mirrors the IdP's groups claim into app_group / group_member (soft-deleting memberships that ended). */
-async function syncGroups(db: Database, tenantId: string, userId: string, groups: string[]): Promise<void> {
-  const groupIds: string[] = [];
-  for (const name of [...new Set(groups)]) {
-    const found = await db
-      .selectFrom('app_group')
-      .select('id')
-      .where('name', '=', name)
-      .where('deleted_at', 'is', null)
-      .executeTakeFirst();
-    groupIds.push(
-      found?.id ??
-        (
-          await db
-            .insertInto('app_group')
-            .values({ tenant_id: tenantId, created_by: userId, name })
-            .returning('id')
-            .executeTakeFirstOrThrow()
-        ).id,
-    );
-  }
-  const current = await db
-    .selectFrom('group_member')
-    .select(['id', 'group_id'])
-    .where('user_id', '=', userId)
-    .where('deleted_at', 'is', null)
-    .execute();
-  const ended = current.filter((m) => !groupIds.includes(m.group_id)).map((m) => m.id);
-  if (ended.length)
-    await db.updateTable('group_member').set({ deleted_at: new Date() }).where('id', 'in', ended).execute();
-  const missing = groupIds.filter((id) => !current.some((m) => m.group_id === id));
-  if (missing.length) {
-    await db
-      .insertInto('group_member')
-      .values(
-        missing.map((group_id) => ({ tenant_id: tenantId, created_by: userId, group_id, user_id: userId })),
-      )
-      .execute();
-  }
 }
