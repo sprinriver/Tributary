@@ -722,4 +722,4 @@ Entry template:
 - CI: added a failure-only step that prints Playwright `error-context.md` files into the job log (artifact
   downloads are blocked from the build container), to diagnose the PIPE-06 sign-in failure that repeats on
   CI but not locally.
-- Commit: (pending)
+- Commit: 57dd9fc

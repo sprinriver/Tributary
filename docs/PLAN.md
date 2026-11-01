@@ -273,7 +273,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 17 — Search
-Status: done
+Status: done (57dd9fc)
 Goal: Hybrid search over experiments and samples with ontology synonyms and strict permission filtering.
 Spec: M9   Features: SRCH-01 … SRCH-03
 In scope: search documents (searchable fields + names + ontology labels/synonyms); tsvector + GIN; embeddings table with provider abstraction (`none` default, `bedrock_titan_v2`, `voyage_4`, `local`) + HNSW with iterative scans; reciprocal-rank fusion; facets; ⌘K palette + search page; reindex on publish.
