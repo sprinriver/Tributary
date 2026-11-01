@@ -262,15 +262,15 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 16 — Results pages and cross-experiment views
-Status: todo
+Status: done
 Goal: Automatic results pages, dose-response viewer, protein and compound pages, contrast comparison.
 Spec: M8   Features: RES-01 … RES-05
 In scope: experiment results page (QC panel, volcano per contrast with known-target overlay, top hits, dose-response summary, files, deterministic methods paragraph from run provenance); dose-response viewer (curves from responses + fitted parameters, small multiples, filters); protein page; compound page; comparison view (2–6 contrasts: log2_fc vs log2_fc scatter, overlap table, UpSet-style bars in Plotly).
 **Suggested split:** 16a = results page, methods paragraph, dose-response viewer · 16b = protein page, compound page, comparison view.
 Definition of done:
-- [ ] e2e for each page on seeded + demo-run data; screenshots
-- [ ] Methods paragraph unit tests (pipeline revision, tool versions, thresholds present)
-- [ ] `pnpm check` exits 0
+- [x] e2e for each page on seeded + demo-run data; screenshots
+- [x] Methods paragraph unit tests (pipeline revision, tool versions, thresholds present)
+- [x] `pnpm check` exits 0
 
 ## Phase 17 — Search
 Status: todo

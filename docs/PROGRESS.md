@@ -604,3 +604,42 @@ Entry template:
   green run (MA hits without p, pie sum, PCA long data).
 - Gaps: no picker for the pairwise reference group; scatter 3D has no panels; MA/volcano label collision handling.
 - Commit: 2e4b791
+
+## 2026-10-31 — Phase 16: Results pages and cross-experiment views — done
+- Built: experiment results page (`/experiments/:id/results`, "Results" on the experiment page): methods
+  paragraph (deterministic, from run and release provenance; copy button), QC panel, one volcano per contrast,
+  top-hits table (links to protein pages), dose-response viewer, files. Dose-response viewer (registry chart
+  `dose_response`: measured responses and the fitted CurveCurator curve per feature as small multiples; regulation,
+  FDR, count, sort, fit and log-dose options; explains an empty selection). Protein page (`/proteins/:acc`):
+  reference annotations, every experiment and contrast it was measured in, its dose-response curves. Compound page
+  (`/compounds/:id`): properties/ADME, targets (compound→target reference release), contrasts it was the treatment
+  in, and volcanoes (six most recent) with a known-target overlay (new volcano `highlight` option, matched on any
+  accession of a protein group, isoforms → canonical). Comparison view (`/compare`, nav "Compare"): 2–6 contrasts →
+  log2 FC scatter, overlap table and UpSet-style intersection bars in Plotly (no UpSet.js — AGPL). APIs:
+  `GET /v1/versions/:id/results`, `GET /v1/compounds/:id`, `GET /v1/proteins/:id`, `GET /v1/compare/options`,
+  `POST /v1/compare`. Synthetic `fixtures/reference/compound_targets.tsv` (one primary and one off-target per
+  compound).
+- Decisions (and why):
+  - Compound/property/target-annotation pages read the seeded reference tables; compound→target links are a
+    reference release (target_annotation kind), so the seed and its counts are unchanged.
+  - Compound → contrasts: samples whose factors have that compound_id and whose condition is the contrast's
+    numerator.
+  - Comparison matches protein groups on accessions; only accessions measured in every contrast are compared
+    (missing and ambiguous ones are counted and shown); exclusive intersections.
+  - The fitted curve is evaluated from stored parameters in TypeScript (display of a fitted model, no fitting);
+    formula from the importer's SOURCE.md.
+- Dependencies: none new.
+- Evidence: `pnpm check` ✓ · `pnpm run test:api RES` ✓ (methods 3, API 4, shaping 4) · `pnpm e2e` ✓ (34, incl. RES-01…05
+  with the demo run) · screenshots in `artifacts/phase-16/`.
+- Review: omics-reviewer — fixed: compare requires the contrast (P0: several contrasts of one release would merge),
+  truncated reads refused, overlap sorted by significance with totals, only accessions measured everywhere compared,
+  accession-level matching with ambiguity counts, methods paragraph calls the thresholds display thresholds, names
+  genes for RNA-seq/CRISPR, writes "p" when unadjusted and the contrast from its stored sides, curves without FDR
+  counted and named, hidden dose-0 points reported, isoforms match their canonical accession. Open: the compound
+  page uses the version's newest DA release, which may not contain every contrast (shown empty then).
+- Test amendments: CON-03 and the Phase 15 VIZ-05 registry assertions now expect `dose_response` (phase-by-phase
+  fill); e2e release helper generalised (no assertion changes); RES-02 test raises the curve cap before checking
+  filters (the default cap hid their effect) and uses an exact "Curves" locator; one shaping expectation corrected
+  before the first green run.
+- Gaps: dose-response "relevance score" not yet a filter; no PDF/print layout for the results page.
+- Commit: (pending)

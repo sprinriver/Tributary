@@ -105,13 +105,16 @@ def write_reference(out: Path, rng: np.random.Generator) -> list[str]:
     )
     # Synthetic compound -> target links (target_annotation rows keyed by compound): one primary target and
     # one off-target per compound, chosen deterministically from the real proteins.
-    proteins = [(acc, gene, p.family) for p in REAL_PROTEINS for acc, gene in zip(p.accessions, p.genes, strict=True)]
-    links: list[list[object]] = []
+    proteins = [
+        (acc, gene, p.family) for p in REAL_PROTEINS for acc, gene in zip(p.accessions, p.genes, strict=True)
+    ]
+    links: list[list[str]] = []
     for i, cid in enumerate(ids):
         for key, offset in (("primary_target", 0), ("off_target", 3)):
             acc, gene, family = proteins[(i + offset) % len(proteins)]
             links.append([acc, gene, family, key, cid])
-    write_tsv(out / "compound_targets.tsv", ["uniprot_accession", "gene_symbol", "family", "key", "value"], links)
+    columns = ["uniprot_accession", "gene_symbol", "family", "key", "value"]
+    write_tsv(out / "compound_targets.tsv", columns, links)
     return [
         "reference/compounds.tsv",
         "reference/compound_properties.tsv",

@@ -2,11 +2,13 @@ import type {
   ChartSpec,
   ChartType,
   DendrogramOptions,
+  DoseResponseOptions,
   HeatmapOptions,
   VolcanoOptions,
 } from '@tributary/contracts';
 import type { Row } from './common.ts';
 import type { Compute } from './compute.ts';
+import { shapeDoseResponse } from './dose-shapes.ts';
 import { shapeBox, shapeHistogram, shapeLollipop, shapePie } from './dist-shapes.ts';
 import { shapeDendrogram, shapeHeatmap } from './figures.ts';
 import { shapeMa, shapePca, shapeQc } from './omics-shapes.ts';
@@ -52,6 +54,8 @@ export async function shapeChart(
       return shapePca(rows, spec, options, compute);
     case 'qc_panel':
       return shapeQc(rows, spec, options, compute);
+    case 'dose_response':
+      return shapeDoseResponse(rows, spec, options as DoseResponseOptions);
     default:
       throw new Error(`No shaping for ${type}`);
   }

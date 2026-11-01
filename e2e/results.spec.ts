@@ -38,6 +38,9 @@ test('RES-02: dose-response viewer — fitted curves as small multiples, filtere
   await page.goto(`/experiments/${made.experiment}/results`);
   const viewer = page.getByRole('region', { name: 'Dose-response' });
   const figure = viewer.getByRole('figure');
+  // Show up to 24 curves so the filters' effect is not hidden by the default cap of 12.
+  await viewer.getByLabel('Curves', { exact: true }).fill('24');
+  await viewer.getByRole('button', { name: 'Apply' }).click();
   await expect(figure.locator('.annotation-text').first()).toBeVisible({ timeout: 30_000 });
   const regulated = await figure.locator('.annotation-text').count();
   await viewer.getByRole('checkbox', { name: 'not' }).check();

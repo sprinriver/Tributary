@@ -24,6 +24,7 @@ export function Layout() {
           <Link to="/experiments">Experiments</Link>
           <Link to="/datasets">Datasets</Link>
           <Link to="/explore">Explore</Link>
+          <Link to="/compare">Compare</Link>
           {me.data?.roles.some((r) => r.role === 'system_admin') && (
             <Link to="/admin/pipelines">Pipelines</Link>
           )}

@@ -5,7 +5,8 @@ import { z } from 'zod';
 export type Control =
   | { kind: 'number'; name: string; min?: number; max?: number; integer: boolean; optional: boolean }
   | { kind: 'boolean'; name: string }
-  | { kind: 'enum'; name: string; values: string[] };
+  | { kind: 'enum'; name: string; values: string[] }
+  | { kind: 'multi'; name: string; values: string[] };
 
 export const OPTION_LABELS: Record<string, string> = {
   fc_threshold: 'Fold-change threshold',
@@ -65,6 +66,11 @@ export const OPTION_LABELS: Record<string, string> = {
   show_completeness: 'Missing values',
   show_cv: 'CVs',
   show_intensity: 'Intensity distributions',
+  regulation: 'Regulation',
+  fdr_max: 'FDR at most',
+  max_curves: 'Curves',
+  show_fit: 'Fitted curves',
+  log_dose: 'Log dose axis',
 };
 
 /** Same option name, different meaning per chart. */
@@ -131,6 +137,9 @@ export function controlsOf(type: ChartType): Control[] {
     }
     if (base instanceof z.ZodBoolean) return [{ kind: 'boolean', name }];
     if (base instanceof z.ZodEnum) return [{ kind: 'enum', name, values: base.options as string[] }];
+    // Arrays of choices (e.g. regulation classes) render as checkbox groups; free-form lists are set by pages.
+    if (base instanceof z.ZodArray && base.element instanceof z.ZodEnum)
+      return [{ kind: 'multi', name, values: base.element.options as string[] }];
     return [];
   });
 }

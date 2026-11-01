@@ -2,6 +2,9 @@ import { createRootRoute, createRoute, createRouter } from '@tanstack/react-rout
 import { ForbiddenPage, Layout } from './components/Layout.tsx';
 import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
 import { ExplorerPage, type ExplorerSearch } from './explorer/ExplorerPage.tsx';
+import { ComparePage } from './results/ComparePage.tsx';
+import { CompoundPage, ProteinPage } from './results/EntityPages.tsx';
+import { ResultsPage } from './results/ResultsPage.tsx';
 import { ReleasePage } from './datasets/ReleasePage.tsx';
 import { AdminPipelinesPage } from './pipelines/AdminPipelinesPage.tsx';
 import { RunPage } from './pipelines/RunPage.tsx';
@@ -62,6 +65,30 @@ const explorerRoute = createRoute({
       ['q', 'view'].map((k) => [k, str(search[k])]).filter(([, v]) => v !== undefined),
     ) as ExplorerSearch,
 });
+const resultsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/experiments/$id/results',
+  component: ResultsPage,
+  validateSearch: (search: Record<string, unknown>): { version?: string } => {
+    const version = str(search.version);
+    return version ? { version } : {};
+  },
+});
+const proteinRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/proteins/$id',
+  component: ProteinPage,
+});
+const compoundRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/compounds/$id',
+  component: CompoundPage,
+});
+const compareRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/compare',
+  component: ComparePage,
+});
 const runRoute = createRoute({ getParentRoute: () => rootRoute, path: '/runs/$id', component: RunPage });
 const adminPipelinesRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -82,6 +109,10 @@ export const router = createRouter({
     experimentRoute,
     datasetsRoute,
     explorerRoute,
+    resultsRoute,
+    proteinRoute,
+    compoundRoute,
+    compareRoute,
     releaseRoute,
     runRoute,
     adminPipelinesRoute,

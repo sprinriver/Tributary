@@ -25,7 +25,7 @@ export const newDraft = (type: ChartType): ChartDraft => ({
   yTitle: '',
 });
 
-function OptionControl({
+export function OptionControl({
   label,
   control,
   value,
@@ -38,6 +38,29 @@ function OptionControl({
   error?: string | undefined;
   onChange: (v: unknown) => void;
 }) {
+  if (control.kind === 'multi') {
+    const chosen = Array.isArray(value) ? (value as string[]) : [];
+    return (
+      <fieldset>
+        <legend>{label}</legend>
+        {control.values.map((v) => (
+          <label key={v} style={{ marginRight: 10 }}>
+            <input
+              type="checkbox"
+              checked={chosen.includes(v)}
+              onChange={(e) => onChange(e.target.checked ? [...chosen, v] : chosen.filter((c) => c !== v))}
+            />{' '}
+            {v}
+          </label>
+        ))}
+        {error && (
+          <span className="error" role="alert">
+            {error}
+          </span>
+        )}
+      </fieldset>
+    );
+  }
   if (control.kind === 'boolean') {
     return (
       <div className="field">

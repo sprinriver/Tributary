@@ -133,6 +133,16 @@ function VersionActions({
 
   return (
     <div className="row" style={{ marginLeft: 'auto' }}>
+      {version.status === 'published' && (
+        <Link
+          to="/experiments/$id/results"
+          params={{ id: experiment.id }}
+          search={{ version: version.id }}
+          className="button"
+        >
+          Results
+        </Link>
+      )}
       {version.status === 'published' && canWrite && (
         <button type="button" className="primary" onClick={() => setLaunching(true)}>
           Launch pipeline

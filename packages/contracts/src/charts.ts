@@ -3,6 +3,7 @@ import { dendrogram } from './charts/dendrogram.ts';
 import { boxViolin, histogramKde, lollipop, pieDonut } from './charts/distribution.ts';
 import { heatmap } from './charts/heatmap.ts';
 import { ma, pca, qcPanel } from './charts/omics.ts';
+import { doseResponse } from './charts/results.ts';
 import { volcano } from './charts/volcano.ts';
 import { bar, bubble, line, scatter2d, scatter3d } from './charts/xy.ts';
 import { UuidV7Schema } from './common.ts';
@@ -61,6 +62,8 @@ export interface ChartDefinition {
   encodings: Partial<Record<EncodingSlot, EncodingDef>>;
   /** Types, ranges, defaults and cross-field `requires` rules. */
   options: z.ZodType;
+  /** Columns the chart always reads besides its encodings (e.g. fitted curve parameters of a dose_response). */
+  requiresColumns?: string[];
   /** Rules that need the encodings too (e.g. labelling hits needs a label column). */
   rules?: (spec: ChartSpec, options: unknown) => ContractError[];
   dataRules: {
@@ -91,6 +94,7 @@ export const CHART_REGISTRY: Partial<Record<ChartType, ChartDefinition>> = {
   ma,
   pca,
   qc_panel: qcPanel,
+  dose_response: doseResponse,
 };
 
 /** Option values with every default applied (what the form starts from). */

@@ -48,7 +48,20 @@ export async function renderChart(
   const options = def.options.parse(spec.options) as Record<string, unknown>;
 
   // Read only the encoded columns, every row up to the chart's point cap (+1 to detect overflow).
-  const encoded = [...new Set(Object.values(spec.encodings).flatMap((v) => (Array.isArray(v) ? v : [v])))];
+  const types = columnTypes(query, sources);
+  const missing = (def.requiresColumns ?? []).filter((c) => !(c in types));
+  if (missing.length)
+    throw dataError(
+      'wrong_kind',
+      'data',
+      `${def.label} needs the columns ${missing.join(', ')} (a ${spec.type} dataset).`,
+    );
+  const encoded = [
+    ...new Set([
+      ...Object.values(spec.encodings).flatMap((v) => (Array.isArray(v) ? v : [v])),
+      ...(def.requiresColumns ?? []),
+    ]),
+  ];
   const cap = def.dataRules.maxPoints ?? 100_000;
   const { page: _page, select: _select, ...rest } = query;
   const internal = { spec: { ...rest, select: encoded }, ...sources, all_rows: cap + 1 };

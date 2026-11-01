@@ -21,6 +21,9 @@ export const volcanoOptions = z
     standardize_x: z.boolean().default(false),
     /** WebGL points (scattergl) for large tables. */
     webgl: z.boolean().default(true),
+    /** Known-target overlay (SPEC M7/M8): ids matched against the label column (any accession of a group). */
+    highlight: z.array(z.string().max(100)).max(5000).optional(),
+    highlight_label: z.string().max(60).default('Known targets'),
   })
   .superRefine((o, ctx) => {
     if (o.pseudolog_base !== undefined && !o.pseudolog_x && !o.pseudolog_y)
@@ -44,10 +47,23 @@ export const volcano: ChartDefinition = {
     label: { required: false, accepts: ['categorical'] },
   },
   options: volcanoOptions,
-  rules: (spec, options) =>
-    (options as VolcanoOptions).label_top > 0 && !spec.encodings.label
-      ? [{ code: 'requires', field: 'options.label_top', message: 'Choose a label column to label hits.' }]
-      : [],
+  rules: (spec, options) => {
+    const o = options as VolcanoOptions;
+    return [
+      ...(o.label_top > 0 && !spec.encodings.label
+        ? [{ code: 'requires', field: 'options.label_top', message: 'Choose a label column to label hits.' }]
+        : []),
+      ...((o.highlight?.length ?? 0) > 0 && !spec.encodings.label
+        ? [
+            {
+              code: 'requires',
+              field: 'options.highlight',
+              message: 'Highlighting needs a label column with protein ids.',
+            },
+          ]
+        : []),
+    ];
+  },
   dataRules: { minRows: 1, maxPoints: 500_000, nullPolicy: 'drop-and-report' },
   compute: 'ts',
   traces: ['scattergl'],

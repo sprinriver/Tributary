@@ -103,6 +103,39 @@ export function shapeVolcano(rows: Row[], spec: ChartSpec, o: VolcanoOptions): S
   });
 
   // Threshold lines live in the plotted space: y is −log10(p) in both modes, then any pseudolog.
+  // Known-target overlay: ids matched against any accession of the label (protein groups are ";"-joined).
+  // Isoforms (P04637-2) match their canonical accession.
+  const canonical = (id: string) => id.trim().replace(/-\d+$/, '');
+  const wanted = new Set((o.highlight ?? []).map(canonical));
+  if (wanted.size && label) {
+    const idx = kept.flatMap((k, j) =>
+      toLabel(k.r[label])
+        .split(';')
+        .some((id) => wanted.has(canonical(id)))
+        ? [j]
+        : [],
+    );
+    const found = new Set(
+      idx.flatMap((j) =>
+        toLabel(kept[j]!.r[label])
+          .split(';')
+          .map(canonical)
+          .filter((id) => wanted.has(id)),
+      ),
+    );
+    data.push({
+      type: o.webgl ? 'scattergl' : 'scatter',
+      mode: 'markers',
+      name: `${o.highlight_label} (${idx.length})`,
+      x: idx.map((j) => xs[j]),
+      y: idx.map((j) => ys[j]),
+      customdata: idx.map((j) => [toLabel(kept[j]!.r[label]), kept[j]!.i]),
+      hovertemplate: '%{customdata[0]}<extra>' + o.highlight_label + '</extra>',
+      marker: { color: 'rgba(0,0,0,0)', size: 11, line: { color: '#e6a100', width: 2.5 } },
+    } as (typeof data)[number]);
+    transformations.push(`${o.highlight_label}: ${found.size} of ${wanted.size} highlighted ids found`);
+  }
+
   const yLine = o.pseudolog_y ? pseudolog(-Math.log10(o.p_threshold), base) : -Math.log10(o.p_threshold);
   const xLine = (v: number) => (o.pseudolog_x ? pseudolog(v, base) : v);
   const line = { color: '#57606a', dash: 'dash', width: 1 };
