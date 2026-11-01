@@ -67,3 +67,14 @@ describe('private service addresses (Render hostport)', () => {
     ).toBe('http://tributary-s3-ef56:8333');
   });
 });
+
+describe('plain-http identity provider', () => {
+  it('OSS-01: production refuses an http issuer unless it is on localhost (local trials only)', async () => {
+    const { allowInsecureIssuer } = await import('./auth/oidc.ts');
+    expect(allowInsecureIssuer('http://localhost:8080/realms/tributary', false)).toBe(true);
+    expect(allowInsecureIssuer('http://tributary.localhost:8080/auth/realms/tributary', true)).toBe(true);
+    expect(allowInsecureIssuer('http://idp.example.com/realms/x', true)).toBe(false);
+    expect(allowInsecureIssuer('http://localhost.example.com/realms/x', true)).toBe(false);
+    expect(allowInsecureIssuer('https://idp.example.com/realms/x', true)).toBe(false);
+  });
+});
