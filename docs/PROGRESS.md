@@ -1139,4 +1139,4 @@ Entry template:
 - Not verified here:
   - a build on Hugging Face itself (it needs the owner's account and a public repository)
   - the embedded-frame link, which can only be seen inside the Space page
-- Commit: (pending)
+- Commit: 42e1a83
