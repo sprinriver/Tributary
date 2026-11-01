@@ -9,8 +9,8 @@ import { startTestDatabase, type TestDatabase } from './testing/postgres.ts';
 const TABLES = [
   'access_token',
   'app_group',
-  'app_setting',
   'app_session',
+  'app_setting',
   'app_user',
   'assay_type',
   'audit_log',
