@@ -21,7 +21,8 @@ test('ADM-02: admin adds a program and edits the time-point picklist; the new-ex
 
   await admin.goto('/admin/lists');
   const times = admin.getByRole('region', { name: 'Time points' });
-  const value = `${(Date.now() % 90) + 2} h`;
+  // Unique per run, so it never collides with a default (6 h, 24 h …) or an earlier run's value.
+  const value = `${(Date.now() % 9_000_000) + 1000} min`;
   await times.getByLabel('New value').fill(value);
   await times.getByRole('button', { name: 'Add' }).click();
   await times.getByRole('button', { name: 'Save time points' }).click();
