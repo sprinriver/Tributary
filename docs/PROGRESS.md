@@ -754,4 +754,4 @@ Entry template:
 - Gaps (18b): re-authentication on publish/approve, the admin screens (templates v1.1, picklists, ontology
   sources, roles and group mapping, runner configuration, lifecycle, AI placeholder, health). AUD-02 stays
   open until re-auth is done.
-- Commit: (pending)
+- Commit: 4f3e8da
