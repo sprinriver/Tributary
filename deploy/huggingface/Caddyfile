@@ -1,0 +1,43 @@
+# One port (the Space's app_port). Hugging Face terminates HTTPS in front of it.
+{
+	auto_https off
+	admin off
+}
+
+:{$PORT} {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		# The Space page embeds the app in an iframe; sign-in needs the app opened directly (the banner links it).
+		Content-Security-Policy "frame-ancestors 'self' https://huggingface.co"
+		-Server
+	}
+
+	handle_path /api/* {
+		reverse_proxy 127.0.0.1:3000
+	}
+
+	@kcadmin path /auth/admin* /auth/realms/master*
+	handle @kcadmin {
+		respond 404
+	}
+	handle /auth/* {
+		reverse_proxy 127.0.0.1:8080 {
+			header_up X-Forwarded-Proto {$FORWARDED_PROTO}
+		}
+	}
+
+	# S3 path-style bucket URLs (presigned uploads) go to SeaweedFS unchanged, so their signatures stay valid.
+	@s3 path /tributary-raw /tributary-raw/* /tributary-warehouse /tributary-warehouse/* /tributary-work /tributary-work/*
+	handle @s3 {
+		reverse_proxy 127.0.0.1:8333
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}
