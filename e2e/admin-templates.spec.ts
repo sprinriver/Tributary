@@ -21,7 +21,20 @@ async function ddaExperiment(page: Page, name: string) {
     name,
   });
   const version = created.body.versions[0]!;
-  await apiCall(page, 'PUT', `/v1/versions/${version.id}/samples`, { rows: rows() });
+  // Earlier runs of this test left required fields in the DDA template: give every required field a value.
+  const templates = await apiCall<{ items: { status: string; fields: { key: string; scope: string; required: boolean }[] }[] }>(
+    page,
+    'GET',
+    '/v1/templates?assay_type=proteomics_dda',
+  );
+  const required = (templates.body.items.find((t) => t.status === 'published')?.fields ?? []).filter(
+    (f) => f.scope === 'sample' && f.required,
+  );
+  const filled = rows().map((r) => ({
+    ...Object.fromEntries(required.filter((f) => !(f.key in r)).map((f) => [f.key, '1'])),
+    ...r,
+  }));
+  await apiCall(page, 'PUT', `/v1/versions/${version.id}/samples`, { rows: filled });
   const detail = await apiCall<{ template_version: string }>(page, 'GET', `/v1/versions/${version.id}`);
   return { experiment: created.body.id, version: version.id, template: detail.body.template_version };
 }
