@@ -28,7 +28,10 @@ export function Layout() {
           <Link to="/compare">Compare</Link>
           <Link to="/search">Search</Link>
           {me.data?.roles.some((r) => r.role === 'system_admin') && (
-            <Link to="/admin/pipelines">Pipelines</Link>
+            <>
+              <Link to="/admin/pipelines">Pipelines</Link>
+              <Link to="/admin/audit">Audit</Link>
+            </>
           )}
         </nav>
         {me.data && (

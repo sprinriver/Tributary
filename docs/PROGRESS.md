@@ -647,7 +647,9 @@ Entry template:
 ## 2026-11-01 — CI fix: PIPE-06 sign-in timeout (second occurrence)
 - Symptom: on CI the admin's user button did not appear within 5 s of signing in to `/admin/pipelines` (passes
   locally, 34/34). CI artifacts were not reachable from the build container, so the exact cause on the runner is
-  not proven.
+  not proven. **Update (Phase 18):** the real cause was a sign-in race. Simultaneous OIDC callbacks for the same
+  user collided on unique keys and the callback answered 409. Fixed in 22a70b1. The retry below is still
+  useful, but it was not the cause.
 - Fixed the product weakness that matches it: `useMe` had `retry: false`, so one slow or failed `/auth/me` right
   after login left a signed-in user shown as signed out. A 401 is still final (signed out); network errors and 5xx
   are retried 3 times with backoff. The header and `RequireAuth` show "Could not load your account" with a retry
@@ -723,3 +725,33 @@ Entry template:
   downloads are blocked from the build container), to diagnose the PIPE-06 sign-in failure that repeats on
   CI but not locally.
 - Commit: 57dd9fc
+
+## 2026-11-01 — Phase 18a: Lineage graph, audit viewer and per-entity history — partial (18b pending)
+- Built:
+  - Lineage (ADR 0021): view `lineage.link` (migration 0016) combines recorded edges with foreign-key relations
+    (file→release, version→release, version→run, run→file, release→saved chart). Run launch records its inputs
+    (the version, and raw files that passed QC or were overridden). `GET /v1/lineage` takes kind, id, depth 1–6
+    and direction; it walks the view with recursive CTEs, caps nodes at 200, and filters by permission (an
+    unreadable root is 404; others' private charts are hidden).
+  - Lineage page `/lineage/:kind/:id`: layered SVG (upstream left, downstream right; click to centre), depth
+    and direction in the URL, and a table alternative. "Lineage" links on the release and run pages.
+  - Audit: `GET /v1/audit` (system admin; action, entity, actor and date filters; cursor paging) and
+    `GET /v1/audit/export`. The export is RFC 4180 CSV, neutralises formulas, and is itself audited. Admin page
+    `/admin/audit` (nav "Audit"): filters, table, "Load more", "Export CSV".
+  - Per-entity history: `GET /v1/history/{experiment|experiment_version|dataset_release|file|pipeline_run}/:id`
+    for readers of the program. History table on release and run pages, and a History tab on the experiment
+    page.
+- Fixed on the way (own commit 22a70b1): the OIDC callback race behind the CI PIPE-06 failures (see the CI-fix
+  entry above). The user, group and membership writes are now upserts, with a barrier-based regression test.
+- Decisions: see ADR 0021. Lineage view instead of a backfill; no graph library; system-admin audit viewer plus
+  history tabs for program readers.
+- Dependencies: none new.
+- Evidence: `pnpm check` ✓ · `pnpm run test:api "LIN|AUD-02"` ✓ (8) ·
+  `pnpm e2e "LIN-01|AUD-02|PIPE|AUTH"` ✓ (7) · screenshots in `artifacts/phase-18/` (lineage, release history,
+  audit log).
+- Test amendments: the e2e data helper can upload a raw file from a buffer and leave a release staged; it now
+  passes the buffer as a `Uint8Array` so the e2e typecheck accepts it. No assertion changes.
+- Gaps (18b): re-authentication on publish/approve, the admin screens (templates v1.1, picklists, ontology
+  sources, roles and group mapping, runner configuration, lifecycle, AI placeholder, health). AUD-02 stays
+  open until re-auth is done.
+- Commit: (pending)

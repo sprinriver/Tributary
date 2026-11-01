@@ -12,6 +12,7 @@ import { FilesTab } from '../files/FilesTab.tsx';
 import { canApproveIn, LaunchDialog } from '../pipelines/LaunchDialog.tsx';
 import { ContrastsTab } from '../registry/ContrastsTab.tsx';
 import { VersionsTab } from '../registry/VersionsTab.tsx';
+import { History } from '../trust/History.tsx';
 
 const TABS = [
   { id: 'overview', label: 'Overview' },
@@ -19,6 +20,7 @@ const TABS = [
   { id: 'contrasts', label: 'Contrasts' },
   { id: 'files', label: 'Files' },
   { id: 'versions', label: 'Versions' },
+  { id: 'history', label: 'History' },
 ] as const;
 type TabId = (typeof TABS)[number]['id'];
 
@@ -97,6 +99,7 @@ function ExperimentView() {
           <FilesTab key={version.data.id} version={version.data} programId={experiment.data.program_id} />
         )}
         {tab === 'versions' && <VersionsTab experiment={experiment.data} currentId={version.data.id} />}
+        {tab === 'history' && <History type="experiment" id={experiment.data.id} />}
       </div>
     </main>
   );

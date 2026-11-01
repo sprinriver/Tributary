@@ -9,6 +9,8 @@ import {
   RunLogsSchema,
   type Pipeline,
 } from '@tributary/contracts';
+import type { Database } from '@tributary/db';
+import { linkLineage } from '../pipelines/lineage.ts';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { insertAudit, requestActor } from '../audit.ts';
 import { authorize, readablePrograms, requirePrincipal, requireSystemAdmin } from '../auth/plugin.ts';
@@ -54,6 +56,47 @@ const pipelineRow = (r: {
   output_importers: r.output_importers as Pipeline['output_importers'],
   created_at: iso(r.created_at),
 });
+
+/**
+ * Lineage (SPEC M10): a run is launched for an experiment version's data, so the version and its raw files that
+ * passed QC (or were overridden by an approver) are recorded as the run's inputs at launch.
+ */
+async function recordRunInputs(
+  db: Database,
+  actor: { tenantId: string; userId: string },
+  versionId: string,
+  runId: string,
+): Promise<void> {
+  const run = { kind: 'pipeline_run' as const, id: runId };
+  await linkLineage(
+    db,
+    actor.tenantId,
+    actor.userId,
+    { kind: 'experiment_version', id: versionId },
+    'input_to',
+    run,
+  );
+  const overridden = (
+    await db
+      .selectFrom('qc_override')
+      .select('file_ids')
+      .where('experiment_version_id', '=', versionId)
+      .where('deleted_at', 'is', null)
+      .execute()
+  ).flatMap((o) => o.file_ids);
+  const raw = await db
+    .selectFrom('file_object')
+    .select(['id', 'ingest_status'])
+    .where('experiment_version_id', '=', versionId)
+    .where('role', '=', 'raw')
+    .where('pipeline_run_id', 'is', null)
+    .where('deleted_at', 'is', null)
+    .execute();
+  for (const f of raw) {
+    if (['qc_passed', 'published'].includes(f.ingest_status) || overridden.includes(f.id))
+      await linkLineage(db, actor.tenantId, actor.userId, { kind: 'file', id: f.id }, 'input_to', run);
+  }
+}
 
 export function registerPipelineRoutes(app: FastifyInstance, deps: PipelineDeps): void {
   const { db, runners } = deps;
@@ -241,6 +284,7 @@ export function registerPipelineRoutes(app: FastifyInstance, deps: PipelineDeps)
           experiment_version_id: version.id,
         },
       });
+      await recordRunInputs(trx as unknown as Database, actor, version.id, created.id);
     });
     await db
       .insertInto('pipeline_run_event')

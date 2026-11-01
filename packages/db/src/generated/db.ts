@@ -317,6 +317,14 @@ export interface LineageEdge {
   updated_at: Generated<Timestamp>;
 }
 
+export interface LineageLink {
+  from_id: string | null;
+  from_kind: string | null;
+  relation: string | null;
+  to_id: string | null;
+  to_kind: string | null;
+}
+
 export interface LineageNode {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -683,6 +691,7 @@ export interface DB {
   lifecycle_policy: LifecyclePolicy;
   lineage_edge: LineageEdge;
   lineage_node: LineageNode;
+  "lineage.link": LineageLink;
   mapping_preset: MappingPreset;
   metadata_field_def: MetadataFieldDef;
   metadata_template: MetadataTemplate;

@@ -7,6 +7,7 @@ import { api } from '../api.ts';
 import { useMe } from '../auth.ts';
 import { RequireAuth } from '../components/Layout.tsx';
 import { Dialog, ErrorMessage, Field } from '../components/ui.tsx';
+import { History } from '../trust/History.tsx';
 import { RELEASE_TONE, releaseLabel, statValue } from './labels.ts';
 
 export function ReleasePage() {
@@ -40,6 +41,11 @@ function Release() {
         {r.dataset_name} · {r.kind}
       </h1>
       <ReleaseHeader release={r} />
+      <p style={{ margin: 0 }}>
+        <Link to="/lineage/$kind/$id" params={{ kind: 'dataset_release', id: r.id }}>
+          Lineage
+        </Link>
+      </p>
       <section className="stack" role="region" aria-label="Quality rules">
         <h2>Quality rules</h2>
         {r.validation.failures.length > 0 && (
@@ -140,6 +146,7 @@ function Release() {
       </section>
       <Provenance release={r} />
       {r.storage && <Preview id={r.id} />}
+      <History type="dataset_release" id={r.id} />
     </main>
   );
 }

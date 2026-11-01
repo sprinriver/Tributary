@@ -52,7 +52,7 @@ export interface Upload {
 
 async function upload(page: Page, version: string, what: Upload): Promise<string> {
   const path = what.file.includes('/') ? resolve(FIXTURES, '../..', what.file) : `${FIXTURES}/${what.file}`;
-  const bytes = what.buffer ?? readFileSync(path);
+  const bytes = what.buffer ? new Uint8Array(what.buffer) : readFileSync(path);
   const started = await apiCall<{ file: { id: string }; parts: { url: string }[] }>(
     page,
     'POST',

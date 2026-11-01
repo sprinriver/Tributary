@@ -12,6 +12,8 @@ import { ExperimentPage } from './routes/ExperimentPage.tsx';
 import { ExperimentsPage, type ExperimentsSearch } from './routes/ExperimentsPage.tsx';
 import { HomePage } from './routes/HomePage.tsx';
 import { SearchPage, type SearchPageSearch } from './search/SearchPage.tsx';
+import { AuditPage, type AuditSearch } from './trust/AuditPage.tsx';
+import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
 
 const str = (v: unknown) => (typeof v === 'string' && v !== '' ? v : undefined);
@@ -110,6 +112,32 @@ const searchRoute = createRoute({
     return type === 'experiment' || type === 'sample' ? { ...out, type } : out;
   },
 });
+const lineageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/lineage/$kind/$id',
+  component: LineagePage,
+  validateSearch: (search: Record<string, unknown>): LineageSearch => {
+    const depth = Number(search.depth);
+    const direction = str(search.direction);
+    return {
+      ...(Number.isInteger(depth) && depth >= 1 && depth <= 6 ? { depth } : {}),
+      ...(direction === 'upstream' || direction === 'downstream' || direction === 'both'
+        ? { direction }
+        : {}),
+    };
+  },
+});
+const auditRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/audit',
+  component: AuditPage,
+  validateSearch: (search: Record<string, unknown>): AuditSearch =>
+    Object.fromEntries(
+      ['action', 'entity_type', 'entity_id', 'from', 'to']
+        .map((k) => [k, str(search[k])])
+        .filter(([, v]) => v !== undefined),
+    ) as AuditSearch,
+});
 const forbiddenRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/forbidden',
@@ -132,6 +160,8 @@ export const router = createRouter({
     runRoute,
     adminPipelinesRoute,
     searchRoute,
+    lineageRoute,
+    auditRoute,
     forbiddenRoute,
   ]),
 });

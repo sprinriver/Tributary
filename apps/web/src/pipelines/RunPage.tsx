@@ -2,6 +2,7 @@ import type { RunDetail } from '@tributary/contracts';
 import { StatusBadge } from '@tributary/ui';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate, useParams } from '@tanstack/react-router';
+import { History } from '../trust/History.tsx';
 import { useState } from 'react';
 import { api } from '../api.ts';
 import { useMe } from '../auth.ts';
@@ -45,6 +46,11 @@ function Run() {
         {r.pipeline_name} · run {r.id.slice(0, 8)}
       </h1>
       <RunHeader run={r} />
+      <p style={{ margin: 0 }}>
+        <Link to="/lineage/$kind/$id" params={{ kind: 'pipeline_run', id: r.id }}>
+          Lineage
+        </Link>
+      </p>
       <section className="stack">
         <h2>Parameters</h2>
         <table className="data" aria-label="Parameters">
@@ -109,6 +115,7 @@ function Run() {
           </tbody>
         </table>
       </section>
+      <History type="pipeline_run" id={r.id} />
     </main>
   );
 }
