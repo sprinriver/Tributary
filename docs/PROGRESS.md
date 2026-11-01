@@ -643,3 +643,15 @@ Entry template:
   before the first green run.
 - Gaps: dose-response "relevance score" not yet a filter; no PDF/print layout for the results page.
 - Commit: fb2ddc1
+
+## 2026-11-01 — CI fix: PIPE-06 sign-in timeout (second occurrence)
+- Symptom: on CI the admin's user button did not appear within 5 s of signing in to `/admin/pipelines` (passes
+  locally, 34/34). CI artifacts were not reachable from the build container, so the exact cause on the runner is
+  not proven.
+- Fixed the product weakness that matches it: `useMe` had `retry: false`, so one slow or failed `/auth/me` right
+  after login left a signed-in user shown as signed out. A 401 is still final (signed out); network errors and 5xx
+  are retried 3 times with backoff. The header and `RequireAuth` show "Could not load your account" with a retry
+  button instead of "Sign in".
+- Test changes: new AUTH-01 unit test (retry policy). The e2e `signIn` helper waits up to 15 s (it was 5 s) for
+  the user button. Same assertion; more time for the first page under CI load.
+- Evidence: `pnpm check` ✓ · `pnpm e2e "AUTH|PIPE"` ✓ (5) · full `pnpm e2e` ✓ (34) before the change.

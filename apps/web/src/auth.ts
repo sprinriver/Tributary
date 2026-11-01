@@ -12,8 +12,20 @@ export async function fetchMe(fetchImpl: typeof fetch = fetch): Promise<MeRespon
   return me;
 }
 
+/**
+ * A 401 is an answer (signed out) and is never retried; a network error or 5xx right after sign-in is transient,
+ * so it is retried a few times rather than showing a signed-in user as signed out.
+ */
+export const retryMe = (failures: number): boolean => failures < 3;
+
 export function useMe() {
-  return useQuery({ queryKey: ['me'], queryFn: () => fetchMe(), staleTime: 60_000, retry: false });
+  return useQuery({
+    queryKey: ['me'],
+    queryFn: () => fetchMe(),
+    staleTime: 60_000,
+    retry: retryMe,
+    retryDelay: (attempt) => Math.min(500 * 2 ** attempt, 4_000),
+  });
 }
 
 export const loginHref = (returnTo: string) => `/api/v1/auth/login?returnTo=${encodeURIComponent(returnTo)}`;

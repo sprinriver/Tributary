@@ -30,7 +30,16 @@ export function Layout() {
           )}
         </nav>
         {me.data && <NotificationsMenu />}
-        {me.data ? <UserMenu me={me.data} /> : me.isPending ? null : <a href={loginHref(path)}>Sign in</a>}
+        {me.data ? (
+          <UserMenu me={me.data} />
+        ) : me.isPending ? null : me.isError ? (
+          // Not "Sign in": the user may well be signed in; the API did not answer.
+          <button type="button" onClick={() => void me.refetch()} title={me.error.message}>
+            Account unavailable — retry
+          </button>
+        ) : (
+          <a href={loginHref(path)}>Sign in</a>
+        )}
       </header>
       <Outlet />
     </div>
@@ -41,6 +50,14 @@ export function Layout() {
 export function RequireAuth({ children }: { children: React.ReactNode }) {
   const me = useMe();
   if (me.isPending) return <main style={{ padding: 24 }}>Loading…</main>;
+  if (me.isError) {
+    return (
+      <main style={{ padding: 24 }} role="alert">
+        <h1>Could not load your account</h1>
+        <p>{me.error.message}. Use retry at the top right, or reload the page.</p>
+      </main>
+    );
+  }
   if (!me.data) {
     return (
       <main style={{ padding: 24 }}>

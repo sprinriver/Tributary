@@ -11,7 +11,10 @@ export async function signIn(
   await page.getByLabel('Password', { exact: true }).fill(user);
   await page.getByRole('button', { name: /sign in/i }).click();
   await page.waitForURL((url) => !url.href.includes('/realms/'));
-  await expect(page.getByRole('button', { name: new RegExp(`${user} dev`, 'i') })).toBeVisible();
+  // The first page after sign-in loads the app and /me while other workers run pipelines; give it time.
+  await expect(page.getByRole('button', { name: new RegExp(`${user} dev`, 'i') })).toBeVisible({
+    timeout: 15_000,
+  });
 }
 
 /** Calls the API from the signed-in page (cookie session + CSRF), for setup steps and immutability checks. */
