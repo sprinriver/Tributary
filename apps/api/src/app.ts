@@ -36,7 +36,7 @@ import { registerAiRoutes } from './routes/ai.ts';
 import { registerWebhookRoutes } from './routes/webhooks.ts';
 import { providerFor, type ModelProvider } from './ai/provider.ts';
 import { systemHealth } from './admin/health.ts';
-import { HealthReportSchema } from '@tributary/contracts';
+import { HealthReportSchema, InstanceInfoSchema } from '@tributary/contracts';
 import { respond } from './respond.ts';
 import { embeddingProvider } from './search/embeddings.ts';
 import { searchIndex } from './search/index-service.ts';
@@ -113,6 +113,15 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
 
     const oidc = new OidcClient(config);
     registerAuthRoutes(scoped, db, config, oidc);
+    scoped.get('/v1/instance', { config: { public: true } }, async () =>
+      respond(InstanceInfoSchema, {
+        name: config.instance.name,
+        version: API_VERSION,
+        demo: config.instance.demo,
+        demo_logins: config.instance.demoLogins,
+        notice: config.instance.notice,
+      }),
+    );
     registerMcpRoutes(scoped, {
       root: app,
       db,

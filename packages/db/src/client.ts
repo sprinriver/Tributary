@@ -22,9 +22,19 @@ pg.types.setTypeParser(pg.types.builtins.INT8, (text: string) => {
 // date columns stay 'YYYY-MM-DD' strings: a JS Date would shift them by the server's time zone.
 pg.types.setTypeParser(pg.types.builtins.DATE, (text: string) => text);
 
-export function createDb(
-  connectionString: string = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL,
-): Database {
+/**
+ * DATABASE_URL, or the same in parts (DATABASE_HOST, DATABASE_PORT, DATABASE_USER, DATABASE_PASSWORD,
+ * DATABASE_NAME) for hosts that cannot compose a URL, such as Render Blueprints. The parts are URL-encoded.
+ */
+export function databaseUrlFromEnv(env: NodeJS.ProcessEnv = process.env): string | undefined {
+  if (env.DATABASE_URL) return env.DATABASE_URL;
+  if (!env.DATABASE_HOST) return undefined;
+  const user = encodeURIComponent(env.DATABASE_USER ?? 'tributary');
+  const password = env.DATABASE_PASSWORD ? `:${encodeURIComponent(env.DATABASE_PASSWORD)}` : '';
+  return `postgres://${user}${password}@${env.DATABASE_HOST}:${env.DATABASE_PORT ?? '5432'}/${encodeURIComponent(env.DATABASE_NAME ?? 'tributary')}`;
+}
+
+export function createDb(connectionString: string = databaseUrlFromEnv() ?? DEFAULT_DATABASE_URL): Database {
   const pool = new pg.Pool({ connectionString });
   // A connection the server closes (restart, failover, shutdown) must not crash the process: node-postgres emits
   // 'error' on idle and closing clients, which is fatal without a listener. The next query reconnects.

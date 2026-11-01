@@ -440,3 +440,15 @@
   resize: vertical;
   font: inherit;
 }
+
+/* Public demo instances (GET /v1/instance). */
+.demo-banner {
+  padding: 8px 20px;
+  font-size: 13px;
+  background: var(--warn-bg);
+  color: var(--warn-text);
+  border-bottom: 1px solid var(--border);
+}
+.demo-banner code {
+  font-size: 12px;
+}

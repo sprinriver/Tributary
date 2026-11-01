@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { HealthStatusSchema } from '../health.ts';
+import { InstanceInfoSchema } from './instance.ts';
 import { CHART_ROUTES } from './routes-charts.ts';
 import { DATASET_ROUTES } from './routes-datasets.ts';
 import { FILE_ROUTES } from './routes-files.ts';
@@ -56,6 +57,12 @@ import {
  */
 export const API_ROUTES = {
   health: { method: 'get', path: '/healthz', summary: 'Liveness', response: HealthStatusSchema },
+  getInstance: {
+    method: 'get',
+    path: '/v1/instance',
+    summary: 'This installation: name, version, and whether it is a public demo (with its demo logins)',
+    response: InstanceInfoSchema,
+  },
   me: {
     method: 'get',
     path: '/v1/auth/me',

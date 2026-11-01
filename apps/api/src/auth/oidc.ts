@@ -18,6 +18,17 @@ export interface LoginResult {
   idToken: string | null;
 }
 
+/**
+ * Plain-http issuers are allowed in development, and in production only on localhost or `*.localhost` (a local
+ * trial of the deployment). Such names never resolve to another machine, so no real deployment can use this.
+ */
+export function allowInsecureIssuer(issuer: string, production: boolean): boolean {
+  const url = new URL(issuer);
+  if (url.protocol !== 'http:') return false;
+  if (!production) return true;
+  return url.hostname === 'localhost' || url.hostname.endsWith('.localhost');
+}
+
 /** What the API needs from RFC 7662 introspection. */
 export interface Introspection {
   active: boolean;
@@ -47,8 +58,7 @@ export class OidcClient {
         this.config.oidc.clientId,
         this.config.oidc.clientSecret,
         undefined,
-        // Plain http is only acceptable for the local Keycloak.
-        this.config.oidc.issuer.startsWith('http:') && !this.config.production
+        allowInsecureIssuer(this.config.oidc.issuer, this.config.production)
           ? { execute: [client.allowInsecureRequests] }
           : undefined,
       )

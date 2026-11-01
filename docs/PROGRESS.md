@@ -1057,3 +1057,52 @@ Entry template:
   - **MCP tool output:** search snippets no longer carry the UI's highlight control characters.
   - Recorded, not fixed: plaintext webhook secrets (KMS in Phase 22). The SDK is 1.x, not "v2" (ADR 0023).
 - Commit: ece946d
+
+## 2026-11-01 — Open source (Apache-2.0) and Render hosting for a public demo
+- **Owner decisions:**
+  - Licence: Apache-2.0.
+  - Hosting: Render only (first proposed as a VPS; changed by the owner mid-way).
+  - Purpose: a public demo.
+- **Branch housekeeping:** PR #1 was merged before the Phase 20 commits were pushed, so Phase 20 was not in
+  `main`. The branch was restored from the remote and `main` merged into it (no force-push). Phase 20 goes into
+  `main` with this PR.
+- Built (ADR 0024):
+  - **Open-source files:** `LICENSE` (Apache-2.0, canonical text), `NOTICE`, `CONTRIBUTING.md`,
+    `CODE_OF_CONDUCT.md`, `SECURITY.md`, issue and PR templates. README has the licence, a "Deploy to Render"
+    button and the deployment options.
+  - **Demo mode:** a public `GET /v1/instance` and a banner on every page with the demo logins.
+    - Configured by `DEMO_MODE`, `DEMO_LOGINS` (an admin login is refused at startup), `INSTANCE_NAME` and
+      `DEMO_NOTICE`.
+  - **Render Blueprint** (`render.yaml`): seven services, one Dockerfile each, in `deploy/render/`.
+    - Caddy for the web (SPA, `/api`, `/auth`), SeaweedFS S3 on a disk, the API with a pre-deploy step, query,
+      compute, Keycloak with a setup script, and pgvector Postgres on a disk.
+    - Generated secrets come from an environment group.
+  - **Configuration for hosts that cannot compose values:**
+    - the database URL in parts (URL-encoded)
+    - `QUERY_HOSTPORT`, `COMPUTE_HOSTPORT` and `S3_HOSTPORT`
+    - `BUNDLED_KEYCLOAK`, so the issuer follows `PUBLIC_URL`
+    - plain-HTTP issuers in production only on `localhost`/`*.localhost`
+  - **Local trial** (`deploy/local-trial/compose.yml`): the same Dockerfiles and variables, at
+    `http://tributary.localhost:8080`.
+  - **Guide:** `docs/DEPLOY_RENDER.md` covers deploy, checks, custom domain, configuration, updates, resetting the
+    demo, backups, real use, the local trial and troubleshooting.
+- Evidence:
+  - All seven images build (`docker build` with each Dockerfile).
+  - **Local trial:** the pre-deploy migrated, created the buckets and seeded the demo data. Keycloak setup printed
+    `configured for http://tributary.localhost:8080`.
+  - **Browser smoke test:**
+    - the banner shows both demo logins
+    - scientist and viewer sign in through Keycloak
+    - the Experiments page lists the demo data, and the Explorer returns 25 rows
+    - a browser upload to `s3.tributary.localhost:8333` through a presigned URL returned 200 with an ETag, and
+      the upload completed
+    - screenshots in `artifacts/deploy/`
+  - `pnpm run test:api OSS-01` ✓ (7).
+  - A first version targeting a single VPS (Caddy with automatic HTTPS) was also built and smoke-tested over
+    HTTPS before the owner chose Render. It was removed to keep one deployment path.
+- Not verified here: applying `render.yaml` on Render itself, which needs the owner's account. The first deploy
+  is the check, and `docs/DEPLOY_RENDER.md` → "Checking it works" lists what to look at.
+- For the owner to fill in: the code-of-conduct contact address (`CODE_OF_CONDUCT.md`,
+  `conduct@REPLACE-WITH-YOUR-DOMAIN`). Enable GitHub private vulnerability reporting (Settings → Security) for
+  `SECURITY.md`.
+- Commit: (pending)

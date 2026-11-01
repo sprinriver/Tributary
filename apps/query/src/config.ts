@@ -1,4 +1,4 @@
-import { DEFAULT_DATABASE_URL } from '@tributary/db';
+import { databaseUrlFromEnv, DEFAULT_DATABASE_URL } from '@tributary/db';
 
 /** Query service configuration. Dev defaults match docker-compose.yml; production requires secrets. */
 export interface QueryConfig {
@@ -32,7 +32,9 @@ export function loadQueryConfig(env: NodeJS.ProcessEnv = process.env): QueryConf
     production,
     internalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     s3: {
-      endpoint: env.S3_ENDPOINT ?? (production ? undefined : 'http://localhost:8333'),
+      endpoint:
+        env.S3_ENDPOINT ??
+        (env.S3_HOSTPORT ? `http://${env.S3_HOSTPORT}` : production ? undefined : 'http://localhost:8333'),
       region: env.S3_REGION ?? 'us-east-1',
       credentials:
         env.S3_ACCESS_KEY_ID && env.S3_SECRET_ACCESS_KEY
@@ -42,7 +44,7 @@ export function loadQueryConfig(env: NodeJS.ProcessEnv = process.env): QueryConf
             : { accessKeyId: 'tributary-dev', secretAccessKey: 'tributary-dev-secret' },
     },
     workDir: env.QUERY_WORK_DIR ?? '',
-    databaseUrl: required('DATABASE_URL', DEFAULT_DATABASE_URL),
+    databaseUrl: databaseUrlFromEnv(env) ?? required('DATABASE_URL', DEFAULT_DATABASE_URL),
     limits: {
       timeoutMs: Number(env.QUERY_TIMEOUT_MS ?? 30_000),
       rowCap: Number(env.QUERY_ROW_CAP ?? 1_000_000),

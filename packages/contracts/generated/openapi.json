@@ -85,6 +85,85 @@
         }
       }
     },
+    "/v1/instance": {
+      "get": {
+        "operationId": "getInstance",
+        "summary": "This installation: name, version, and whether it is a public demo (with its demo logins)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstanceInfo"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/auth/me": {
       "get": {
         "operationId": "me",
@@ -15570,6 +15649,53 @@
           "part_count",
           "parts",
           "expires_at"
+        ],
+        "additionalProperties": false
+      },
+      "InstanceInfo": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          },
+          "demo": {
+            "type": "boolean"
+          },
+          "demo_logins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "username": {
+                  "type": "string"
+                },
+                "password": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "username",
+                "password"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "notice": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "demo",
+          "demo_logins",
+          "notice"
         ],
         "additionalProperties": false
       },

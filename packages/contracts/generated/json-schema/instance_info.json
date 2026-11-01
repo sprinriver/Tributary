@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/InstanceInfo",
+  "$defs": {
+    "InstanceInfo": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "demo": {
+          "type": "boolean"
+        },
+        "demo_logins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "username": {
+                "type": "string"
+              },
+              "password": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "username",
+              "password"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "notice": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "demo",
+        "demo_logins",
+        "notice"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

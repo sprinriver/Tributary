@@ -3,9 +3,12 @@
 **An experiment data platform for drug discovery, proteomics first.** Register experiments and their samples,
 upload raw data, launch Nextflow pipelines, import tool outputs into versioned dataset releases, then explore,
 chart, compare and search the results. Every change is audited, and lineage runs from raw file to chart.
-It is installed in each customer's own AWS account.
+Open source under the [Apache License 2.0](LICENSE). Run it on [Render](docs/DEPLOY_RENDER.md) in a few clicks,
+or in your own AWS account.
 
-> "Tributary" is a codename. Status: Phases 0–17 and 18a of [`docs/PLAN.md`](docs/PLAN.md) are complete. See
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sprinriver/Tributary)
+
+> "Tributary" is a codename. Status: Phases 0–20 of [`docs/PLAN.md`](docs/PLAN.md) are complete. See
 > [`docs/PROGRESS.md`](docs/PROGRESS.md) for what was built in each phase and the evidence for it.
 
 ## Contents
@@ -149,6 +152,10 @@ in production (`NODE_ENV=production`) the required ones must be set, or the API 
 | `AI_MODEL`, `AI_MONTHLY_TOKEN_BUDGET` | | Model id (required for `bedrock`); monthly token budget (default 5,000,000) |
 | `ANTHROPIC_API_KEY` / `BEDROCK_REGION` | | Credentials for `anthropic`; region for `bedrock` (uses the task role) |
 | `MCP_RESOURCE` | | Resource id IdP access tokens must name in `aud` (default `<PUBLIC_URL>/api/mcp`) |
+| `DEMO_MODE`, `DEMO_LOGINS`, `INSTANCE_NAME`, `DEMO_NOTICE` | | Public demo banner and its published (non-admin) logins |
+| `DATABASE_HOST`, `DATABASE_PASSWORD`, … | | Database URL in parts, instead of `DATABASE_URL` (Render) |
+| `BUNDLED_KEYCLOAK` | | `true`: the issuer is `<PUBLIC_URL>/auth/realms/tributary` |
+| `QUERY_HOSTPORT`, `COMPUTE_HOSTPORT` | | Private `host:port`, instead of `QUERY_URL` / `COMPUTE_URL` |
 
 Query service limits: `QUERY_TIMEOUT_MS`, `QUERY_ROW_CAP`, `QUERY_MAX_CONCURRENT`, `QUERY_MEMORY_LIMIT`,
 `QUERY_THREADS`.
@@ -196,8 +203,12 @@ docs              spec, architecture, plan, progress, ADRs
   - Verify it with `tributary_sdk.verify_webhook`.
 
 ## Deployment
-Target: the customer's AWS account (ECS Fargate, RDS Postgres 17, S3, optional AWS Batch or HealthOmics).
-Terraform modules are planned for Phase 21 (`infra/terraform`). Until then:
+- **Render (public demo or a small team):** [`render.yaml`](render.yaml) defines all seven services. Secrets are
+  generated, migrations and demo data run on deploy, and sign-in is bundled (Keycloak under `/auth`). Follow
+  [`docs/DEPLOY_RENDER.md`](docs/DEPLOY_RENDER.md).
+  - Try the same setup locally first with `docker compose -f deploy/local-trial/compose.yml up -d --build`.
+- **Your AWS account (production target):** ECS Fargate, RDS Postgres 17, S3, and optionally AWS Batch or
+  HealthOmics. Terraform modules are planned for Phase 21 (`infra/terraform`). Until then:
 - only `terraform plan` is ever run by tooling, never `apply` or `destroy`;
 - a real AWS Batch or HealthOmics run needs a sandbox account;
 - see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) §12 for environments and costs.
@@ -235,4 +246,8 @@ Terraform modules are planned for Phase 21 (`infra/terraform`). Until then:
 - `pnpm check` must pass, and every new dependency is exact-pinned and approved first.
 - Conventions: [`CLAUDE.md`](CLAUDE.md) and `.claude/rules/`.
 
-No licence has been chosen yet; until a `LICENSE` file is added, all rights are reserved.
+- Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md). Report security
+  issues privately ([`SECURITY.md`](SECURITY.md)).
+
+## Licence
+Apache License 2.0: see [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). The demo data is synthetic.

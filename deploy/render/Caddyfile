@@ -1,0 +1,44 @@
+# Plain HTTP behind Render's TLS-terminating proxy.
+#   /api/*  → the API (prefix stripped, as the Vite dev proxy does)   API_UPSTREAM, e.g. tributary-api:3000
+#   /auth/* → Keycloak (admin console not exposed)                    KEYCLOAK_UPSTREAM, e.g. tributary-keycloak:8080
+#   else    → the SPA
+{
+	auto_https off
+	admin off
+	servers {
+		# Keep the client's X-Forwarded-Proto/For from Render's proxy (private addresses), so Keycloak sees HTTPS.
+		trusted_proxies static private_ranges
+	}
+}
+
+:{$PORT} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+
+	handle_path /api/* {
+		reverse_proxy {$API_UPSTREAM}
+	}
+
+	@kcadmin path /auth/admin* /auth/realms/master*
+	handle @kcadmin {
+		respond 404
+	}
+	handle /auth/* {
+		reverse_proxy {$KEYCLOAK_UPSTREAM}
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+		@assets path /assets/*
+		header @assets Cache-Control "public, max-age=31536000, immutable"
+	}
+}

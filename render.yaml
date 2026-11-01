@@ -1,0 +1,171 @@
+# Render Blueprint: Tributary as a public demo (or a small team instance). See docs/DEPLOY_RENDER.md.
+# Render → New → Blueprint → this repository. Every secret is generated; nothing to type except optional AI keys.
+#
+#   tributary-web       web    Caddy: the SPA, /api → API, /auth → Keycloak            (public)
+#   tributary-s3        web    SeaweedFS S3 (browsers upload with presigned URLs)       (public, disk)
+#   tributary-api       pserv  API (migrations + demo data in the pre-deploy command)
+#   tributary-query     pserv  DuckDB query service
+#   tributary-compute   pserv  statistics and charts (Python)
+#   tributary-keycloak  pserv  sign-in (served under /auth by tributary-web)
+#   tributary-db        pserv  Postgres 17 + pgvector, for Tributary and Keycloak    (disk)
+
+envVarGroups:
+  - name: tributary-shared
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: TRIBUTARY_TENANT_ID
+        value: 00000000-0000-7000-8000-000000000001
+      - key: DATABASE_USER
+        value: tributary
+      - key: DATABASE_NAME
+        value: tributary
+      - key: S3_REGION
+        value: us-east-1
+      - key: S3_ACCESS_KEY_ID
+        generateValue: true
+      - key: S3_SECRET_ACCESS_KEY
+        generateValue: true
+      - key: QUERY_INTERNAL_TOKEN
+        generateValue: true
+      - key: OIDC_CLIENT_SECRET
+        generateValue: true
+      # Demo mode: banner with these logins on every page; demo data is loaded on deploy.
+      - key: DEMO_MODE
+        value: 'true'
+      - key: INSTANCE_NAME
+        value: Tributary demo
+      - key: DEMO_NOTICE
+        value: Synthetic data; it may be reset at any time.
+      # Published on the banner and set as the users' passwords. Never list admin.
+      - key: DEMO_LOGINS
+        value: scientist:scientist,viewer:viewer
+
+services:
+  - type: web
+    name: tributary-web
+    runtime: docker
+    dockerfilePath: ./deploy/render/web.Dockerfile
+    plan: 0.5c-512mb
+    healthCheckPath: /api/healthz
+    envVars:
+      # Its own public URL (or set your custom domain here; the other services follow on the next sync).
+      - key: PUBLIC_URL
+        fromService: { name: tributary-web, type: web, envVarKey: RENDER_EXTERNAL_URL }
+      - key: API_UPSTREAM
+        fromService: { name: tributary-api, type: pserv, property: hostport }
+      - key: KEYCLOAK_UPSTREAM
+        fromService: { name: tributary-keycloak, type: pserv, property: hostport }
+
+  - type: web
+    name: tributary-s3
+    runtime: docker
+    dockerfilePath: ./deploy/render/seaweedfs.Dockerfile
+    plan: 0.5c-512mb
+    disk: { name: s3-data, mountPath: /data, sizeGB: 10 }
+    envVars:
+      - key: S3_PUBLIC_URL
+        fromService: { name: tributary-s3, type: web, envVarKey: RENDER_EXTERNAL_URL }
+      - key: PORT
+        value: '8333'
+      - fromGroup: tributary-shared
+
+  - type: pserv
+    name: tributary-api
+    runtime: docker
+    dockerfilePath: ./deploy/render/node.Dockerfile
+    plan: 0.5c-512mb
+    preDeployCommand: sh deploy/render/api-predeploy.sh
+    envVars:
+      - fromGroup: tributary-shared
+      - key: PORT
+        value: '3000'
+      - key: PUBLIC_URL
+        fromService: { name: tributary-web, type: web, envVarKey: PUBLIC_URL }
+      # Keycloak is served at PUBLIC_URL/auth, so the OIDC issuer follows PUBLIC_URL.
+      - key: BUNDLED_KEYCLOAK
+        value: 'true'
+      - key: OIDC_CLIENT_ID
+        value: tributary-api
+      - key: AUTH_GROUP_ROLE_MAP
+        value: '[{"group":"admin","role":"system_admin"},{"group":"scientist","role":"contributor","programs":["*"]},{"group":"viewer","role":"viewer","programs":["*"]}]'
+      - key: COOKIE_SECRET
+        generateValue: true
+      - key: DATABASE_HOST
+        fromService: { name: tributary-db, type: pserv, property: host }
+      - key: DATABASE_PASSWORD
+        fromService: { name: tributary-db, type: pserv, envVarKey: POSTGRES_PASSWORD }
+      # Private-network addresses (Render may add a suffix to the host names).
+      - key: QUERY_HOSTPORT
+        fromService: { name: tributary-query, type: pserv, property: hostport }
+      - key: COMPUTE_HOSTPORT
+        fromService: { name: tributary-compute, type: pserv, property: hostport }
+      # Presigned upload URLs must use the public S3 address.
+      - key: S3_ENDPOINT
+        fromService: { name: tributary-s3, type: web, envVarKey: S3_PUBLIC_URL }
+      # AI assistant: off unless you set AI_PROVIDER=anthropic and ANTHROPIC_API_KEY (docs/adr/0022).
+      - key: AI_PROVIDER
+        value: none
+      - key: ANTHROPIC_API_KEY
+        sync: false
+
+  - type: pserv
+    name: tributary-query
+    runtime: docker
+    dockerfilePath: ./deploy/render/node.Dockerfile
+    dockerCommand: node apps/query/src/server.ts
+    plan: 1c-2g
+    envVars:
+      - fromGroup: tributary-shared
+      - key: PORT
+        value: '3100'
+      - key: DATABASE_HOST
+        fromService: { name: tributary-db, type: pserv, property: host }
+      - key: DATABASE_PASSWORD
+        fromService: { name: tributary-db, type: pserv, envVarKey: POSTGRES_PASSWORD }
+      - key: S3_HOSTPORT
+        fromService: { name: tributary-s3, type: web, property: hostport }
+
+  - type: pserv
+    name: tributary-compute
+    runtime: docker
+    dockerfilePath: ./apps/compute/Dockerfile
+    plan: 0.5c-512mb
+    envVars:
+      - key: PORT
+        value: '8000'
+
+  - type: pserv
+    name: tributary-keycloak
+    runtime: docker
+    dockerfilePath: ./deploy/render/keycloak.Dockerfile
+    plan: 1c-2g
+    envVars:
+      - fromGroup: tributary-shared
+      - key: PORT
+        value: '8080'
+      - key: PUBLIC_URL
+        fromService: { name: tributary-web, type: web, envVarKey: PUBLIC_URL }
+      - key: DATABASE_HOST
+        fromService: { name: tributary-db, type: pserv, property: host }
+      - key: KEYCLOAK_DB_PASSWORD
+        fromService: { name: tributary-db, type: pserv, envVarKey: KEYCLOAK_DB_PASSWORD }
+      - key: KEYCLOAK_ADMIN_PASSWORD
+        generateValue: true
+      # The in-app system administrator ("admin"); find it in this service's Environment tab.
+      - key: TRIBUTARY_ADMIN_PASSWORD
+        generateValue: true
+
+  - type: pserv
+    name: tributary-db
+    runtime: docker
+    dockerfilePath: ./deploy/render/postgres.Dockerfile
+    plan: 0.5c-512mb
+    disk: { name: pg-data, mountPath: /var/lib/postgresql/data, sizeGB: 10 }
+    envVars:
+      - key: PORT
+        value: '5432'
+      - key: POSTGRES_PASSWORD
+        generateValue: true
+      - key: KEYCLOAK_DB_PASSWORD
+        generateValue: true
