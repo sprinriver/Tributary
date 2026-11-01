@@ -27,9 +27,8 @@ async function ddaExperiment(page: Page, name: string, fillRequired = true) {
     'GET',
     '/v1/templates?assay_type=proteomics_dda',
   );
-  const required = (fillRequired ? templates.body.items : []).find((t) => t.status === 'published')?.fields ?? []).filter(
-    (f) => f.scope === 'sample' && f.required,
-  );
+  const published = fillRequired ? templates.body.items.find((t) => t.status === 'published') : undefined;
+  const required = (published?.fields ?? []).filter((f) => f.scope === 'sample' && f.required);
   const filled = rows().map((r) => ({
     ...Object.fromEntries(required.filter((f) => !(f.key in r)).map((f) => [f.key, '1'])),
     ...r,
