@@ -1,4 +1,7 @@
-"""Phase 17 `local` embedding provider: a deterministic, dependency-free hashing embedder (not a semantic model)."""
+"""Phase 17 `local` embedding provider.
+
+A deterministic, dependency-free hashing embedder (not a semantic model).
+"""
 
 import asyncio
 import math
