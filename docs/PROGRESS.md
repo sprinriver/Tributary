@@ -1056,4 +1056,4 @@ Entry template:
     delivery. Raw network errors are no longer returned.
   - **MCP tool output:** search snippets no longer carry the UI's highlight control characters.
   - Recorded, not fixed: plaintext webhook secrets (KMS in Phase 22). The SDK is 1.x, not "v2" (ADR 0023).
-- Commit: (pending)
+- Commit: ece946d
