@@ -203,7 +203,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 11 — Pipelines UI
-Status: done
+Status: done (990e4b6)
 Goal: Admins define pipelines; scientists launch and follow runs (v1 parity + run page).
 Spec: M4, REFERENCE_V1 §5   Features: PIPE-05, PIPE-06
 In scope: admin pipeline definitions (params_schema upload + preview); launch dialog generated from nf-schema (types, enums, defaults, help); prefill from experiment (SDRF path, species, contrasts); QC-gate message + approver override; live status on the experiments list (SSE or polling); run page (params, timeline, tasks, recent logs, deep links, outputs, re-run with edits, cancel); in-app notifications.
@@ -214,7 +214,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 12 — Query compiler and query service
-Status: done
+Status: done (990e4b6)
 Goal: Any QuerySpec is validated, scoped to the caller's programs, compiled to parameterized SQL and returned fast and safely.
 Spec: M6, §6.2, §7.1, ARCHITECTURE §6   Features: QRY-01 … QRY-06
 In scope: compiler (all typed operators, nested groups, NOT; inner/left/right joins on declared keys + advanced mode; per-join `where` compiled into the joined subquery so LEFT joins keep their semantics; explode `protein_ids`/`gene_names` with ambiguity flag; select/orderBy; cursor pagination; capped total count); read-only metadata kinds (`experiment_version`, `sample`, `file_object`, `pipeline_run` — SPEC §6.2) served from program-scoped Postgres views through DuckDB's postgres extension with a read-only DB role; program scoping injected before compilation; limits (timeout, row cap, memory semaphore); streaming exports CSV/TSV/Parquet to S3 + presigned URL + audit; result cache keyed by sqlHash + release IDs; `pnpm bench:query` generating 5M and 50M-row synthetic tables and timing typical specs.
@@ -227,7 +227,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 13 — Data Explorer UI
-Status: done
+Status: done (990e4b6)
 Goal: v1 Data Explorer parity plus typed filters, declared joins, saved views and copy-as-code.
 Spec: M6, REFERENCE_V1 §6   Features: EXP-01 … EXP-05
 In scope: dataset picker (by experiment / by kind across experiments / reference / metadata tables); react-querybuilder with typed value editors, AND/OR, nesting, NOT; join builder blocks (type, conditions, per-join filters, explode toggle, advanced pairs); AG Grid server-side datasource; column chooser; number formatting; export menu; saved views (private/program) + share links; copy as Python / R / QuerySpec JSON; state in the URL.
@@ -238,7 +238,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 14 — Chart framework, compute service and reference charts
-Status: done
+Status: done (990e4b6)
 Goal: Schema-driven charting with server-side statistics; volcano and heatmap + dendrogram as reference implementations.
 Spec: M7, §7.2, ARCHITECTURE §7   Features: VIZ-01 … VIZ-04
 In scope: chart registry entries (volcano, heatmap, dendrogram); form generator (type-aware pickers, option controls, `requires` rules, Apply disabled until valid, inline errors); `/v1/charts/render` (QuerySpec → data → shaping → compute → Plotly figure JSON); apps/compute endpoints `cluster` (methods, metrics, leaf ordering, bootstrap N with seed), `kde`, `pvalues`, `zscore`, `pca`, `fit-4pl` with pydantic guards and structured errors; Plotly partial bundle (measure gz size, lazy-load); axis titles and layout options; provenance popover; PNG/SVG export; lasso → rows.
@@ -252,7 +252,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 15 — Remaining charts and omics presets (fan-out)
-Status: done
+Status: done (990e4b6)
 Goal: All 12 v1 chart types plus MA plot, PCA and QC panel, each with schema, tests and e2e.
 Spec: M7, REFERENCE_V1 §7–8   Features: VIZ-05 … VIZ-08
 In scope: `add-chart-type` skill + `/batch` for line, bar, scatter 2D, scatter 3D, box/violin, histogram/KDE, lollipop, bubble, pie/donut; then MA plot, PCA, QC panel by hand; layout options shared.
@@ -262,7 +262,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 16 — Results pages and cross-experiment views
-Status: done
+Status: done (990e4b6)
 Goal: Automatic results pages, dose-response viewer, protein and compound pages, contrast comparison.
 Spec: M8   Features: RES-01 … RES-05
 In scope: experiment results page (QC panel, volcano per contrast with known-target overlay, top hits, dose-response summary, files, deterministic methods paragraph from run provenance); dose-response viewer (curves from responses + fitted parameters, small multiples, filters); protein page; compound page; comparison view (2–6 contrasts: log2_fc vs log2_fc scatter, overlap table, UpSet-style bars in Plotly).
@@ -283,7 +283,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 18 — Lineage, audit, admin and Part 11-ready controls
-Status: done
+Status: done (990e4b6)
 Goal: Trust features pharma IT asks about: lineage graph, audit viewer/export, re-auth on publish, versioned templates, lifecycle policies.
 Spec: M10, M11, §10   Features: LIN-01, AUD-02, ADM-01 … ADM-03
 In scope: lineage API (recursive CTE, depth) + graph UI (check the graph library licence first); audit viewer with filters + CSV export; per-entity history tab; re-auth on publish/approve (OIDC `max_age`); admin for templates (versioning + migration preview), picklists, ontology sources, role bindings and IdP group → role mapping, runner configuration, lifecycle policies, AI settings placeholder, system health.

@@ -861,4 +861,4 @@ Entry template:
   - Direct user or group role bindings have no admin UI (roles come from IdP group mappings).
   - Runner configuration is read-only status; runners are configured in the deployment.
   - AI settings are a placeholder until Phase 19.
-- Commit: (pending)
+- Commit: 990e4b6
