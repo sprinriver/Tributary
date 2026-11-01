@@ -1106,3 +1106,37 @@ Entry template:
   `conduct@REPLACE-WITH-YOUR-DOMAIN`). Enable GitHub private vulnerability reporting (Settings → Security) for
   `SECURITY.md`.
 - Commit: 72bddce
+
+## 2026-11-01 — Free public demo on Hugging Face Spaces
+- **Why:** the owner asked for a free deployment, and Render's free tier cannot run the stack (0.1 CPU and 512 MB
+  per free service, no disks, no private networking, a Postgres that is deleted after 30 days). The owner chose a
+  Hugging Face Docker Space (ADR 0025).
+- Built:
+  - `deploy/huggingface/Dockerfile`: one image with every service.
+    - Postgres 17 + pgvector, SeaweedFS, Keycloak (with its own Java 21), compute on Python 3.12, query, API and
+      Caddy.
+    - It builds from the public GitHub repository, or from a local checkout with
+      `--build-context source=.`.
+  - `start.sh` starts the services in order, generates secrets per start, and exits if any service stops.
+  - The Caddyfile serves one port and routes the S3 bucket paths unchanged, so presigned uploads work through the
+    Space's address.
+  - The Space card (`README.md`) and the guide `docs/DEPLOY_HUGGINGFACE.md`.
+  - The demo banner offers "Open Tributary in a new tab" when the app is embedded in a frame.
+  - README: the free option comes first.
+- Evidence (local run with `PUBLIC_URL=http://localhost:7860`, as uid 1000):
+  - startup completed (`web on :7860`)
+  - the banner shows the demo logins
+  - scientist signs in; the Experiments page lists the demo data, and the Explorer returns 25 rows
+  - a browser upload to `/tributary-raw/…` through a presigned URL returned 200 and completed
+  - admin (with `TRIBUTARY_ADMIN_PASSWORD`) sees every health check OK: database, object storage, query,
+    compute, identity provider, job queue and search index
+  - the Keycloak admin path returns 404
+  - memory is about 1.1 GB when idle
+  - screenshots in `artifacts/deploy/hf-space-*.png`
+- Fixed during the trial:
+  - SeaweedFS's volume server took port 8080 from Keycloak (moved to 8090).
+  - The setup step needed the API's sign-in settings exported.
+- Not verified here:
+  - a build on Hugging Face itself (it needs the owner's account and a public repository)
+  - the embedded-frame link, which can only be seen inside the Space page
+- Commit: (pending)

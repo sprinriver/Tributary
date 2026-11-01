@@ -3,10 +3,9 @@
 **An experiment data platform for drug discovery, proteomics first.** Register experiments and their samples,
 upload raw data, launch Nextflow pipelines, import tool outputs into versioned dataset releases, then explore,
 chart, compare and search the results. Every change is audited, and lineage runs from raw file to chart.
-Open source under the [Apache License 2.0](LICENSE). Run it on [Render](docs/DEPLOY_RENDER.md) in a few clicks,
-or in your own AWS account.
-
-[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/sprinriver/Tributary)
+Open source under the [Apache License 2.0](LICENSE). Try a **free public demo** on
+[Hugging Face Spaces](docs/DEPLOY_HUGGINGFACE.md), host it on [Render](docs/DEPLOY_RENDER.md) (paid plans), or
+install it in your own AWS account.
 
 > "Tributary" is a codename. Status: Phases 0–20 of [`docs/PLAN.md`](docs/PLAN.md) are complete. See
 > [`docs/PROGRESS.md`](docs/PROGRESS.md) for what was built in each phase and the evidence for it.
@@ -203,7 +202,10 @@ docs              spec, architecture, plan, progress, ADRs
   - Verify it with `tributary_sdk.verify_webhook`.
 
 ## Deployment
-- **Render (public demo or a small team):** [`render.yaml`](render.yaml) defines all seven services. Secrets are
+- **Free public demo, on Hugging Face Spaces:** one container with every service. Data resets on restart.
+  - Create a Docker Space and add `deploy/huggingface/Dockerfile` and `README.md`. Follow
+    [`docs/DEPLOY_HUGGINGFACE.md`](docs/DEPLOY_HUGGINGFACE.md).
+- **Render (paid; a persistent demo or a small team):** [`render.yaml`](render.yaml) defines all seven services. Secrets are
   generated, migrations and demo data run on deploy, and sign-in is bundled (Keycloak under `/auth`). Follow
   [`docs/DEPLOY_RENDER.md`](docs/DEPLOY_RENDER.md).
   - Try the same setup locally first with `docker compose -f deploy/local-trial/compose.yml up -d --build`.
