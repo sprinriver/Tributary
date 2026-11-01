@@ -913,4 +913,4 @@ Entry template:
   - The newer 1.x releases are under 90 days old.
 - Gaps (19b): write tools with approval, the curation assistant in the manifest editor, streaming, and
   `run_analysis`.
-- Commit: (pending)
+- Commit: 244bc8c
