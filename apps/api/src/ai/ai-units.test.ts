@@ -6,10 +6,28 @@ describe('AI provider abstraction', () => {
   it('AI-01: none, stub, anthropic and bedrock are the providers; none means no assistant', () => {
     expect(providerFor({ provider: 'none', model: 'x', monthlyTokenBudget: 1 })).toBeNull();
     expect(providerFor({ provider: 'stub', model: 'stub-1', monthlyTokenBudget: 1 })?.name).toBe('stub');
-    // Real providers need their SDK client injected (dependency approval pending) — without it they explain why.
-    expect(() =>
+    // Real providers use the approved SDKs (no network call until a turn runs).
+    expect(
       providerFor({ provider: 'anthropic', model: 'claude-opus-5-5', monthlyTokenBudget: 1 }),
-    ).toThrow(/@anthropic-ai\/sdk/);
+    ).toMatchObject({ name: 'anthropic', model: 'claude-opus-5-5' });
+    // Bedrock model ids depend on the account and region, so AI_MODEL must be set explicitly.
+    expect(() =>
+      providerFor({
+        provider: 'bedrock',
+        model: 'claude-opus-5-5',
+        monthlyTokenBudget: 1,
+        bedrockModelSet: false,
+      }),
+    ).toThrow(/AI_MODEL/);
+    expect(
+      providerFor({
+        provider: 'bedrock',
+        model: 'my-bedrock-model-id',
+        monthlyTokenBudget: 1,
+        bedrockModelSet: true,
+        bedrockRegion: 'eu-west-1',
+      }),
+    ).toMatchObject({ name: 'bedrock', model: 'my-bedrock-model-id' });
   });
 
   it('AI-01: the Anthropic adapter maps tools, tool_use blocks, usage and refusals', async () => {

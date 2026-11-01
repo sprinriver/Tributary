@@ -1,4 +1,4 @@
-"""API-01 / API-02: the Python SDK (packages/sdk-python) lists experiments, runs a QuerySpec, verifies webhooks."""
+"""API-01 / API-02: the Python SDK (packages/sdk-python): experiments, QuerySpecs, webhook signatures."""
 
 from __future__ import annotations
 
@@ -9,17 +9,19 @@ import os
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, HTTPServer
+from typing import ClassVar
 
 import pytest
 
 # packages/sdk-python/src is on the test path (pyproject: pytest pythonpath, pyright extraPaths).
 from tributary_sdk import Client, TributaryError, verify_webhook
 
-SPEC = {"source": {"kind": "sample", "scope": {}}, "page": {"size": 25}}
+TOKEN = "trb_test"  # noqa: S105 (a fake token for the fake API)
+SPEC: dict[str, object] = {"source": {"kind": "sample", "scope": {}}, "page": {"size": 25}}
 
 
 class _Api(BaseHTTPRequestHandler):
-    seen: list[dict[str, object]] = []
+    seen: ClassVar[list[dict[str, object]]] = []
 
     def _reply(self, status: int, body: object) -> None:
         data = json.dumps(body).encode()
@@ -29,19 +31,19 @@ class _Api(BaseHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(data)
 
-    def do_GET(self) -> None:  # noqa: N802
+    def do_GET(self) -> None:
         _Api.seen.append({"method": "GET", "path": self.path, "auth": self.headers["authorization"]})
-        if self.path.startswith("/v1/experiments"):
+        if self.path.split("?")[0] == "/v1/experiments":
             self._reply(200, {"items": [{"id": "e1", "name": "ONC-DIA-01"}], "next_cursor": None})
         else:
             self._reply(404, {"code": "not_found", "message": "Experiment not found."})
 
-    def do_POST(self) -> None:  # noqa: N802
+    def do_POST(self) -> None:
         body = json.loads(self.rfile.read(int(self.headers["content-length"])))
         _Api.seen.append({"method": "POST", "path": self.path, "body": body})
         self._reply(200, {"rows": [{"sample_key": "S1"}], "columns": [], "totalRows": 1, "nextCursor": None})
 
-    def log_message(self, *args: object) -> None:
+    def log_message(self, format: str, *args: object) -> None:
         pass
 
 
@@ -56,7 +58,7 @@ def fake_api():
 
 
 def test_API_01_client_sends_the_token_and_returns_parsed_results(fake_api: str) -> None:
-    client = Client(fake_api, token="trb_test")
+    client = Client(fake_api, token=TOKEN)
     experiments = list(client.list_experiments())
     assert [e["name"] for e in experiments] == ["ONC-DIA-01"]
     result = client.run_query(SPEC)
@@ -67,7 +69,7 @@ def test_API_01_client_sends_the_token_and_returns_parsed_results(fake_api: str)
 
 def test_API_01_errors_carry_the_api_code_and_message(fake_api: str) -> None:
     with pytest.raises(TributaryError) as err:
-        Client(fake_api, token="trb_test").get_experiment("missing")
+        Client(fake_api, token=TOKEN).get_experiment("missing")
     assert err.value.status == 404
     assert err.value.code == "not_found"
 
