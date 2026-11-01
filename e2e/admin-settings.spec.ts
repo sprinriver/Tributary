@@ -94,6 +94,7 @@ test('ADM-03: group mapping, lifecycle policies and system health', async ({ pag
   for (const name of ['Database', 'Object storage', 'Query service', 'Compute service', 'Identity provider'])
     await expect(checks.getByRole('row', { name: new RegExp(`${name}.*OK`) })).toBeVisible();
   await expect(page.getByRole('table', { name: 'Pipeline runners' })).toContainText('local');
-  await expect(page.getByRole('region', { name: 'AI assistant' })).toContainText('Off');
+  // The e2e stack runs the assistant with the stub provider (playwright.config.ts).
+  await expect(page.getByRole('region', { name: 'AI assistant' })).toContainText('stub · stub-1');
   await page.screenshot({ path: `${SHOTS}/admin-health.png`, fullPage: true });
 });

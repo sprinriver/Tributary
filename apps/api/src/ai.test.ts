@@ -1,6 +1,7 @@
 import { seedDatabase } from '@tributary/db';
 import { resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
+import { publishedDaRelease } from './testing-data.ts';
 import { startTestApi, type TestApi } from './testing.ts';
 
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -55,6 +56,9 @@ describe('AI assistant (SPEC M12)', () => {
       })
       .execute();
     admin = adminUser.token;
+    // A published differential-abundance release in ONC, so the QuerySpec path runs against real data.
+    const contributor = (await t.user('ai-contrib', { [ONC]: 'contributor' })).token;
+    await publishedDaRelease(t, contributor, ONC, 'AI-DA-01');
   });
   afterAll(async () => {
     await t?.close();
@@ -176,13 +180,18 @@ describe('AI assistant (SPEC M12)', () => {
     }
     const turn = (await ask(both, `Show the first rows of release ${release.id}`)).turn;
     const build = (turn.tool_calls as Json[]).find((c) => c.tool === 'build_query')!;
-    expect(build.status).toBe('ok');
+    expect(build.status, build.error).toBe('ok');
     expect(build.output.query_spec).toMatchObject({ source: { releaseIds: [release.id] } });
     expect(build.output.explorer_url).toMatch(/^\/explore\?q=/);
     const run = (turn.tool_calls as Json[]).find((c) => c.tool === 'run_query')!;
     expect(run.status).toBe('ok');
     expect(run.output.rows.length).toBeGreaterThan(0);
     expect(run.output.rows.length).toBeLessThanOrEqual(25);
+    // The same rows as the hand-built query run directly (SPEC M12 E2E check).
+    const direct = (
+      await t.call(both, { method: 'POST', url: '/v1/query', payload: build.output.query_spec })
+    ).json() as Json;
+    expect(run.output.rows).toEqual(direct.rows.slice(0, 25));
   });
 
   it('AI-03: an invalid QuerySpec from the model is refused by validation and never executed', async () => {
