@@ -642,4 +642,4 @@ Entry template:
   filters (the default cap hid their effect) and uses an exact "Curves" locator; one shaping expectation corrected
   before the first green run.
 - Gaps: dose-response "relevance score" not yet a filter; no PDF/print layout for the results page.
-- Commit: (pending)
+- Commit: fb2ddc1
