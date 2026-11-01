@@ -1105,4 +1105,4 @@ Entry template:
 - For the owner to fill in: the code-of-conduct contact address (`CODE_OF_CONDUCT.md`,
   `conduct@REPLACE-WITH-YOUR-DOMAIN`). Enable GitHub private vulnerability reporting (Settings → Security) for
   `SECURITY.md`.
-- Commit: (pending)
+- Commit: 72bddce
