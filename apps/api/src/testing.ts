@@ -8,6 +8,7 @@ import {
 } from '@tributary/db/testing';
 import type { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
 import { buildApp } from './app.ts';
+import type { ModelProvider } from './ai/provider.ts';
 import { createPersonalAccessToken } from './auth/tokens.ts';
 import { loadConfig, type ApiConfig } from './config.ts';
 import { MemoryIngestQueue } from './ingest/queue.ts';
@@ -71,6 +72,8 @@ export async function startTestApi(
     query?: boolean;
     runners?: Runners;
     config?: Partial<ApiConfig>;
+    /** Replaces the configured assistant model (e.g. a scripted provider). */
+    aiProvider?: ModelProvider | null;
   } = {},
 ): Promise<TestApi> {
   const [testDb, testS3] = await Promise.all([
@@ -120,7 +123,15 @@ export async function startTestApi(
     ),
     ...options.runners,
   };
-  const app = buildApp({ db, config, storage, ingestQueue: queue, fetch: fetchImpl, runners });
+  const app = buildApp({
+    db,
+    config,
+    storage,
+    ingestQueue: queue,
+    fetch: fetchImpl,
+    runners,
+    ...(options.aiProvider === undefined ? {} : { aiProvider: options.aiProvider }),
+  });
   const pipelineDeps = { db, config, storage, fetch: fetchImpl, runners };
   return {
     testDb,
