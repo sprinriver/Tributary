@@ -34,6 +34,8 @@ export interface ApiConfig {
   s3: S3Config;
   /** AI assistant (SPEC §11); `none`, the default, means no assistant. */
   ai: AiConfig;
+  /** The MCP endpoint's resource identifier: IdP access tokens must name it in `aud` (RFC 8707/9728). */
+  mcpResource: string;
 }
 
 /** Object storage (SPEC M3). Locally SeaweedFS (docker-compose.yml); on AWS the endpoint is left unset. */
@@ -101,6 +103,7 @@ function aiConfig(env: NodeJS.ProcessEnv): AiConfig {
     provider,
     model: env.AI_MODEL ?? (provider === 'stub' ? 'stub-1' : 'claude-opus-5-5'),
     monthlyTokenBudget: budget,
+    bedrockModelSet: !!env.AI_MODEL,
     ...(env.BEDROCK_REGION ? { bedrockRegion: env.BEDROCK_REGION } : {}),
   };
 }
@@ -135,6 +138,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     computeUrl: env.COMPUTE_URL ?? 'http://127.0.0.1:8000',
     search: searchConfig(env),
     ai: aiConfig(env),
+    mcpResource: env.MCP_RESOURCE ?? `${env.PUBLIC_URL ?? 'http://localhost:5173'}/api/mcp`,
     queryUrl: env.QUERY_URL ?? 'http://127.0.0.1:3100',
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',

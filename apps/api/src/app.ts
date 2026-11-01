@@ -2,7 +2,8 @@ import cookie from '@fastify/cookie';
 import type { HealthStatus } from '@tributary/contracts';
 import { createDb, type Database } from '@tributary/db';
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
-import { OidcClient } from './auth/oidc.ts';
+import { OidcClient, type Introspection } from './auth/oidc.ts';
+import { registerMcpRoutes } from './mcp/server.ts';
 import { registerAuth, requireSystemAdmin } from './auth/plugin.ts';
 import { loadConfig, type ApiConfig } from './config.ts';
 import { registerErrorHandler } from './errors.ts';
@@ -32,6 +33,7 @@ import { registerTrustRoutes } from './routes/trust.ts';
 import { registerAdminTemplateRoutes } from './routes/admin-templates.ts';
 import { registerAdminSettingsRoutes } from './routes/admin-settings.ts';
 import { registerAiRoutes } from './routes/ai.ts';
+import { registerWebhookRoutes } from './routes/webhooks.ts';
 import { providerFor, type ModelProvider } from './ai/provider.ts';
 import { systemHealth } from './admin/health.ts';
 import { HealthReportSchema } from '@tributary/contracts';
@@ -39,7 +41,8 @@ import { respond } from './respond.ts';
 import { embeddingProvider } from './search/embeddings.ts';
 import { searchIndex } from './search/index-service.ts';
 
-export const API_VERSION = '0.0.0';
+import { API_VERSION } from './version.ts';
+export { API_VERSION };
 
 export interface AppOptions {
   /** Defaults to a pool on `config.databaseUrl`, closed with the app. */
@@ -54,6 +57,8 @@ export interface AppOptions {
   ingestQueue?: IngestQueue;
   /** Pipeline runners by kind (server.ts builds them from config; tests pass a fake). */
   runners?: Runners;
+  /** IdP token introspection for MCP clients; defaults to the OIDC client (tests pass a fake). */
+  introspect?: (token: string) => Promise<Introspection>;
   /** The assistant's model; defaults to `providerFor(config.ai)`. Tests may pass a scripted provider. */
   aiProvider?: ModelProvider | null;
 }
@@ -106,7 +111,14 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
       version: API_VERSION,
     }));
 
-    registerAuthRoutes(scoped, db, config, new OidcClient(config));
+    const oidc = new OidcClient(config);
+    registerAuthRoutes(scoped, db, config, oidc);
+    registerMcpRoutes(scoped, {
+      root: app,
+      db,
+      config,
+      introspect: options.introspect ?? ((token) => oidc.introspect(token)),
+    });
     registerProgramRoutes(scoped, db);
     registerExperimentRoutes(scoped, db, index);
     registerVersionRoutes(scoped, db, index);
@@ -125,6 +137,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerAdminTemplateRoutes(scoped, db);
     registerAdminSettingsRoutes(scoped, db, config);
     registerAiRoutes(scoped, { root: app, db, config, provider: aiProvider });
+    registerWebhookRoutes(scoped, { db, config, fetch: fetchImpl });
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

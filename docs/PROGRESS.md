@@ -993,3 +993,67 @@ Entry template:
   - Full local `pnpm e2e` after the fix: 45 passed, and the query service logged no errors. RES-03 failed only on
     this machine: the protein page's "Measured in" table is capped, and hundreds of earlier local runs push the
     new experiment past the cap. CI starts from an empty database.
+
+## 2026-11-01 — Phase 20: MCP server, Python SDK and webhooks
+- **Dependencies**, approved by the owner on 2026-11-01 ("whatever you suggest"):
+  - `@anthropic-ai/sdk` 0.115.0 (MIT; earlier entries said Apache-2.0, which was wrong)
+  - `@anthropic-ai/bedrock-sdk` 0.32.0 (MIT)
+  - `@modelcontextprotocol/sdk` 1.30.0 (MIT)
+  - All are exact-pinned and over 90 days old. `pnpm run licence:scan` passes (196 dependencies).
+- Built (SPEC M12/M13; ADR 0023):
+  - **MCP server** at `POST /mcp` (Streamable HTTP, stateless, JSON responses):
+    - Exposes the assistant's tool registry. Read tools are `readOnlyHint`. Write tools carry
+      `tributary/requiresUserInteraction` and need a write scope and admin permission.
+    - Tool errors come back as MCP tool errors. Results are cut at 90k characters. Every call is audited as
+      `mcp.tool_call` (`ai_assistant_on_behalf_of`).
+  - **OAuth 2.1:**
+    - RFC 9728 metadata at `/.well-known/oauth-protected-resource[/mcp]`; a 401 carries
+      `WWW-Authenticate … resource_metadata`.
+    - IdP access tokens are introspected (RFC 7662) and must name `MCP_RESOURCE` in `aud` (no passthrough).
+    - PATs of any scope work as a fallback.
+    - Tools reach the API in-process through a 2-minute HMAC-signed assertion, so permissions, validation and audit
+      stay the API's own.
+  - **Read-scoped tokens** may now call the three POST endpoints that only read: `/v1/query`, `/v1/charts/render`
+    and `/v1/ai/curation/suggest`.
+  - **Agent Skill:** `integrations/claude-skill/SKILL.md` covers connecting, ground rules (QuerySpecs only, cite
+    releases, statistics as stored, writes need the user), and workflows (explore an experiment, pull rows,
+    compare compounds, charts, failures).
+  - **Python SDK** (`packages/sdk-python`, standard library only):
+    - `list_experiments` (cursor), `get_experiment`, `list_datasets`, `search`, `run_query`, `iter_rows` and
+      `verify_webhook`.
+    - Notebook and webhook-receiver examples.
+    - `pnpm dev:token` prints a local PAT for it.
+  - **Webhooks** (migration 0019):
+    - Admin endpoints: create (the `whsec_` secret is shown once), list, delete, ping, deliveries.
+    - https only (http to localhost outside production).
+    - Signed as `X-Tributary-Signature: t=…,v1=HMAC-SHA256(secret, "t.body")`, with a 5-minute replay tolerance.
+    - 3 attempts with backoff, no redirects, every attempt recorded.
+    - Run status changes from events or polls notify subscribers without blocking them.
+  - **Assistant providers:** `AI_PROVIDER=anthropic` uses the Claude API (`ANTHROPIC_API_KEY`).
+    `AI_PROVIDER=bedrock` uses Amazon Bedrock (task role; `AI_MODEL` must be set to the account's Bedrock model id).
+  - README: AI and MCP settings, an Integrations section and new tasks.
+- Evidence:
+  - `pnpm check` ✓ (api 188 tests, compute 78 passed and 1 skipped).
+  - `pnpm run test:api "MCP-0|API-02"` ✓
+  - Against the local stack: `TRIBUTARY_API_URL=http://127.0.0.1:3000 TRIBUTARY_TOKEN=$(pnpm -s dev:token)
+    pnpm run test:compute -k API_0` → 4 passed.
+  - `test -f integrations/claude-skill/SKILL.md` ✓
+- Test amendments (own commit b8cafb9):
+  - The AI-01 provider test now expects real providers to build (the SDKs are approved) and Bedrock to require
+    `AI_MODEL`.
+  - The API-01 fake API routed `/v1/experiments/{id}` to the list handler.
+- Gaps:
+  - The real-provider eval is still not run: it needs an `ANTHROPIC_API_KEY` or Bedrock access.
+  - No wheel build script: install with `pip install ./packages/sdk-python`.
+  - The SDK is hand-written, not generated (ADR 0023).
+  - IdPs without token introspection need JWKS validation.
+  - The live-stack SDK test is skipped in CI's `check` job, which has no stack.
+- Security review (plan-reviewer), fixed:
+  - **Assertions:** the in-process assertion is signed with a random key generated per process (not
+    `COOKIE_SECRET`), lives 60 s, and is tested against forging, tampering, expiry and scope escalation.
+  - **OAuth tokens:** introspected once (an IdP error is a 401) and must carry `tributary:read`.
+  - **Webhook SSRF guard:** in production, hosts must resolve to public addresses, at creation and before each
+    delivery. Raw network errors are no longer returned.
+  - **MCP tool output:** search snippets no longer carry the UI's highlight control characters.
+  - Recorded, not fixed: plaintext webhook secrets (KMS in Phase 22). The SDK is 1.x, not "v2" (ADR 0023).
+- Commit: (pending)

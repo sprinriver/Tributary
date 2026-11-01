@@ -18,6 +18,7 @@ It is installed in each customer's own AWS account.
 - [Configuration](#configuration)
 - [Repository layout](#repository-layout)
 - [Common tasks](#common-tasks)
+- [Integrations](#integrations)
 - [Deployment](#deployment)
 - [Security and compliance](#security-and-compliance)
 - [Troubleshooting](#troubleshooting)
@@ -36,6 +37,8 @@ It is installed in each customer's own AWS account.
 | **Results** | Results pages with a generated methods paragraph, a dose-response viewer, protein and compound pages, and a 2–6 contrast comparison. |
 | **Search** | Full-text search over experiments and samples, with ontology synonyms and facets. Optional embeddings fused by reciprocal rank. ⌘K palette. |
 | **Trust** | Lineage graph (raw file → run → release → chart). Audit log viewer with CSV export. Per-entity history. Append-only audit of every mutation and export. |
+| **AI assistant** | Optional, off by default (Claude API or Amazon Bedrock). Answers through validated tools that run with the user's own permissions, shows every QuerySpec with "Open in Explorer", needs approval for writes, suggests ontology terms only from OLS lookups. |
+| **Integrations** | An MCP server (`/api/mcp`) so Claude and other assistants can use the same tools with the user's permissions, plus an Agent Skill for them. A Python SDK for notebooks. Signed run-status webhooks. |
 
 ## Architecture
 ```
@@ -142,6 +145,10 @@ in production (`NODE_ENV=production`) the required ones must be set, or the API 
 | `SEARCH_EMBEDDINGS` | | `none` (default), `local`, `voyage_4` or `bedrock_titan_v2` (see ADR 0020) |
 | `SEARCH_EMBEDDING_DIMS`, `SEARCH_MIN_SIMILARITY`, `VOYAGE_API_KEY` | | Embedding options |
 | `SESSION_TTL_HOURS` | | Browser session lifetime (default 12) |
+| `AI_PROVIDER` | | `none` (default), `anthropic`, `bedrock` or `stub` (tests). See ADR 0022 |
+| `AI_MODEL`, `AI_MONTHLY_TOKEN_BUDGET` | | Model id (required for `bedrock`); monthly token budget (default 5,000,000) |
+| `ANTHROPIC_API_KEY` / `BEDROCK_REGION` | | Credentials for `anthropic`; region for `bedrock` (uses the task role) |
+| `MCP_RESOURCE` | | Resource id IdP access tokens must name in `aud` (default `<PUBLIC_URL>/api/mcp`) |
 
 Query service limits: `QUERY_TIMEOUT_MS`, `QUERY_ROW_CAP`, `QUERY_MAX_CONCURRENT`, `QUERY_MEMORY_LIMIT`,
 `QUERY_THREADS`.
@@ -171,7 +178,22 @@ docs              spec, architecture, plan, progress, ADRs
 | Regenerate the synthetic corpus | `pnpm synth` |
 | Benchmark the query service | `pnpm bench:query` |
 | Check dependency licences | `pnpm run licence:scan` |
+| Score the assistant on the golden questions | `pnpm eval:ai` |
+| A local personal access token (SDK, MCP clients) | `pnpm dev:token` |
 | Format | `pnpm format` |
+
+## Integrations
+- **MCP:** point an MCP client (Claude Desktop, Claude Code, …) at `https://<host>/api/mcp` (Streamable HTTP).
+  - It signs in through your IdP (OAuth; metadata at `/api/.well-known/oauth-protected-resource/mcp`), or sends a
+    personal access token as `Authorization: Bearer trb_…`.
+  - Tools run with your permissions. Write tools ask you first and can be switched off by an admin.
+  - Give your assistant [`integrations/claude-skill/SKILL.md`](integrations/claude-skill/SKILL.md).
+- **Python SDK:** `pip install ./packages/sdk-python`, then
+  `Client(url, token).list_experiments()` / `.run_query(spec)`.
+  See [`packages/sdk-python/README.md`](packages/sdk-python/README.md).
+- **Webhooks:** admins subscribe https endpoints to `run.status` (`POST /v1/admin/webhooks`).
+  - Each delivery is signed: `X-Tributary-Signature: t=…,v1=<HMAC-SHA256>`.
+  - Verify it with `tributary_sdk.verify_webhook`.
 
 ## Deployment
 Target: the customer's AWS account (ECS Fargate, RDS Postgres 17, S3, optional AWS Batch or HealthOmics).

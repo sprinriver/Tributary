@@ -736,6 +736,37 @@ export interface TargetAnnotation {
   value: string | null;
 }
 
+export interface WebhookDelivery {
+  attempts: Generated<number>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  delivered_at: Timestamp | null;
+  error: string | null;
+  event: string;
+  id: Generated<string>;
+  payload: Json;
+  response_status: number | null;
+  status: string;
+  subscription_id: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface WebhookSubscription {
+  active: Generated<boolean>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  description: Generated<string>;
+  events: Generated<string[]>;
+  id: Generated<string>;
+  secret: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  url: string;
+}
+
 export interface DB {
   access_token: AccessToken;
   ai_conversation: AiConversation;
@@ -783,4 +814,6 @@ export interface DB {
   search_document: SearchDocument;
   search_embedding: SearchEmbedding;
   target_annotation: TargetAnnotation;
+  webhook_delivery: WebhookDelivery;
+  webhook_subscription: WebhookSubscription;
 }

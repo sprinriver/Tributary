@@ -18,6 +18,14 @@ export interface LoginResult {
   idToken: string | null;
 }
 
+/** What the API needs from RFC 7662 introspection. */
+export interface Introspection {
+  active: boolean;
+  sub?: string;
+  aud?: string | string[];
+  scope?: string;
+}
+
 /** OIDC authorization code + PKCE, run by the API (BFF): tokens never reach the browser (SPEC §10). */
 export class OidcClient {
   private configuration: Promise<client.Configuration> | undefined;
@@ -49,6 +57,20 @@ export class OidcClient {
         throw error;
       });
     return this.configuration;
+  }
+
+  /**
+   * RFC 7662 token introspection at the IdP (MCP clients send IdP-issued access tokens). The caller checks
+   * `active` and the audience.
+   */
+  async introspect(token: string): Promise<Introspection> {
+    const result = await client.tokenIntrospection(await this.discover(), token);
+    return {
+      active: result.active,
+      ...(typeof result.sub === 'string' ? { sub: result.sub } : {}),
+      ...(result.aud ? { aud: result.aud as string | string[] } : {}),
+      ...(typeof result.scope === 'string' ? { scope: result.scope } : {}),
+    };
   }
 
   /** `reauth` asks the IdP for credentials again (OIDC `prompt=login`, `max_age=0`) even with a live IdP session. */
