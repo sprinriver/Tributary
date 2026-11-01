@@ -15,7 +15,11 @@
   min-width: 0;
 }
 
-/* Sidebar */
+/* Sidebar: the rail stretches with the page; the sidebar inside stays in view. */
+.sidebar-rail {
+  flex-shrink: 0;
+  background: #0b1220;
+}
 .sidebar {
   width: 244px;
   flex-shrink: 0;
@@ -269,6 +273,9 @@
   display: none;
 }
 @media (max-width: 900px) {
+  .sidebar-rail {
+    width: 0;
+  }
   .sidebar {
     position: fixed;
     left: 0;

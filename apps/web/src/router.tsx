@@ -14,6 +14,11 @@ import { HomePage } from './routes/HomePage.tsx';
 import { SearchPage, type SearchPageSearch } from './search/SearchPage.tsx';
 import { AuditPage, type AuditSearch } from './trust/AuditPage.tsx';
 import { TemplatesPage } from './admin/TemplatesPage.tsx';
+import { AccessPage } from './admin/AccessPage.tsx';
+import { HealthPage } from './admin/HealthPage.tsx';
+import { LifecyclePage } from './admin/LifecyclePage.tsx';
+import { ListsPage } from './admin/ListsPage.tsx';
+import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
 
@@ -133,6 +138,15 @@ const templatesRoute = createRoute({
   path: '/admin/templates',
   component: TemplatesPage,
 });
+const adminPage = (path: string, component: () => React.ReactNode) =>
+  createRoute({ getParentRoute: () => rootRoute, path, component });
+const adminRoutes = [
+  adminPage('/admin/programs', ProgramsPage),
+  adminPage('/admin/lists', ListsPage),
+  adminPage('/admin/access', AccessPage),
+  adminPage('/admin/lifecycle', LifecyclePage),
+  adminPage('/admin/health', HealthPage),
+];
 const auditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/audit',
@@ -169,6 +183,7 @@ export const router = createRouter({
     lineageRoute,
     auditRoute,
     templatesRoute,
+    ...adminRoutes,
     forbiddenRoute,
   ]),
 });

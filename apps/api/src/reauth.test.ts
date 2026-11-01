@@ -132,3 +132,12 @@ describe('re-authentication on publish and approve', () => {
     expect(body.reauth_max_age_seconds).toBe(900);
   });
 });
+
+describe('auth_time from the ID token', () => {
+  it('AUD-02: a missing auth_time counts as long ago (no silent sign-in passes as a fresh one)', async () => {
+    const { authTimeFrom } = await import('./auth/oidc.ts');
+    expect(authTimeFrom(1_800_000_000).toISOString()).toBe('2027-01-15T08:00:00.000Z');
+    expect(authTimeFrom(undefined).getTime()).toBe(0);
+    expect(authTimeFrom('1800000000').getTime()).toBe(0);
+  });
+});

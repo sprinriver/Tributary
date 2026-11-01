@@ -816,3 +816,49 @@ Entry template:
   - ADM-01 e2e fills required DDA fields left by earlier runs for the "before" experiment only; a setup
     expression was fixed.
 - Commit: 5c20885
+
+## 2026-11-01 — Phase 18b-2: Admin settings — Phase 18 done
+- Built (SPEC M11):
+  - **Programs** (`/admin/programs`): create and edit, with unique upper-case codes and an "approval required
+    to publish" flag. Audited.
+  - **Picklists** (`/admin/lists`):
+    - Species (NCBI Taxonomy ids), spectral libraries and time points (must parse as times).
+    - Built-in defaults until saved; replacing a list soft-deletes old values. Audited.
+    - The new-experiment form offers them: a species select, and suggestion lists for libraries and time
+      points.
+  - **Ontology sources:** admins switch known OLS4 sources off. The manifest editor's lookups for a disabled
+    source answer 422 `ontology_disabled`; other prefixes and stored terms are unaffected.
+  - **Access** (`/admin/access`): IdP group → role mappings stored by admins (migration 0017,
+    `group_role_mapping`). They are merged with `AUTH_GROUP_ROLE_MAP` when roles are loaded, which happens on
+    every request, so removals apply immediately. Environment mappings are shown read-only.
+  - **Lifecycle** (`/admin/lifecycle`): editor for the existing per-role storage policies, with the generated
+    S3 rules.
+  - **Health** (`/admin/health`):
+    - Checks: database, object storage, query service, compute service, identity provider, job queue,
+      search index (3 s timeout each; one being down degrades the report, never fails it).
+    - Pipeline runners (configured or not) and the AI assistant placeholder (off).
+- Fixes from the plan-reviewer:
+  - The new-experiment form could submit no species when an admin's list lacked the default; the shown choice
+    is now the saved one.
+  - Ontology prefixes outside the known list stay enabled; only explicitly disabled sources are blocked.
+  - A missing `auth_time` in the ID token now counts as long ago, so a silent IdP sign-in cannot pass
+    re-authentication (`authTimeFrom`, unit-tested).
+  - An empty program edit is a 400, not a 500.
+  - The Access page copy says changes apply on the next request.
+  - Earlier phases' screenshots that e2e runs rewrote were restored.
+- Also fixed:
+  - Postgres pools and clients now have error listeners. A connection the server closes (restart, shutdown)
+    was an unhandled error: the intermittent 57P01 in test teardown, and a crash risk in production.
+  - The sidebar sits in a full-height rail, so long pages no longer show a gap under it.
+- Dependencies: none new.
+- Evidence: `pnpm check` ✓ · `pnpm run test:api "ADM|AUD-02"` ✓ (20) · full `pnpm e2e` ✓ (43 passed, 4.6 min) ·
+  screenshots `artifacts/phase-18/admin-lists.png`, `admin-health.png`.
+- Test amendments (own commits):
+  - DB-01 lists the three new tables, and the order was corrected (`app_session` before `app_setting`).
+  - One non-null assertion was added in the ADM-02 test for the typecheck; no behaviour change.
+  - A unit test for `authTimeFrom` was added.
+- Gaps:
+  - Direct user or group role bindings have no admin UI (roles come from IdP group mappings).
+  - Runner configuration is read-only status; runners are configured in the deployment.
+  - AI settings are a placeholder until Phase 19.
+- Commit: (pending)

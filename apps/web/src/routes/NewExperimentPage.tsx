@@ -1,4 +1,4 @@
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import type { MetadataFieldDef } from '@tributary/contracts';
 import { useState } from 'react';
@@ -12,6 +12,8 @@ const SPECIES = [
   { id: 'NCBITaxon:10090', label: 'Mus musculus' },
   { id: 'NCBITaxon:10116', label: 'Rattus norvegicus' },
 ];
+const picklist = (kind: 'species' | 'spectral_library' | 'time_point') =>
+  api('getPicklist', { query: { kind } });
 const FIELD_TYPES = ['text', 'number', 'integer', 'boolean', 'date'] as const;
 
 interface CustomRow {
@@ -36,6 +38,16 @@ function Wizard() {
   const navigate = useNavigate();
   const invalidate = useRegistryInvalidation();
   const programs = usePrograms();
+  // Admin-managed picklists (SPEC M11); the built-in species list is used until they load.
+  const species = useQuery({ queryKey: ['picklist', 'species'], queryFn: () => picklist('species') });
+  const libraryList = useQuery({
+    queryKey: ['picklist', 'spectral_library'],
+    queryFn: () => picklist('spectral_library'),
+  });
+  const timeList = useQuery({ queryKey: ['picklist', 'time_point'], queryFn: () => picklist('time_point') });
+  const speciesOptions = species.data?.values.map((v) => ({ id: v.value, label: v.label })) ?? SPECIES;
+  const libraries = libraryList.data?.values ?? [];
+  const timePoints = timeList.data?.values ?? [];
   const [step, setStep] = useState(0);
   const [details, setDetails] = useState({
     program_id: '',
@@ -49,6 +61,10 @@ function Wizard() {
   });
   const [custom, setCustom] = useState<CustomRow[]>([]);
   const set = (patch: Partial<typeof details>) => setDetails((d) => ({ ...d, ...patch }));
+  // What the select shows is what is saved: an admin's list may not contain the initial default.
+  const selectedSpecies = speciesOptions.some((s) => s.id === details.species)
+    ? details.species
+    : (speciesOptions[0]?.id ?? '');
   const programId = details.program_id || programs.data?.items[0]?.id || '';
 
   const create = useMutation({
@@ -60,7 +76,7 @@ function Wizard() {
           assay_type: details.assay_type as 'proteomics_dia',
           name: details.name,
           ...(details.experiment_date ? { experiment_date: details.experiment_date } : {}),
-          species: SPECIES.find((s) => s.id === details.species) ?? null,
+          species: speciesOptions.find((s) => s.id === selectedSpecies) ?? null,
           ...(details.spectral_library ? { spectral_library: details.spectral_library } : {}),
           time_points: details.time_points
             .split(',')
@@ -154,8 +170,8 @@ function Wizard() {
           </Field>
           <Field label="Species">
             {(id) => (
-              <select id={id} value={details.species} onChange={(e) => set({ species: e.target.value })}>
-                {SPECIES.map((s) => (
+              <select id={id} value={selectedSpecies} onChange={(e) => set({ species: e.target.value })}>
+                {speciesOptions.map((s) => (
                   <option key={s.id} value={s.id}>
                     {s.label}
                   </option>
@@ -165,11 +181,21 @@ function Wizard() {
           </Field>
           <Field label="Spectral library">
             {(id) => (
-              <input
-                id={id}
-                value={details.spectral_library}
-                onChange={(e) => set({ spectral_library: e.target.value })}
-              />
+              <>
+                <input
+                  id={id}
+                  list="spectral-library-options"
+                  value={details.spectral_library}
+                  onChange={(e) => set({ spectral_library: e.target.value })}
+                />
+                <datalist id="spectral-library-options">
+                  {libraries.map((v) => (
+                    <option key={v.value} value={v.value}>
+                      {v.label}
+                    </option>
+                  ))}
+                </datalist>
+              </>
             )}
           </Field>
           <Field
@@ -178,11 +204,21 @@ function Wizard() {
             error={fieldError('time_points.0')}
           >
             {(id) => (
-              <input
-                id={id}
-                value={details.time_points}
-                onChange={(e) => set({ time_points: e.target.value })}
-              />
+              <>
+                <input
+                  id={id}
+                  list="time-point-options"
+                  value={details.time_points}
+                  onChange={(e) => set({ time_points: e.target.value })}
+                />
+                <datalist id="time-point-options">
+                  {timePoints.map((v) => (
+                    <option key={v.value} value={v.value}>
+                      {v.label}
+                    </option>
+                  ))}
+                </datalist>
+              </>
             )}
           </Field>
           <Field label="Description">

@@ -3,7 +3,7 @@ import type { HealthStatus } from '@tributary/contracts';
 import { createDb, type Database } from '@tributary/db';
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
 import { OidcClient } from './auth/oidc.ts';
-import { registerAuth } from './auth/plugin.ts';
+import { registerAuth, requireSystemAdmin } from './auth/plugin.ts';
 import { loadConfig, type ApiConfig } from './config.ts';
 import { registerErrorHandler } from './errors.ts';
 import { registerAuthRoutes } from './routes/auth.ts';
@@ -30,6 +30,10 @@ import { registerVersionRoutes } from './routes/versions.ts';
 import { registerSearchRoutes } from './routes/search.ts';
 import { registerTrustRoutes } from './routes/trust.ts';
 import { registerAdminTemplateRoutes } from './routes/admin-templates.ts';
+import { registerAdminSettingsRoutes } from './routes/admin-settings.ts';
+import { systemHealth } from './admin/health.ts';
+import { HealthReportSchema } from '@tributary/contracts';
+import { respond } from './respond.ts';
 import { embeddingProvider } from './search/embeddings.ts';
 import { searchIndex } from './search/index-service.ts';
 
@@ -114,6 +118,14 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerSearchRoutes(scoped, { db, config, provider, index });
     registerTrustRoutes(scoped, db);
     registerAdminTemplateRoutes(scoped, db);
+    registerAdminSettingsRoutes(scoped, db, config);
+    scoped.get('/v1/admin/health', async (request) => {
+      requireSystemAdmin(request);
+      return respond(
+        HealthReportSchema,
+        await systemHealth({ db, config, storage, fetch: fetchImpl, runners: options.runners ?? {} }),
+      );
+    });
     registerChartRoutes(scoped, { db, config, fetch: fetchImpl });
     registerResultRoutes(scoped, { db, config, fetch: fetchImpl });
     registerDatasetRoutes(scoped, db, config, fetchImpl);

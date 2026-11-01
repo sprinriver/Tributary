@@ -1,4 +1,5 @@
 import type { Database } from '@tributary/db';
+import { storedGroupMappings, toConfigMapping } from '../admin/settings.ts';
 import type { ApiConfig } from '../config.ts';
 import { defineAbility, type AppAbility, type Role, type RoleBinding } from './abilities.ts';
 import type { TokenScope } from './tokens.ts';
@@ -18,7 +19,7 @@ export interface Principal {
 
 /**
  * Role bindings for a user: rows bound to the user or their groups, plus bindings derived from the IdP
- * group → role mapping in config. Deleted programs and bindings are ignored.
+ * group → role mappings (environment and admin-stored). Deleted programs and bindings are ignored.
  */
 export async function loadBindings(db: Database, config: ApiConfig, userId: string): Promise<RoleBinding[]> {
   const groups = await db
@@ -51,7 +52,9 @@ export async function loadBindings(db: Database, config: ApiConfig, userId: stri
     }));
 
   const groupNames = new Set(groups.map((g) => g.name));
-  const mapped = config.groupRoleMap.filter((m) => groupNames.has(m.group));
+  // Mappings from the environment and those stored by admins (SPEC M11) apply alike.
+  const stored = groupNames.size ? (await storedGroupMappings(db, config.tenantId)).map(toConfigMapping) : [];
+  const mapped = [...config.groupRoleMap, ...stored].filter((m) => groupNames.has(m.group));
   if (mapped.length) {
     const programs = await db
       .selectFrom('program')

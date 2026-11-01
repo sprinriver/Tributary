@@ -14,6 +14,8 @@ export async function startTestDatabase(): Promise<TestDatabase> {
   const container: StartedPostgreSqlContainer = await new PostgreSqlContainer(POSTGRES_IMAGE).start();
   const url = container.getConnectionUri();
   const pool = new pg.Pool({ connectionString: url, max: 4 });
+  pool.on('error', () => undefined);
+  pool.on('connect', (client) => client.on('error', () => undefined));
   return {
     url,
     pool,

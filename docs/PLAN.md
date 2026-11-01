@@ -283,14 +283,14 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 18 — Lineage, audit, admin and Part 11-ready controls
-Status: todo
+Status: done
 Goal: Trust features pharma IT asks about: lineage graph, audit viewer/export, re-auth on publish, versioned templates, lifecycle policies.
 Spec: M10, M11, §10   Features: LIN-01, AUD-02, ADM-01 … ADM-03
 In scope: lineage API (recursive CTE, depth) + graph UI (check the graph library licence first); audit viewer with filters + CSV export; per-entity history tab; re-auth on publish/approve (OIDC `max_age`); admin for templates (versioning + migration preview), picklists, ontology sources, role bindings and IdP group → role mapping, runner configuration, lifecycle policies, AI settings placeholder, system health.
 **Suggested split:** 18a = lineage API + graph, audit viewer/export, history tab · 18b = re-auth on publish, admin screens (templates, picklists, ontology sources, roles and group mapping, runner configuration, lifecycle, health).
 Definition of done:
-- [ ] e2e: lineage of a published release; publish audit with reason + approver; template v1.1 behaviour (SPEC M11 check); screenshots
-- [ ] `pnpm check` exits 0
+- [x] e2e: lineage of a published release; publish audit with reason + approver; template v1.1 behaviour (SPEC M11 check); screenshots
+- [x] `pnpm check` exits 0
 
 ## Phase 19 — AI assistant and curation
 Status: todo

@@ -14,12 +14,14 @@ export function Layout() {
   const [drawer, setDrawer] = useState(false);
   return (
     <div className={`app${drawer ? ' drawer-open' : ''}`}>
-      <Sidebar
-        me={me.data}
-        collapsed={collapsed}
-        onToggle={toggleCollapsed}
-        onNavigate={() => setDrawer(false)}
-      />
+      <div className="sidebar-rail">
+        <Sidebar
+          me={me.data}
+          collapsed={collapsed}
+          onToggle={toggleCollapsed}
+          onNavigate={() => setDrawer(false)}
+        />
+      </div>
       <div className="scrim" onClick={() => setDrawer(false)} aria-hidden="true" />
       <div className="app-body">
         <TopBar onOpenNav={() => setDrawer(true)} />

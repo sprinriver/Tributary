@@ -73,6 +73,17 @@ export interface AppSession {
   user_id: string;
 }
 
+export interface AppSetting {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  key: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  value: Json;
+}
+
 export interface AppUser {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -277,6 +288,19 @@ export interface GroupMember {
   user_id: string;
 }
 
+export interface GroupRoleMapping {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  group_name: string;
+  id: Generated<string>;
+  position: Generated<number>;
+  programs: Generated<string[]>;
+  role: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface ImportPreset {
   columns: Json;
   constants: Generated<Json>;
@@ -399,6 +423,19 @@ export interface OntologyTermCache {
   ontology: string;
   synonyms: Generated<string[]>;
   term_id: string;
+}
+
+export interface PicklistValue {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  kind: string;
+  label: string;
+  position: Generated<number>;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  value: string;
 }
 
 export interface PipelineDefinition {
@@ -675,6 +712,7 @@ export interface DB {
   access_token: AccessToken;
   app_group: AppGroup;
   app_session: AppSession;
+  app_setting: AppSetting;
   app_user: AppUser;
   assay_type: AssayType;
   audit_log: AuditLog;
@@ -687,6 +725,7 @@ export interface DB {
   experiment_version: ExperimentVersion;
   file_object: FileObject;
   group_member: GroupMember;
+  group_role_mapping: GroupRoleMapping;
   import_preset: ImportPreset;
   lifecycle_policy: LifecyclePolicy;
   lineage_edge: LineageEdge;
@@ -697,6 +736,7 @@ export interface DB {
   metadata_template: MetadataTemplate;
   ontology_query_cache: OntologyQueryCache;
   ontology_term_cache: OntologyTermCache;
+  picklist_value: PicklistValue;
   pipeline_definition: PipelineDefinition;
   pipeline_run: PipelineRun;
   pipeline_run_event: PipelineRunEvent;

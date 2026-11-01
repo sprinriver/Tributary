@@ -99,7 +99,7 @@ export class OidcClient {
       email: str(claims.email),
       name: str(claims.name) || str(claims.preferred_username) || claims.sub,
       groups: Array.isArray(groups) ? groups.filter((g): g is string => typeof g === 'string') : [],
-      authTime: typeof claims.auth_time === 'number' ? new Date(claims.auth_time * 1000) : new Date(),
+      authTime: authTimeFrom(claims.auth_time),
       idToken: tokens.id_token ?? null,
     };
   }
@@ -110,4 +110,13 @@ export class OidcClient {
     if (idToken) params.id_token_hint = idToken;
     return client.buildEndSessionUrl(configuration, params).href;
   }
+}
+
+/**
+ * When the user last entered credentials (OIDC `auth_time`). An IdP may omit the claim when no `max_age` was
+ * asked for; a missing claim then counts as long ago, so publishing still requires re-authentication (which
+ * sends `max_age=0`, making the claim mandatory) instead of trusting a silent sign-in as fresh.
+ */
+export function authTimeFrom(claim: unknown): Date {
+  return typeof claim === 'number' && Number.isFinite(claim) ? new Date(claim * 1000) : new Date(0);
 }

@@ -25,5 +25,11 @@ pg.types.setTypeParser(pg.types.builtins.DATE, (text: string) => text);
 export function createDb(
   connectionString: string = process.env.DATABASE_URL ?? DEFAULT_DATABASE_URL,
 ): Database {
-  return new Kysely<DB>({ dialect: new PostgresDialect({ pool: new pg.Pool({ connectionString }) }) });
+  const pool = new pg.Pool({ connectionString });
+  // A connection the server closes (restart, failover, shutdown) must not crash the process: node-postgres emits
+  // 'error' on idle and closing clients, which is fatal without a listener. The next query reconnects.
+  const warn = (error: Error) => console.warn(`postgres connection closed: ${error.message}`);
+  pool.on('error', warn);
+  pool.on('connect', (client) => client.on('error', warn));
+  return new Kysely<DB>({ dialect: new PostgresDialect({ pool }) });
 }

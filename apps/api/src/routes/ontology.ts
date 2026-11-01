@@ -7,7 +7,8 @@ import {
 import type { Database } from '@tributary/db';
 import type { FastifyInstance } from 'fastify';
 import type { ApiConfig } from '../config.ts';
-import { parse } from '../errors.ts';
+import { disabledOntologies } from '../admin/settings.ts';
+import { HttpError, parse } from '../errors.ts';
 import { respond } from '../respond.ts';
 
 const CACHE_DAYS = 30;
@@ -34,6 +35,14 @@ export function registerOntologyRoutes(
   app.get('/v1/ontology/search', async (request) => {
     const { ontology: rawOntology, q: rawQ } = parse(OntologySearchQuerySchema, request.query);
     const ontology = rawOntology.toLowerCase();
+    // Admins choose the ontology sources (SPEC M11); a disabled one is not looked up.
+    if ((await disabledOntologies(db, config.tenantId)).has(ontology))
+      throw new HttpError(
+        422,
+        'ontology_disabled',
+        `Lookups in ${rawOntology} are switched off by an admin.`,
+        'ontology',
+      );
     const q = rawQ.toLowerCase();
     const since = new Date(Date.now() - CACHE_DAYS * 86_400_000);
 
