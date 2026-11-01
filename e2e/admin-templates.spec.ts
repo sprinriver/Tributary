@@ -88,5 +88,6 @@ test('ADM-01: admin publishes a template version with a required field; publishe
   expect(JSON.stringify(blocked.body)).toContain(key);
   await scientist.goto(`/experiments/${after.experiment}`);
   await scientist.getByRole('tab', { name: 'Samples' }).click();
-  await expect(scientist.getByRole('columnheader', { name: new RegExp(`Passage ${tag}`) })).toBeVisible();
+  // The new required field has its own column (headers are field keys, as in TSV imports).
+  await expect(scientist.getByRole('columnheader', { name: key, exact: true })).toBeVisible();
 });
