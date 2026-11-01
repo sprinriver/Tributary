@@ -12,6 +12,9 @@ export const MeResponseSchema = z
     auth: z.enum(['session', 'token']),
     /** Present for cookie sessions: send it as `X-CSRF-Token` on every mutation. */
     csrf_token: z.string().optional(),
+    /** Sessions: when the user last entered credentials at the IdP (re-authentication, SPEC M10). */
+    auth_time: z.string().optional(),
+    reauth_max_age_seconds: z.int(),
   })
   .meta({ id: 'MeResponse' });
 export type MeResponse = z.infer<typeof MeResponseSchema>;

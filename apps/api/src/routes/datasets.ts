@@ -12,7 +12,7 @@ import {
 import type { Database } from '@tributary/db';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { insertAudit, requestActor } from '../audit.ts';
-import { authorize, readablePrograms, requirePrincipal } from '../auth/plugin.ts';
+import { authorize, readablePrograms, requirePrincipal, requireRecentAuth } from '../auth/plugin.ts';
 import type { ApiConfig } from '../config.ts';
 import { listDatasets, loadDataset, loadRelease } from '../datasets/load.ts';
 import { odcsYaml } from '../datasets/odcs.ts';
@@ -66,6 +66,7 @@ export function registerDatasetRoutes(
 
   // Staged → published | rejected, with a reason; the DB trigger keeps both final (SPEC M5).
   const decide = (to: 'published' | 'rejected') => async (request: IdParams) => {
+    requireRecentAuth(request);
     const body = parse(ReleaseReasonBodySchema, request.body);
     const release = await loadRelease(db, request.params.id);
     const action = to === 'published' && release.requires_approval ? 'approve' : 'publish';

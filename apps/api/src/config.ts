@@ -18,6 +18,8 @@ export interface ApiConfig {
   cookieSecret: string;
   /** Internal Python service (statistics, SDRF). */
   computeUrl: string;
+  /** Browser sessions must have signed in within this many seconds to publish or approve (default 15 min). */
+  reauthMaxAgeSeconds: number;
   /** Search embeddings (SPEC M9, ADR 0020); `none` = full-text only, the default. */
   search: SearchConfig;
   /** Internal DuckDB service (importers, queries) and the token it requires. */
@@ -117,6 +119,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 12),
+    reauthMaxAgeSeconds: Number(env.REAUTH_MAX_AGE_SECONDS ?? 900),
     s3: {
       endpoint: env.S3_ENDPOINT ?? (production ? undefined : 'http://localhost:8333'),
       region: env.S3_REGION ?? 'us-east-1',

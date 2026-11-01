@@ -30,6 +30,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
     label: 'Admin',
     items: [
       { to: '/admin/pipelines', label: 'Pipelines', icon: 'workflow', admin: true },
+      { to: '/admin/templates', label: 'Templates', icon: 'flask', admin: true },
       { to: '/admin/audit', label: 'Audit', icon: 'shield', admin: true },
     ],
   },

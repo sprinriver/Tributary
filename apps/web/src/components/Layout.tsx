@@ -2,6 +2,7 @@ import { Link, Outlet } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useMe } from '../auth.ts';
 import { SearchPalette } from '../search/SearchPalette.tsx';
+import { ReauthDialog } from '../shell/ReauthDialog.tsx';
 import { Sidebar } from '../shell/Sidebar.tsx';
 import { TopBar } from '../shell/TopBar.tsx';
 import { useCollapsed } from '../shell/theme.ts';
@@ -23,6 +24,7 @@ export function Layout() {
       <div className="app-body">
         <TopBar onOpenNav={() => setDrawer(true)} />
         {me.data && <SearchPalette />}
+        {me.data && <ReauthDialog />}
         <div className="app-main">
           <Outlet />
         </div>

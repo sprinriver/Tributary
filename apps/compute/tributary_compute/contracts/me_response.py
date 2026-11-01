@@ -48,6 +48,8 @@ class MeResponse(BaseModel):
     roles: list[Role]
     auth: Literal["session", "token"]
     csrf_token: str | None = None
+    auth_time: str | None = None
+    reauth_max_age_seconds: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
 
 
 class Model(RootModel[MeResponse]):

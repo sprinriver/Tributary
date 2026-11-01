@@ -80,6 +80,9 @@ export async function api<O extends ApiOperation>(
     const body = (await res
       .json()
       .catch(() => ({ code: 'http_error', message: `HTTP ${res.status}` }))) as ContractError;
+    // Publishing and approving need a recent sign-in (SPEC M10): the shell asks the user to confirm identity.
+    if (body.code === 'reauth_required' && typeof document !== 'undefined')
+      document.dispatchEvent(new CustomEvent('tributary:reauth', { detail: body.message }));
     throw new ApiError(res.status, body);
   }
   if (!route.response || res.status === 204) return undefined as ApiResponse<O>;

@@ -10,13 +10,13 @@ export interface ResolvedTemplate extends MetadataTemplateDefinition {
   built_in: boolean;
 }
 
-const builtIn = (assayType: AssayTypeKey): ResolvedTemplate => ({
+export const builtIn = (assayType: AssayTypeKey): ResolvedTemplate => ({
   ...SEED_PROTEOMICS_TEMPLATE,
   assay_type: assayType,
   built_in: true,
 });
 
-const semverKey = (v: string) =>
+export const semverKey = (v: string) =>
   v
     .split('.')
     .map((n) => n.padStart(6, '0'))
@@ -60,7 +60,8 @@ export async function listTemplates(db: Database, assayType?: AssayTypeKey): Pro
 /** The newest published template for an assay type (pinned on new experiments). */
 export async function currentTemplate(db: Database, assayType: AssayTypeKey): Promise<ResolvedTemplate> {
   const all = await listTemplates(db, assayType);
-  return all.find((t) => t.status === 'published') ?? all[0] ?? builtIn(assayType);
+  // Only a published template is pinned; drafts are never handed to new experiments.
+  return all.find((t) => t.status === 'published') ?? builtIn(assayType);
 }
 
 /** The exact template version a version pinned. */

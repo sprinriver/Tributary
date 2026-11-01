@@ -38,8 +38,8 @@ export function registerAuthRoutes(
   const cookieBase = { httpOnly: true, secure: config.production, path: '/' } as const;
 
   app.get('/v1/auth/login', { config: { public: true } }, async (request, reply) => {
-    const { returnTo } = request.query as { returnTo?: string };
-    const { url, flow } = await oidc.startLogin(safeReturnTo(returnTo));
+    const { returnTo, reauth } = request.query as { returnTo?: string; reauth?: string };
+    const { url, flow } = await oidc.startLogin(safeReturnTo(returnTo), undefined, reauth === '1');
     // Lax: the IdP redirects back with a top-level GET from another site in production.
     reply.setCookie(FLOW_COOKIE, JSON.stringify(flow), {
       ...cookieBase,
@@ -124,7 +124,10 @@ export function registerAuthRoutes(
         role: b.role,
       })),
       auth: p.via.type,
-      ...(p.via.type === 'session' ? { csrf_token: p.via.csrfToken } : {}),
+      ...(p.via.type === 'session'
+        ? { csrf_token: p.via.csrfToken, auth_time: p.via.authTime.toISOString() }
+        : {}),
+      reauth_max_age_seconds: request.reauthMaxAgeSeconds,
     };
   });
 

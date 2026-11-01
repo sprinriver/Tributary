@@ -13,6 +13,7 @@ import { ExperimentsPage, type ExperimentsSearch } from './routes/ExperimentsPag
 import { HomePage } from './routes/HomePage.tsx';
 import { SearchPage, type SearchPageSearch } from './search/SearchPage.tsx';
 import { AuditPage, type AuditSearch } from './trust/AuditPage.tsx';
+import { TemplatesPage } from './admin/TemplatesPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
 
@@ -127,6 +128,11 @@ const lineageRoute = createRoute({
     };
   },
 });
+const templatesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/templates',
+  component: TemplatesPage,
+});
 const auditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/audit',
@@ -162,6 +168,7 @@ export const router = createRouter({
     searchRoute,
     lineageRoute,
     auditRoute,
+    templatesRoute,
     forbiddenRoute,
   ]),
 });

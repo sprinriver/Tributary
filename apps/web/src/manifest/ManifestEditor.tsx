@@ -29,7 +29,7 @@ const newRow = (cells: Record<string, string> = {}): Row => ({
   id: `row-${Date.now().toString(36)}-${counter++}`,
   cells,
 });
-/** Columns shown even when empty; other template columns appear once they hold data (or with "All columns"). */
+/** Columns shown even when empty (with required fields); others appear once they hold data (or with "All columns"). */
 const CORE = [
   'sample_key',
   'source_name',
@@ -115,7 +115,12 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
   const allKeys = fieldDefs.map((f) => f.key);
   const visible = allKeys.filter(
     (k) =>
-      allColumns || CORE.includes(k) || sampleFields.some((f) => f.key === k) || rows.some((r) => r.cells[k]),
+      allColumns ||
+      CORE.includes(k) ||
+      // Required fields always have a column (e.g. one a newer template version added), so they can be filled.
+      fieldDefs.some((f) => f.key === k && f.required) ||
+      sampleFields.some((f) => f.key === k) ||
+      rows.some((r) => r.cells[k]),
   );
 
   // A stable key for the visible column set, so column definitions are rebuilt only when it changes.
@@ -164,17 +169,23 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
   const columnsForMapping = allKeys;
   const programId = version.program_id;
 
-  async function applyImported({ rows: incoming, mapping, presetName }: ApplyArgs) {
+  function applyImported({ rows: incoming, mapping, presetName }: ApplyArgs) {
     setRows((prev) => mergeBySampleKey(prev, incoming, newRow));
     setUpload(null);
     setMessage(`Applied ${incoming.length} imported rows`);
     if (presetName.trim()) {
+      // The rows are applied at once; the preset is saved in the background and a failure is reported here.
       const clean = Object.fromEntries(Object.entries(mapping).filter(([, v]) => v));
-      await api('createMappingPreset', {
+      void api('createMappingPreset', {
         params: { id: programId },
         body: { name: presetName.trim(), mapping: clean },
-      });
-      await client.invalidateQueries({ queryKey: ['mapping-presets', programId] });
+      })
+        .then(() => client.invalidateQueries({ queryKey: ['mapping-presets', programId] }))
+        .catch((e: unknown) =>
+          setMessage(
+            `Applied ${incoming.length} imported rows; the mapping preset was not saved: ${String(e)}`,
+          ),
+        );
     }
   }
 

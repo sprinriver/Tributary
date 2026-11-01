@@ -22,11 +22,9 @@ async function ddaExperiment(page: Page, name: string, fillRequired = true) {
   });
   const version = created.body.versions[0]!;
   // Earlier runs of this test left required fields in the DDA template: give every required field a value.
-  const templates = await apiCall<{ items: { status: string; fields: { key: string; scope: string; required: boolean }[] }[] }>(
-    page,
-    'GET',
-    '/v1/templates?assay_type=proteomics_dda',
-  );
+  const templates = await apiCall<{
+    items: { status: string; fields: { key: string; scope: string; required: boolean }[] }[];
+  }>(page, 'GET', '/v1/templates?assay_type=proteomics_dda');
   const published = fillRequired ? templates.body.items.find((t) => t.status === 'published') : undefined;
   const required = (published?.fields ?? []).filter((f) => f.scope === 'sample' && f.required);
   const filled = rows().map((r) => ({

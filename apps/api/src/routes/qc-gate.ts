@@ -2,7 +2,7 @@ import { QcGateSchema, QcOverrideBodySchema, QcOverrideSchema } from '@tributary
 import type { Database } from '@tributary/db';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { requestActor, insertAudit } from '../audit.ts';
-import { authorize } from '../auth/plugin.ts';
+import { authorize, requireRecentAuth } from '../auth/plugin.ts';
 import { HttpError, parse } from '../errors.ts';
 import { canLaunch, failedFiles, latestOverride } from '../ingest/gate.ts';
 import { loadVersion } from '../registry/load.ts';
@@ -19,6 +19,7 @@ export function registerQcGateRoutes(app: FastifyInstance, db: Database): void {
 
   // SPEC M3: an approver overrides failed QC with a reason; the override and its reason are audited.
   app.post('/v1/versions/:id/qc-override', async (request: IdParams, reply) => {
+    requireRecentAuth(request);
     const body = parse(QcOverrideBodySchema, request.body);
     const version = await loadVersion(db, request.params.id);
     authorize(request, 'approve', 'ExperimentVersion', version.program_id);

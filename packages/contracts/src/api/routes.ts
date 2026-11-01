@@ -8,6 +8,7 @@ import { QUERY_ROUTES } from './routes-query.ts';
 import { RESULT_ROUTES } from './routes-results.ts';
 import { SEARCH_ROUTES } from './routes-search.ts';
 import { TRUST_ROUTES } from './routes-trust.ts';
+import { ADMIN_ROUTES } from './routes-admin.ts';
 import { VIEW_ROUTES } from './routes-views.ts';
 import type { ApiRoute } from './route.ts';
 import {
@@ -274,6 +275,7 @@ export const API_ROUTES = {
   ...VIEW_ROUTES,
   ...SEARCH_ROUTES,
   ...TRUST_ROUTES,
+  ...ADMIN_ROUTES,
   ...CHART_ROUTES,
   ...RESULT_ROUTES,
 } as const satisfies Record<string, ApiRoute>;

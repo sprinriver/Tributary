@@ -86,12 +86,21 @@
         },
         "csrf_token": {
           "type": "string"
+        },
+        "auth_time": {
+          "type": "string"
+        },
+        "reauth_max_age_seconds": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
         }
       },
       "required": [
         "user",
         "roles",
-        "auth"
+        "auth",
+        "reauth_max_age_seconds"
       ],
       "additionalProperties": false
     }

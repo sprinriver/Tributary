@@ -777,3 +777,42 @@ Entry template:
 - Gaps:
   - Plotly charts and AG Grid stay light in dark mode.
   - Earlier phases' screenshots show the old look; they are kept as phase records.
+
+## 2026-11-01 — Phase 18b-1: Re-authentication on publish/approve and template versioning — partial (18b-2 pending)
+- Built:
+  - Re-authentication (SPEC M10, §10): publishing a version, approving or rejecting a release, and overriding
+    QC (plus publishing a template) need a sign-in within `REAUTH_MAX_AGE_SECONDS` (default 900). Otherwise
+    the API answers 401 `reauth_required`, checked before anything is loaded or written.
+  - API tokens are exempt: not interactive; their scopes still apply.
+  - `/v1/auth/me` reports `auth_time` and `reauth_max_age_seconds`.
+  - The web shows "Confirm it’s you" on `reauth_required`. "Sign in again" goes through the IdP with
+    `prompt=login` and `max_age=0` (Keycloak asks for the password again), back to the same page, and the user
+    repeats the action.
+  - Template versioning (SPEC M11, ADM-01):
+    - `GET /v1/admin/templates` lists versions with how many experiment versions pin each.
+    - `POST /v1/admin/templates` creates the next major/minor/patch version as a draft, with key-field and
+      duplicate checks.
+    - `GET …/preview` is the migration preview: added, removed, changed and newly required fields, and pinned
+      counts.
+    - `POST …/publish` (with reason; audited; the previous version is retired).
+    - New experiments and new versions (clone) pin the current published template, never a draft. Published
+      versions keep theirs.
+  - Admin page `/admin/templates` (sidebar "Templates"): versions table, field editor (contract-validated),
+    migration preview, publish with reason.
+- Fixes found on the way:
+  - `currentTemplate` could hand a draft template to new experiments.
+  - The manifest grid now always shows required template fields, so a newly required field can be filled.
+  - The Paste TSV dialog closes once rows are applied; the mapping preset is saved in the background, and a
+    failure shows in the editor message. Before, the dialog waited on the save and timed out under load.
+- Decisions: a template version is immutable once published (409). The built-in template stays listed until a
+  stored version replaces it.
+- Dependencies: none new.
+- Evidence: `pnpm check` ✓ · `pnpm run test:api "ADM-01|AUD-02"` ✓ · full `pnpm e2e` ✓ (40 passed, 4.5 min) ·
+  screenshots `artifacts/phase-18/template-preview.png`, `template-published.png`, `reauth-dialog.png`.
+- Test amendments (own commits; these new tests had not passed before):
+  - AUD-02 re-auth e2e asserts Keycloak's "Please re-authenticate to continue" page (the username is kept)
+    instead of filling a username.
+  - ADM-01 e2e looks for the new column by its key (grid headers are keys).
+  - ADM-01 e2e fills required DDA fields left by earlier runs for the "before" experiment only; a setup
+    expression was fixed.
+- Commit: (pending)

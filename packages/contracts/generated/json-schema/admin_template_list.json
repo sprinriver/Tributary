@@ -1,0 +1,172 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/AdminTemplateList",
+  "$defs": {
+    "AdminTemplateList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AdminTemplate"
+          }
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "additionalProperties": false
+    },
+    "AdminTemplate": {
+      "type": "object",
+      "properties": {
+        "assay_type": {
+          "type": "string",
+          "enum": [
+            "proteomics_dia",
+            "proteomics_dda",
+            "proteomics_tmt",
+            "rnaseq",
+            "crispr_screen",
+            "ngs_raw"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "draft",
+            "published",
+            "retired"
+          ]
+        },
+        "key_field": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/MetadataFieldDef"
+          }
+        },
+        "built_in": {
+          "type": "boolean"
+        },
+        "pinned": {
+          "type": "object",
+          "properties": {
+            "draft": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "published": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "archived": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "draft",
+            "published",
+            "archived"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "assay_type",
+        "version",
+        "status",
+        "key_field",
+        "fields",
+        "built_in",
+        "pinned"
+      ],
+      "additionalProperties": false
+    },
+    "MetadataFieldDef": {
+      "type": "object",
+      "properties": {
+        "scope": {
+          "type": "string",
+          "enum": [
+            "experiment",
+            "sample"
+          ]
+        },
+        "key": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]*$"
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "text",
+            "number",
+            "integer",
+            "boolean",
+            "date",
+            "enum",
+            "ontology_term",
+            "quantity"
+          ]
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "searchable": {
+          "type": "boolean"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "ontology": {
+          "type": "string"
+        },
+        "enumValues": {
+          "minItems": 1,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "quantityKind": {
+          "type": "string",
+          "enum": [
+            "concentration",
+            "time"
+          ]
+        },
+        "validator": {
+          "type": "string",
+          "enum": [
+            "plate_well"
+          ]
+        }
+      },
+      "required": [
+        "scope",
+        "key",
+        "label",
+        "type",
+        "required",
+        "searchable"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

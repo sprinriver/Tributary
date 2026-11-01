@@ -11,7 +11,7 @@ import type { SearchIndex } from '../search/index-service.ts';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { changeReason, writeAudit } from '../audit.ts';
 import { inProgram } from '../auth/abilities.ts';
-import { authorize } from '../auth/plugin.ts';
+import { authorize, requireRecentAuth } from '../auth/plugin.ts';
 import { forbidden, HttpError, parse } from '../errors.ts';
 import { diffVersions } from '../registry/diff.ts';
 import {
@@ -22,7 +22,7 @@ import {
   versionDetail,
   type LoadedVersion,
 } from '../registry/load.ts';
-import { fieldToRow, pinnedTemplate } from '../registry/templates.ts';
+import { currentTemplate, fieldToRow, pinnedTemplate } from '../registry/templates.ts';
 import {
   checkCustomFields,
   MANIFEST_OPTIONS,
@@ -140,6 +140,7 @@ export function registerVersionRoutes(app: FastifyInstance, db: Database, index:
   });
 
   app.post('/v1/versions/:id/publish', async (request: IdParams) => {
+    requireRecentAuth(request);
     const version = await loadVersion(db, request.params.id);
     const principal = authorize(request, 'publish', 'ExperimentVersion', version.program_id);
     if (
@@ -211,6 +212,8 @@ export function registerVersionRoutes(app: FastifyInstance, db: Database, index:
     const source = await loadVersion(db, request.params.id);
     const principal = authorize(request, 'create', 'ExperimentVersion', source.program_id);
     const base = { tenant_id: principal.tenantId, created_by: principal.userId };
+    // A new version is a new draft: it follows the current template (SPEC M11), not the source's pinned one.
+    const template = await currentTemplate(db, source.assay_type);
     const id = await db.transaction().execute(async (trx) => {
       const max = await trx
         .selectFrom('experiment_version')
@@ -224,7 +227,7 @@ export function registerVersionRoutes(app: FastifyInstance, db: Database, index:
           experiment_id: source.experiment_id,
           version_number: Number(max.n ?? 0) + 1,
           parent_version_id: source.id,
-          template_version: source.template_version,
+          template_version: template.version,
           experiment_date: source.experiment_date,
           species: source.species === null ? null : json(source.species),
           spectral_library: source.spectral_library,

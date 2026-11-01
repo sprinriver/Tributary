@@ -11,6 +11,8 @@ import { findToken } from './tokens.ts';
 declare module 'fastify' {
   interface FastifyRequest {
     principal: Principal | null;
+    /** Browser sessions older than this must sign in again to publish or approve (SPEC M10). */
+    reauthMaxAgeSeconds: number;
   }
   interface FastifyContextConfig {
     /** Routes reachable without signing in (health, login callback). */
@@ -26,8 +28,10 @@ const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
  */
 export function registerAuth(app: FastifyInstance, db: Database, config: ApiConfig): void {
   app.decorateRequest('principal', null);
+  app.decorateRequest('reauthMaxAgeSeconds', 0);
 
   app.addHook('onRequest', async (request) => {
+    request.reauthMaxAgeSeconds = config.reauthMaxAgeSeconds;
     const header = request.headers.authorization;
     if (header?.startsWith('Bearer ')) {
       const token = await findToken(db, header.slice('Bearer '.length).trim());
@@ -95,4 +99,23 @@ export function requireSystemAdmin(request: FastifyRequest): Principal {
   const principal = requirePrincipal(request);
   if (!principal.bindings.some((b) => b.role === 'system_admin')) throw forbidden();
   return principal;
+}
+
+/**
+ * Part 11-ready control (SPEC M10, §10): publishing, approving, rejecting and overriding need a recent sign-in.
+ * Browser sessions older than the configured age get 401 `reauth_required`; the UI sends the user through the IdP
+ * with `prompt=login` and `max_age=0`. API tokens are not interactive and are exempt (their scopes still apply).
+ */
+export function requireRecentAuth(request: FastifyRequest): void {
+  const principal = requirePrincipal(request);
+  if (principal.via.type !== 'session') return;
+  const ageSeconds = (Date.now() - principal.via.authTime.getTime()) / 1000;
+  if (ageSeconds > request.reauthMaxAgeSeconds) {
+    const minutes = Math.round(request.reauthMaxAgeSeconds / 60);
+    throw new HttpError(
+      401,
+      'reauth_required',
+      `Sign in again to confirm it is you: this needs a sign-in within the last ${minutes} minutes.`,
+    );
+  }
 }

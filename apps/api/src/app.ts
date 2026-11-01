@@ -29,6 +29,7 @@ import { registerSdrfRoutes } from './routes/sdrf.ts';
 import { registerVersionRoutes } from './routes/versions.ts';
 import { registerSearchRoutes } from './routes/search.ts';
 import { registerTrustRoutes } from './routes/trust.ts';
+import { registerAdminTemplateRoutes } from './routes/admin-templates.ts';
 import { embeddingProvider } from './search/embeddings.ts';
 import { searchIndex } from './search/index-service.ts';
 
@@ -112,6 +113,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerViewRoutes(scoped, db);
     registerSearchRoutes(scoped, { db, config, provider, index });
     registerTrustRoutes(scoped, db);
+    registerAdminTemplateRoutes(scoped, db);
     registerChartRoutes(scoped, { db, config, fetch: fetchImpl });
     registerResultRoutes(scoped, { db, config, fetch: fetchImpl });
     registerDatasetRoutes(scoped, db, config, fetchImpl);

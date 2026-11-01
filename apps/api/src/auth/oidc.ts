@@ -51,7 +51,12 @@ export class OidcClient {
     return this.configuration;
   }
 
-  async startLogin(returnTo: string, maxAge?: number): Promise<{ url: URL; flow: LoginFlow }> {
+  /** `reauth` asks the IdP for credentials again (OIDC `prompt=login`, `max_age=0`) even with a live IdP session. */
+  async startLogin(
+    returnTo: string,
+    maxAge?: number,
+    reauth = false,
+  ): Promise<{ url: URL; flow: LoginFlow }> {
     const configuration = await this.discover();
     const flow: LoginFlow = {
       state: client.randomState(),
@@ -68,6 +73,10 @@ export class OidcClient {
       code_challenge_method: 'S256',
     };
     if (maxAge !== undefined) params.max_age = String(maxAge);
+    if (reauth) {
+      params.max_age = '0';
+      params.prompt = 'login';
+    }
     return { url: client.buildAuthorizationUrl(configuration, params), flow };
   }
 

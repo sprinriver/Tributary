@@ -7306,6 +7306,384 @@
         }
       }
     },
+    "/v1/admin/templates": {
+      "get": {
+        "operationId": "listAdminTemplates",
+        "summary": "Template versions of an assay type with how many experiment versions pin each (system admin)",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTemplate",
+        "summary": "Create the next template version as a draft (system admin)",
+        "parameters": [
+          {
+            "name": "X-Change-Reason",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Recorded in the audit log"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTemplateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/templates/{assay_type}/{version}/preview": {
+      "get": {
+        "operationId": "previewTemplate",
+        "summary": "Migration preview: field changes against the current version and pinned counts",
+        "parameters": [
+          {
+            "name": "assay_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplatePreview"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/admin/templates/{assay_type}/{version}/publish": {
+      "post": {
+        "operationId": "publishTemplate",
+        "summary": "Publish a draft template version; new drafts pin it, existing versions keep theirs",
+        "parameters": [
+          {
+            "name": "assay_type",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "version",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PublishTemplateBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplate"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/charts/render": {
       "post": {
         "operationId": "renderChart",
@@ -7901,6 +8279,117 @@
           "revoked_at",
           "last_used_at",
           "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "AdminTemplate": {
+        "type": "object",
+        "properties": {
+          "assay_type": {
+            "type": "string",
+            "enum": [
+              "proteomics_dia",
+              "proteomics_dda",
+              "proteomics_tmt",
+              "rnaseq",
+              "crispr_screen",
+              "ngs_raw"
+            ]
+          },
+          "version": {
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "retired"
+            ]
+          },
+          "key_field": {
+            "type": "string"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetadataFieldDef"
+            }
+          },
+          "built_in": {
+            "type": "boolean"
+          },
+          "pinned": {
+            "type": "object",
+            "properties": {
+              "draft": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "published": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "archived": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "assay_type",
+          "version",
+          "status",
+          "key_field",
+          "fields",
+          "built_in",
+          "pinned"
+        ],
+        "additionalProperties": false
+      },
+      "AdminTemplateList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AdminTemplate"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
+      "AdminTemplateListQuery": {
+        "type": "object",
+        "properties": {
+          "assay_type": {
+            "type": "string",
+            "enum": [
+              "proteomics_dia",
+              "proteomics_dda",
+              "proteomics_tmt",
+              "rnaseq",
+              "crispr_screen",
+              "ngs_raw"
+            ]
+          }
+        },
+        "required": [
+          "assay_type"
         ],
         "additionalProperties": false
       },
@@ -9619,6 +10108,47 @@
           "program_id",
           "assay_type",
           "name"
+        ],
+        "additionalProperties": false
+      },
+      "CreateTemplateBody": {
+        "type": "object",
+        "properties": {
+          "assay_type": {
+            "type": "string",
+            "enum": [
+              "proteomics_dia",
+              "proteomics_dda",
+              "proteomics_tmt",
+              "rnaseq",
+              "crispr_screen",
+              "ngs_raw"
+            ]
+          },
+          "bump": {
+            "type": "string",
+            "enum": [
+              "major",
+              "minor",
+              "patch"
+            ]
+          },
+          "fields": {
+            "minItems": 1,
+            "maxItems": 200,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/MetadataFieldDef"
+            }
+          },
+          "key_field": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "assay_type",
+          "bump",
+          "fields"
         ],
         "additionalProperties": false
       },
@@ -13445,12 +13975,21 @@
           },
           "csrf_token": {
             "type": "string"
+          },
+          "auth_time": {
+            "type": "string"
+          },
+          "reauth_max_age_seconds": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
           }
         },
         "required": [
           "user",
           "roles",
-          "auth"
+          "auth",
+          "reauth_max_age_seconds"
         ],
         "additionalProperties": false
       },
@@ -14659,6 +15198,20 @@
             "maxLength": 2000
           }
         },
+        "additionalProperties": false
+      },
+      "PublishTemplateBody": {
+        "type": "object",
+        "properties": {
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          }
+        },
+        "required": [
+          "reason"
+        ],
         "additionalProperties": false
       },
       "QcGate": {
@@ -17485,6 +18038,96 @@
         },
         "required": [
           "items"
+        ],
+        "additionalProperties": false
+      },
+      "TemplatePreview": {
+        "type": "object",
+        "properties": {
+          "assay_type": {
+            "type": "string",
+            "enum": [
+              "proteomics_dia",
+              "proteomics_dda",
+              "proteomics_tmt",
+              "rnaseq",
+              "crispr_screen",
+              "ngs_raw"
+            ]
+          },
+          "version": {
+            "type": "string"
+          },
+          "base_version": {
+            "type": "string"
+          },
+          "added": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "removed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "changed": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "newly_required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "pinned": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "draft": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "published": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "archived": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "version": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "draft",
+                "published",
+                "archived",
+                "version"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "assay_type",
+          "version",
+          "base_version",
+          "added",
+          "removed",
+          "changed",
+          "newly_required",
+          "pinned"
         ],
         "additionalProperties": false
       },
