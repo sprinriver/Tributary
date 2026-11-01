@@ -23,6 +23,8 @@ export default defineConfig({
       'scatter3d',
     ].map((m) => `plotly.js/lib/${m}`),
   },
+  // `vite preview` (CI e2e) serves the production build on the same port, with server.proxy for /api.
+  preview: { port: 5173, strictPort: true },
   server: {
     port: 5173,
     strictPort: true,

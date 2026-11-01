@@ -965,3 +965,20 @@ Entry template:
 - Test infrastructure: `startTestApi` takes an `aiProvider` (a scripted model, used for the refusal test).
 - Still waiting on you: approval of the model SDKs (see 19a). The real-provider eval is not run until then.
 - Commit: f76df73
+
+## 2026-11-01 — CI e2e: serve the production build; picklist editor guards
+- CI's e2e job failed intermittently at sign-in in PIPE-06 (runs 24, 25, 28, 29, 32, 33). The user button did not
+  appear within 15 s, and it passed on other pushes.
+  - CI ran the e2e suite against the Vite dev server, which compiles each route on first visit. It also reloads
+    every open page when it re-optimises dependencies (an earlier reload is noted in vite.config.ts).
+  - On a busy runner with pipelines in parallel, the first page after sign-in could miss 15 s.
+  - Fix: under CI, Playwright serves `vite build` + `vite preview` on port 5173; local runs keep the dev server.
+  - Locally in CI mode, the full suite runs in 3.3 min instead of about 5.
+- That run also found two problems in the picklist editor (ADM-02), now fixed:
+  - Adding a value before the saved list had loaded would have saved only the new value; Add and Save now wait for
+    the list.
+  - Adding a value already in the list is blocked with a note, instead of a 422 on save.
+- Test amendment (own commit): ADM-02's random time point (2–91 h) could equal a default (6, 24, 48, 72 h) or an
+  earlier run's value. It is now unique per run (`<n> min`).
+- Evidence: `CI=1 pnpm e2e` 45 passed and 1 failed (ADM-02, the collision above); after the fix,
+  `CI=1 pnpm e2e ADM-0` ✓ (4); web unit tests ✓ (30).

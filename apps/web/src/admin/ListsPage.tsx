@@ -42,6 +42,7 @@ function PicklistEditor({ kind, title, hint, needsLabel }: (typeof LISTS)[number
   const [value, setValue] = useState('');
   const [label, setLabel] = useState('');
   const current = values ?? list.data?.values ?? [];
+  const duplicate = current.some((v) => v.value === value.trim());
   const save = useMutation({
     mutationFn: () =>
       api('putPicklist', { params: { kind }, body: { values: current }, reason: `Edit ${title}` }),
@@ -81,7 +82,8 @@ function PicklistEditor({ kind, title, hint, needsLabel }: (typeof LISTS)[number
         )}
         <button
           type="button"
-          disabled={!value.trim()}
+          // Until the saved list has loaded, adding would replace it with only the new value.
+          disabled={!value.trim() || !list.data || duplicate}
           onClick={() => {
             setValues([
               ...current,
@@ -94,8 +96,16 @@ function PicklistEditor({ kind, title, hint, needsLabel }: (typeof LISTS)[number
           Add
         </button>
       </div>
+      {duplicate && (
+        <p style={{ margin: 0, color: 'var(--muted)' }}>{value.trim()} is already in the list.</p>
+      )}
       <div className="row" style={{ alignItems: 'center' }}>
-        <button type="button" className="primary" onClick={() => save.mutate()} disabled={save.isPending}>
+        <button
+          type="button"
+          className="primary"
+          onClick={() => save.mutate()}
+          disabled={save.isPending || !list.data}
+        >
           Save {title.toLowerCase()}
         </button>
         {save.isSuccess && <span role="status">Saved</span>}

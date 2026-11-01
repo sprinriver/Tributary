@@ -35,7 +35,12 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
-      command: 'pnpm --dir apps/web run dev',
+      // CI serves the production build: no on-demand compiles or dependency re-optimisation reloads while
+      // tests run in parallel (they made sign-in time out in CI). Locally the dev server is reused.
+      command: process.env.CI
+        ? 'pnpm --dir apps/web run build && pnpm --dir apps/web run preview'
+        : 'pnpm --dir apps/web run dev',
+      timeout: 180_000,
       url: 'http://localhost:5173',
       reuseExistingServer: !process.env.CI,
     },
