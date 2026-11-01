@@ -26,7 +26,7 @@ package = false
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["."]
+pythonpath = [".", "../../packages/sdk-python/src"]
 
 [tool.ruff]
 line-length = 110
@@ -46,6 +46,8 @@ select = ["E", "F", "W", "I", "B", "UP", "N", "S", "SIM", "RUF"]
 [tool.pyright]
 include = ["tributary_compute", "tests"]
 exclude = ["tributary_compute/contracts"]
+# The Python SDK (packages/sdk-python) is tested here (API-01).
+extraPaths = ["../../packages/sdk-python/src"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
 # sdrf-pipelines ships no stubs or py.typed; its call sites still type-check as Unknown under strict mode.

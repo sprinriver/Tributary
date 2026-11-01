@@ -7,7 +7,7 @@ import {
   type TestS3,
 } from '@tributary/db/testing';
 import type { FastifyInstance, InjectOptions, LightMyRequestResponse } from 'fastify';
-import { buildApp } from './app.ts';
+import { buildApp, type AppOptions } from './app.ts';
 import type { ModelProvider } from './ai/provider.ts';
 import { createPersonalAccessToken } from './auth/tokens.ts';
 import { loadConfig, type ApiConfig } from './config.ts';
@@ -74,6 +74,8 @@ export async function startTestApi(
     config?: Partial<ApiConfig>;
     /** Replaces the configured assistant model (e.g. a scripted provider). */
     aiProvider?: ModelProvider | null;
+    /** Replaces IdP token introspection (MCP OAuth access tokens). */
+    introspect?: AppOptions['introspect'];
   } = {},
 ): Promise<TestApi> {
   const [testDb, testS3] = await Promise.all([
@@ -131,6 +133,7 @@ export async function startTestApi(
     fetch: fetchImpl,
     runners,
     ...(options.aiProvider === undefined ? {} : { aiProvider: options.aiProvider }),
+    ...(options.introspect ? { introspect: options.introspect } : {}),
   });
   const pipelineDeps = { db, config, storage, fetch: fetchImpl, runners };
   return {
