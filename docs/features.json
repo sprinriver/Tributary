@@ -83,6 +83,7 @@
   {"id": "MCP-03", "phase": 20, "parity": "new", "description": "Agent Skill bundle teaching a customer's Claude to use the MCP tools and cite releases", "verify": "test -f integrations/claude-skill/SKILL.md", "passes": true},
   {"id": "API-01", "phase": 20, "parity": "new", "description": "Generated Python SDK lists experiments and runs a QuerySpec", "verify": "pnpm run test:compute -k API_01", "passes": true},
   {"id": "API-02", "phase": 20, "parity": "new", "description": "HMAC-signed webhooks for run status", "verify": "pnpm run test:api API-02", "passes": true},
+  {"id": "OSS-01", "phase": 22, "parity": "new", "description": "Open-source self-hosting: public instance info, demo banner with demo logins, production images and a one-server Docker Compose deployment with HTTPS", "verify": "pnpm run test:api OSS-01", "passes": false},
   {"id": "OPS-02", "phase": 21, "parity": "v1 arch", "description": "Terraform modules validate and pass tflint and checkov", "verify": "pnpm run infra:validate", "passes": false},
   {"id": "OPS-03", "phase": 21, "parity": "new", "description": "DEPLOY.md runbook and image build/plan workflow", "verify": "test -f docs/DEPLOY.md", "passes": false},
   {"id": "OPS-04", "phase": 22, "parity": "new", "description": "Load test meets SPEC section 9 targets or gaps documented", "verify": "pnpm run load:test", "passes": false},
