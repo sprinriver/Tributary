@@ -1140,3 +1140,6 @@ Entry template:
   - a build on Hugging Face itself (it needs the owner's account and a public repository)
   - the embedded-frame link, which can only be seen inside the Space page
 - Commit: 42e1a83
+- **Follow-up:** the "open in a new tab" banner change had not been applied in that commit; my text replacement did
+  not match the formatted file and nothing failed loudly. It is added now, with a unit test
+  (`isEmbedded`, `OSS-01: the app knows when it runs inside a frame`).
