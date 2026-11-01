@@ -862,3 +862,55 @@ Entry template:
   - Runner configuration is read-only status; runners are configured in the deployment.
   - AI settings are a placeholder until Phase 19.
 - Commit: 990e4b6
+
+## 2026-11-01 — Phase 19a: AI assistant — providers, tools as the user, panel, golden eval
+- Built (SPEC M12, §11; ADR 0022):
+  - **Providers:** `none` (the default: no assistant), `stub`, `anthropic` and `bedrock`, set by `AI_PROVIDER`
+    (`AI_MODEL` defaults to `claude-opus-5-5`; `AI_MONTHLY_TOKEN_BUDGET` defaults to 5,000,000).
+    - The Messages API adapter (`anthropicProvider`) uses adaptive thinking and automatic tool choice, replays
+      the model's own blocks in the tool loop, and handles `refusal` before reading content.
+    - Its SDK client is injected. `anthropic` and `bedrock` stop at startup with a message until the SDK
+      dependency is approved (below).
+  - **Tools** (zod input, risk class), run in-process through the API with the caller's credentials:
+    - `search_experiments`, `get_experiment`, `list_datasets`, `describe_release`
+    - `build_query` (validated QuerySpec + Explorer link), `run_query` (first 25 rows)
+    - `get_results_summary`, `get_lineage`, `suggest_chart`, `render_chart`
+    - A 404, or a 403 on a read, reads as "not found" to the model.
+  - **API:**
+    - `GET /v1/ai/settings`
+    - `PUT /v1/admin/ai-settings` (system admin, audited)
+    - `POST /v1/ai/conversations` (409 `ai_disabled` when off)
+    - `GET /v1/ai/conversations/{id}` (owner only)
+    - `POST …/messages` (429 `ai_budget_exhausted` at the monthly budget)
+  - **Storage:** migration 0018 (`ai_conversation`, `ai_message`) with tool calls, provenance, refusal and token
+    counts.
+  - **Audit:** every tool call writes `ai.tool_call` as `ai_assistant_on_behalf_of`, recording the input, status
+    and error, never rows.
+  - **Provenance:** provider, model, prompt version, tools, QuerySpecs, release ids and tokens.
+  - **Web:**
+    - An "Assistant" top-bar button, shown only when the assistant is on, opens the side panel.
+    - The panel shows a card per tool call: the QuerySpec, row counts and "Open in Explorer".
+    - System health has an AI settings card: on/off, write tools, budget, usage and tools.
+  - **Golden eval:** `pnpm eval:ai` asks 30 search questions as two users (`apps/api/src/ai/eval/golden.json`).
+    It scores by result equivalence: the experiments returned must be exactly the expected ones. Empty
+    expectations must be answered "no experiments".
+- Evidence:
+  - `pnpm check` ✓
+  - `pnpm run test:api AI-` ✓ (9, including AI-05: stub eval 30/30)
+  - `pnpm e2e "AI-03|ADM-0"` ✓ (5)
+  - Screenshots: `artifacts/phase-19/assistant-search.png`, `assistant-query.png`.
+- Test amendments (own commit):
+  - DB-01 lists the new tables.
+  - The ADM-03 e2e now expects the stub provider on the health page, since the e2e stack runs it.
+  - AI-03 now creates a published release (the seed has none) and checks that the rows equal the hand-run
+    query's rows.
+- Not run: the real-provider eval. It needs the SDK approved and a key or Bedrock access; it is recorded here
+  when run.
+- Waiting on you: approve the model SDKs:
+  - `@anthropic-ai/sdk` 0.115.0: Apache-2.0, publisher Anthropic, created 2023-01-31, this version 2026-07-24,
+    https://www.npmjs.com/package/@anthropic-ai/sdk
+  - `@anthropic-ai/bedrock-sdk` 0.32.0: Apache-2.0, Anthropic, created 2023-10-12, this version 2026-06-30.
+  - The newer 1.x releases are under 90 days old.
+- Gaps (19b): write tools with approval, the curation assistant in the manifest editor, streaming, and
+  `run_analysis`.
+- Commit: (pending)

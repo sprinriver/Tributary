@@ -1,4 +1,6 @@
+import { AI_PROVIDERS, type AiProvider } from '@tributary/contracts';
 import { DEFAULT_DATABASE_URL, DEV_TENANT_ID } from '@tributary/db';
+import type { AiConfig } from './ai/provider.ts';
 
 /** IdP group → role mapping (SPEC §10). `programs` are program codes; `*` means every program. */
 export interface GroupRoleMapping {
@@ -30,6 +32,8 @@ export interface ApiConfig {
   sessionTtlHours: number;
   groupRoleMap: GroupRoleMapping[];
   s3: S3Config;
+  /** AI assistant (SPEC §11); `none`, the default, means no assistant. */
+  ai: AiConfig;
 }
 
 /** Object storage (SPEC M3). Locally SeaweedFS (docker-compose.yml); on AWS the endpoint is left unset. */
@@ -86,6 +90,21 @@ function searchConfig(env: NodeJS.ProcessEnv): SearchConfig {
   };
 }
 
+function aiConfig(env: NodeJS.ProcessEnv): AiConfig {
+  const provider = (env.AI_PROVIDER ?? 'none') as AiProvider;
+  if (!AI_PROVIDERS.includes(provider))
+    throw new Error(`AI_PROVIDER must be one of ${AI_PROVIDERS.join(', ')}`);
+  const budget = Number(env.AI_MONTHLY_TOKEN_BUDGET ?? 5_000_000);
+  if (!Number.isInteger(budget) || budget < 0)
+    throw new Error('AI_MONTHLY_TOKEN_BUDGET must be a whole number ≥ 0');
+  return {
+    provider,
+    model: env.AI_MODEL ?? (provider === 'stub' ? 'stub-1' : 'claude-opus-5-5'),
+    monthlyTokenBudget: budget,
+    ...(env.BEDROCK_REGION ? { bedrockRegion: env.BEDROCK_REGION } : {}),
+  };
+}
+
 const DEV_GROUP_ROLE_MAP: GroupRoleMapping[] = [
   { group: 'admin', role: 'system_admin' },
   { group: 'scientist', role: 'contributor', programs: ['*'] },
@@ -115,6 +134,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
     cookieSecret: required('COOKIE_SECRET', 'dev-only-cookie-secret-change-me-0123456789'),
     computeUrl: env.COMPUTE_URL ?? 'http://127.0.0.1:8000',
     search: searchConfig(env),
+    ai: aiConfig(env),
     queryUrl: env.QUERY_URL ?? 'http://127.0.0.1:3100',
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',

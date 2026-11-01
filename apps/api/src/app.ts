@@ -31,6 +31,8 @@ import { registerSearchRoutes } from './routes/search.ts';
 import { registerTrustRoutes } from './routes/trust.ts';
 import { registerAdminTemplateRoutes } from './routes/admin-templates.ts';
 import { registerAdminSettingsRoutes } from './routes/admin-settings.ts';
+import { registerAiRoutes } from './routes/ai.ts';
+import { providerFor, type ModelProvider } from './ai/provider.ts';
 import { systemHealth } from './admin/health.ts';
 import { HealthReportSchema } from '@tributary/contracts';
 import { respond } from './respond.ts';
@@ -52,6 +54,8 @@ export interface AppOptions {
   ingestQueue?: IngestQueue;
   /** Pipeline runners by kind (server.ts builds them from config; tests pass a fake). */
   runners?: Runners;
+  /** The assistant's model; defaults to `providerFor(config.ai)`. Tests may pass a scripted provider. */
+  aiProvider?: ModelProvider | null;
 }
 
 export function buildApp(options: AppOptions = {}): FastifyInstance {
@@ -85,6 +89,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
   void app.register(cookie, { secret: config.cookieSecret });
   const provider = embeddingProvider(config.search, { fetch: fetchImpl, computeUrl: config.computeUrl });
   const index = searchIndex(db, provider, app.log);
+  const aiProvider = options.aiProvider === undefined ? providerFor(config.ai) : options.aiProvider;
   void app.register(async (scoped) => {
     registerAuth(scoped, db, config);
 
@@ -119,6 +124,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerTrustRoutes(scoped, db);
     registerAdminTemplateRoutes(scoped, db);
     registerAdminSettingsRoutes(scoped, db, config);
+    registerAiRoutes(scoped, { root: app, db, config, provider: aiProvider });
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

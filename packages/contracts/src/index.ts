@@ -12,6 +12,7 @@ export * from './api/lineage.ts';
 export * from './api/audit.ts';
 export * from './api/admin-templates.ts';
 export * from './api/admin-settings.ts';
+export * from './api/ai.ts';
 export * from './api/registry.ts';
 export * from './api/routes.ts';
 export * from './charts.ts';

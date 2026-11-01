@@ -3,6 +3,7 @@ import { StatusBadge } from '@tributary/ui';
 import { api } from '../api.ts';
 import { RequireAuth } from '../components/Layout.tsx';
 import { ErrorMessage } from '../components/ui.tsx';
+import { AiSettingsCard } from './AiSettings.tsx';
 
 const TONE = { ok: 'ok', degraded: 'warning', down: 'error' } as const;
 const LABEL = { ok: 'OK', degraded: 'Degraded', down: 'Down' } as const;
@@ -86,13 +87,7 @@ function Health() {
               Runner credentials and queues are set in the deployment (environment and Terraform), not here.
             </p>
           </section>
-          <section className="card stack" aria-label="AI assistant">
-            <h2 style={{ margin: 0 }}>AI assistant</h2>
-            <p style={{ margin: 0 }}>
-              {h.ai.enabled ? `On (${h.ai.provider})` : 'Off'} — the provider, enabled features and monthly
-              budget are configured here once the assistant is available.
-            </p>
-          </section>
+          <AiSettingsCard />
         </>
       )}
     </main>

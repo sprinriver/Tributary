@@ -9,6 +9,7 @@ import { RESULT_ROUTES } from './routes-results.ts';
 import { SEARCH_ROUTES } from './routes-search.ts';
 import { TRUST_ROUTES } from './routes-trust.ts';
 import { ADMIN_ROUTES } from './routes-admin.ts';
+import { AI_ROUTES } from './routes-ai.ts';
 import { VIEW_ROUTES } from './routes-views.ts';
 import type { ApiRoute } from './route.ts';
 import {
@@ -278,6 +279,7 @@ export const API_ROUTES = {
   ...ADMIN_ROUTES,
   ...CHART_ROUTES,
   ...RESULT_ROUTES,
+  ...AI_ROUTES,
 } as const satisfies Record<string, ApiRoute>;
 
 export type ApiOperation = keyof typeof API_ROUTES;

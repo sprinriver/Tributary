@@ -26,7 +26,7 @@ export function changeReason(request: FastifyRequest): string | null {
 export interface AuditActor {
   tenantId: string;
   userId: string;
-  kind: 'user' | 'service';
+  kind: 'user' | 'service' | 'ai_assistant_on_behalf_of';
   requestId: string;
   ip: string | null;
   /** Default reason when an entry has none. */

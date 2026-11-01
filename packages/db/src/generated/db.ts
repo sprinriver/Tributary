@@ -50,6 +50,34 @@ export interface AccessToken {
   user_id: string;
 }
 
+export interface AiConversation {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  tenant_id: string;
+  title: Generated<string>;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
+export interface AiMessage {
+  conversation_id: string;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  input_tokens: Generated<number>;
+  output_tokens: Generated<number>;
+  provenance: Json | null;
+  refusal: Json | null;
+  role: string;
+  tenant_id: string;
+  text: string;
+  tool_calls: Generated<Json>;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface AppGroup {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -710,6 +738,8 @@ export interface TargetAnnotation {
 
 export interface DB {
   access_token: AccessToken;
+  ai_conversation: AiConversation;
+  ai_message: AiMessage;
   app_group: AppGroup;
   app_session: AppSession;
   app_setting: AppSetting;

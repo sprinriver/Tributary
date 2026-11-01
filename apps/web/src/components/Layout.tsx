@@ -1,6 +1,7 @@
 import { Link, Outlet } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useMe } from '../auth.ts';
+import { AssistantPanel } from '../assistant/AssistantPanel.tsx';
 import { SearchPalette } from '../search/SearchPalette.tsx';
 import { ReauthDialog } from '../shell/ReauthDialog.tsx';
 import { Sidebar } from '../shell/Sidebar.tsx';
@@ -12,6 +13,7 @@ export function Layout() {
   const me = useMe();
   const [collapsed, toggleCollapsed] = useCollapsed();
   const [drawer, setDrawer] = useState(false);
+  const [assistant, setAssistant] = useState(false);
   return (
     <div className={`app${drawer ? ' drawer-open' : ''}`}>
       <div className="sidebar-rail">
@@ -24,7 +26,12 @@ export function Layout() {
       </div>
       <div className="scrim" onClick={() => setDrawer(false)} aria-hidden="true" />
       <div className="app-body">
-        <TopBar onOpenNav={() => setDrawer(true)} />
+        <TopBar
+          onOpenNav={() => setDrawer(true)}
+          onAssistant={() => setAssistant((a) => !a)}
+          assistantOpen={assistant}
+        />
+        {me.data && assistant && <AssistantPanel onClose={() => setAssistant(false)} />}
         {me.data && <SearchPalette />}
         {me.data && <ReauthDialog />}
         <div className="app-main">

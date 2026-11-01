@@ -3,6 +3,7 @@ import type { HealthReport } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
 import { sql } from 'kysely';
 import type { ApiConfig } from '../config.ts';
+import { aiSettings } from '../ai/settings.ts';
 import type { Runners } from '../pipelines/runner.ts';
 import type { Storage } from '../storage.ts';
 
@@ -98,7 +99,9 @@ export async function systemHealth(deps: {
     checked_at: new Date().toISOString(),
     checks,
     runners,
-    // The AI assistant arrives in Phase 19; until then it is off.
-    ai: { enabled: false, provider: 'none' },
+    ai: await aiSettings(db, config.tenantId, config.ai).then((a) => ({
+      enabled: a.enabled,
+      provider: a.provider,
+    })),
   };
 }

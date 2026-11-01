@@ -293,13 +293,13 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 19 — AI assistant and curation
-Status: todo
+Status: in progress (19a done; 19b next)
 Goal: An optional assistant that answers questions through validated tools, with the user's permissions, approvals and provenance.
 Spec: M12, §11, ARCHITECTURE §11   Features: AI-01 … AI-05
 In scope: provider abstraction (`anthropic`, `bedrock`, `none`) + admin settings + budgets; tool registry — read: `search_experiments`, `get_experiment`, `list_datasets`, `describe_release`, `build_query` (returns a validated QuerySpec), `run_query`, `suggest_chart` (validated ChartSpec), `get_results_summary`, `get_lineage`; compute: `render_chart`, `run_analysis` (budgeted); write (approval): `apply_metadata_suggestions`, `create_saved_view`; assistant panel (streaming, tool-call cards showing the QuerySpec, "open in Explorer", approve/reject); OLS-constrained curation in the manifest editor; refusal handling; audit + provenance; `pnpm eval:ai` with ≥ 30 golden questions scored by result-row equivalence (stub provider in CI; real provider run manually).
 **Suggested split:** 19a = provider abstraction, registry, read/compute tools, assistant panel, eval harness · 19b = write tools with approval, curation assistant, refusal handling.
 Definition of done:
-- [ ] Viewer's assistant cannot read another program's data (test)
+- [x] Viewer's assistant cannot read another program's data (test)
 - [ ] Write tools pause for approval (unit + e2e)
 - [ ] Eval harness passes with the stub provider; real-provider score recorded in PROGRESS
 - [ ] `pnpm check` exits 0
