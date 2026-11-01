@@ -63,3 +63,22 @@ describe('AI provider abstraction', () => {
     expect(refused).toMatchObject({ stop: 'refusal', tool_calls: [], refusal: { category: 'bio' } });
   });
 });
+
+describe('AI audit redaction (SPEC §11.9)', () => {
+  it('AI-02: tool input in the audit log keeps ids and replaces free text by its length', async () => {
+    const { redact } = await import('./assistant.ts');
+    expect(
+      redact({
+        query: 'HEK293 knockout',
+        version_id: '01a19699-12dc-7b76-b036-1569132f7088',
+        changes: [{ from: 'mcf7 cells', term_id: 'cellosaurus:CVCL_0031' }],
+        limit: 5,
+      }),
+    ).toEqual({
+      query: '<text 15>',
+      version_id: '01a19699-12dc-7b76-b036-1569132f7088',
+      changes: [{ from: '<text 10>', term_id: 'cellosaurus:CVCL_0031' }],
+      limit: 5,
+    });
+  });
+});

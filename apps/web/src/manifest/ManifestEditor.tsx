@@ -1,6 +1,6 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { MetadataFieldDef, SeedTerm, VersionDetail } from '@tributary/contracts';
-import { AllCommunityModule, ModuleRegistry, type ColDef, type GridApi } from 'ag-grid-community';
+import { AllCommunityModule, ModuleRegistry, type GridApi } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../api.ts';
@@ -10,19 +10,16 @@ import { useSamples } from '../registry/queries.ts';
 import { parseTsv } from '../registry/tsv.ts';
 import { PasteDialog, UploadPreview, type ApplyArgs } from './ImportPanels.tsx';
 import { mergeBySampleKey } from './mapping.ts';
-import { OntologyEditor } from './OntologyEditor.tsx';
+import { buildColumnDefs, type Row } from './columns.ts';
+import { CurationDialog } from './CurationDialog.tsx';
+import { EditToolbar, applyCuration, curationTargets as targetsOf } from './EditToolbar.tsx';
 import type { ParsedTable } from './parse-core.ts';
 import { parseInWorker } from './parse.ts';
 import { PlateView } from './PlateView.tsx';
 import { downloadVersionSdrf } from './sdrf.ts';
-import { quantityDisplay, validateRows } from './validation.ts';
+import { validateRows } from './validation.ts';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
-
-interface Row {
-  id: string;
-  cells: Record<string, string>;
-}
 
 let counter = 0;
 const newRow = (cells: Record<string, string> = {}): Row => ({
@@ -92,6 +89,7 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
     [template, sampleFields, rows, extraTerms],
   );
   const rowIndex = useMemo(() => new Map(rows.map((r, i) => [r.id, i])), [rows]);
+  const [curationOpen, setCurationOpen] = useState(false);
   const errorAt = useCallback(
     (id: string, column: string) => validation.errors.get(rowIndex.get(id) ?? -1)?.[column],
     [validation, rowIndex],
@@ -113,6 +111,11 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
     [template, sampleFields],
   );
   const allKeys = fieldDefs.map((f) => f.key);
+  const curationTargets = useMemo(
+    () => (curationOpen ? targetsOf(fieldDefs, rows, validation.errors) : []),
+    [curationOpen, fieldDefs, rows, validation.errors],
+  );
+
   const visible = allKeys.filter(
     (k) =>
       allColumns ||
@@ -135,34 +138,8 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
     [],
   );
 
-  const columnDefs = useMemo<ColDef<Row>[]>(
-    () =>
-      visible.map((key) => {
-        const def = fieldDefs.find((f) => f.key === key);
-        const quantity = def?.type === 'quantity' ? (def.quantityKind ?? 'concentration') : undefined;
-        return {
-          colId: key,
-          field: key as never,
-          headerName: key,
-          editable: !readOnly,
-          minWidth: key === 'sample_key' ? 120 : 110,
-          valueGetter: (p) => p.data?.cells[key] ?? '',
-          valueSetter: (p) => {
-            if (p.data) setCell(p.data.id, key, String(p.newValue ?? '').trim());
-            return false;
-          },
-          ...(quantity ? { valueFormatter: (p) => quantityDisplay(String(p.value ?? ''), quantity) } : {}),
-          ...(def?.type === 'ontology_term'
-            ? {
-                cellEditor: OntologyEditor,
-                cellEditorPopup: true,
-                cellEditorParams: { ontology: def.ontology ?? '', onPick: pickTerm(def.ontology ?? '') },
-              }
-            : {}),
-          cellClassRules: { 'cell-invalid': (p) => !!p.data && !!errorAt(p.data.id, key) },
-          tooltipValueGetter: (p) => (p.data ? errorAt(p.data.id, key) : undefined),
-        } satisfies ColDef<Row>;
-      }),
+  const columnDefs = useMemo(
+    () => buildColumnDefs({ visible, fieldDefs, readOnly, setCell, errorAt, pickTerm }),
     [visibleKey, fieldDefs, readOnly, setCell, errorAt, pickTerm], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
@@ -276,44 +253,20 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
   return (
     <div className="stack">
       {!readOnly && (
-        <div className="toolbar">
-          <label className="button">
-            Upload file
-            <input
-              type="file"
-              aria-label="Manifest file"
-              accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values"
-              style={{ display: 'none' }}
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                e.target.value = '';
-                if (file) void file.text().then(parseInWorker).then(setUpload, setError);
-              }}
-            />
-          </label>
-          <button type="button" onClick={() => setPasteOpen(true)}>
-            Paste TSV block
-          </button>
-          <button type="button" onClick={() => setRows((r) => [...r, newRow()])}>
-            Add row
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              const focused = gridApi.current?.getFocusedCell();
-              const node = focused ? gridApi.current?.getDisplayedRowAtIndex(focused.rowIndex) : undefined;
-              if (node?.data) setRows((r) => r.filter((x) => x.id !== node.data!.id));
-            }}
-          >
-            Delete row
-          </button>
-          <button type="button" onClick={() => setColumnOpen(true)}>
-            Add column
-          </button>
-          <button type="button" className="primary" disabled={busy} onClick={() => void save()}>
-            Save samples
-          </button>
-        </div>
+        <EditToolbar
+          onUpload={(file) => void file.text().then(parseInWorker).then(setUpload, setError)}
+          onPaste={() => setPasteOpen(true)}
+          onAddRow={() => setRows((r) => [...r, newRow()])}
+          onDeleteRow={() => {
+            const focused = gridApi.current?.getFocusedCell();
+            const node = focused ? gridApi.current?.getDisplayedRowAtIndex(focused.rowIndex) : undefined;
+            if (node?.data) setRows((r) => r.filter((x) => x.id !== node.data!.id));
+          }}
+          onAddColumn={() => setColumnOpen(true)}
+          onSuggest={() => setCurationOpen(true)}
+          onSave={() => void save()}
+          busy={busy}
+        />
       )}
       <div className="toolbar">
         <button type="button" aria-pressed={plateOpen} onClick={() => setPlateOpen((v) => !v)}>
@@ -413,6 +366,19 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
         columns={columnsForMapping}
         onApply={applyImported}
       />
+      {curationOpen && (
+        <CurationDialog
+          targets={curationTargets}
+          onClose={() => setCurationOpen(false)}
+          onApply={(changes) => {
+            setRows((prev) => applyCuration(prev, changes));
+            setMessage(
+              `Applied ${changes.length} ontology term${changes.length > 1 ? 's' : ''}; save to keep them`,
+            );
+            setCurationOpen(false);
+          }}
+        />
+      )}
       <AddColumnDialog
         open={columnOpen}
         onClose={() => setColumnOpen(false)}

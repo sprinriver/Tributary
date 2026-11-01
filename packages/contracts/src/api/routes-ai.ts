@@ -1,5 +1,9 @@
 import {
   AiConversationSchema,
+  AiDecisionBodySchema,
+  AiToolCallSchema,
+  CurationSuggestBodySchema,
+  CurationSuggestResponseSchema,
   AiSettingsSchema,
   AiTurnSchema,
   CreateAiConversationBodySchema,
@@ -44,5 +48,20 @@ export const AI_ROUTES = {
     summary: 'Ask the assistant; it answers through tools run as you (429 ai_budget_exhausted)',
     body: PostAiMessageBodySchema,
     response: AiTurnSchema,
+  },
+  decideAiToolCall: {
+    method: 'post',
+    path: '/v1/ai/conversations/{id}/tool-calls/{callId}/decision',
+    summary:
+      'Approve or reject a write the assistant proposed; an approved write runs as you (409 once decided)',
+    body: AiDecisionBodySchema,
+    response: AiToolCallSchema,
+  },
+  suggestCurationTerms: {
+    method: 'post',
+    path: '/v1/ai/curation/suggest',
+    summary: 'Ontology terms for free-text values, from ontology lookups only (no match when none fits)',
+    body: CurationSuggestBodySchema,
+    response: CurationSuggestResponseSchema,
   },
 } as const satisfies Record<string, ApiRoute>;

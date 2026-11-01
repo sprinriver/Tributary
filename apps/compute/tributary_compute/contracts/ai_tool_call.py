@@ -10,8 +10,9 @@ class AiToolCall(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
+    id: str
     tool: str
-    status: Literal["ok", "error"]
+    status: Literal["ok", "error", "pending_approval", "rejected"]
     input: Any
     output: Any
     error: str | None

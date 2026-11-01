@@ -14,7 +14,13 @@ import type { ModelTool } from './provider.ts';
 
 /** How a tool reaches the platform: the API itself, in-process, with the signed-in user's credentials. */
 export interface ToolContext {
-  call(method: 'GET' | 'POST', url: string, payload?: unknown): Promise<unknown>;
+  /** `reason` is sent as X-Change-Reason, so a write's audit row says the assistant proposed it. */
+  call(
+    method: 'GET' | 'POST' | 'PUT',
+    url: string,
+    payload?: unknown,
+    options?: { reason?: string },
+  ): Promise<unknown>;
 }
 
 export class ToolError extends Error {}
@@ -25,7 +31,8 @@ export interface AiTool {
   /** SPEC §11.2 risk class: reads run freely, compute is budgeted, writes need the user's approval (19b). */
   risk: 'read' | 'compute' | 'write';
   input: z.ZodType;
-  run(ctx: ToolContext, input: never): Promise<unknown>;
+  /** `options.reason` is passed to writes (approved by the user). */
+  run(ctx: ToolContext, input: never, options?: { reason?: string }): Promise<unknown>;
 }
 
 /** Rows a query tool returns to the model (the Explorer shows the rest). */
@@ -46,7 +53,7 @@ export const explorerUrl = (spec: QuerySpec) =>
  * Validates a QuerySpec against the dataset contracts. Release-id sources are looked up through the API as the
  * user (an unreadable release reads as not found).
  */
-async function checkSpec(ctx: ToolContext, raw: unknown): Promise<QuerySpec> {
+export async function checkSpec(ctx: ToolContext, raw: unknown): Promise<QuerySpec> {
   const parsed = QuerySpecSchema.safeParse(raw);
   if (!parsed.success)
     throw new ToolError(
@@ -229,8 +236,6 @@ export const TOOLS: AiTool[] = [
     },
   },
 ];
-
-export const toolByName = (name: string) => TOOLS.find((t) => t.name === name);
 
 /** Tool definitions as the model sees them (JSON Schema from zod). */
 export const modelTools = (tools: AiTool[]): ModelTool[] =>

@@ -1,6 +1,11 @@
 import {
   AiConversationSchema,
+  AiDecisionBodySchema,
   AiSettingsSchema,
+  AiToolCallSchema,
+  CurationSuggestBodySchema,
+  CurationSuggestResponseSchema,
+  type AiToolCall,
   AiTurnSchema,
   CreateAiConversationBodySchema,
   PostAiMessageBodySchema,
@@ -9,8 +14,10 @@ import {
 } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
 import type { FastifyInstance, FastifyRequest, InjectOptions } from 'fastify';
+import { sql } from 'kysely';
 import { getSetting, putSetting } from '../admin/settings.ts';
-import { runTurn } from '../ai/assistant.ts';
+import { auditCall, runApproved, runTurn } from '../ai/assistant.ts';
+import { suggestTerms } from '../ai/curation.ts';
 import type { ModelMessage, ModelProvider } from '../ai/provider.ts';
 import { aiSettings } from '../ai/settings.ts';
 import { ToolError, type ToolContext } from '../ai/tools.ts';
@@ -29,6 +36,7 @@ interface Deps {
 }
 
 type IdParams = FastifyRequest<{ Params: { id: string } }>;
+type CallParams = FastifyRequest<{ Params: { id: string; callId: string } }>;
 
 /** Credentials of the original request, so every tool call is authorised exactly as the user (SPEC §11.2). */
 function toolContext(root: FastifyInstance, request: FastifyRequest): ToolContext {
@@ -38,8 +46,12 @@ function toolContext(root: FastifyInstance, request: FastifyRequest): ToolContex
     if (typeof v === 'string') headers[h] = v;
   }
   return {
-    async call(method, url, payload) {
-      const options: InjectOptions = { method, url, headers };
+    async call(method, url, payload, extra) {
+      const options: InjectOptions = {
+        method,
+        url,
+        headers: extra?.reason ? { ...headers, 'x-change-reason': extra.reason } : headers,
+      };
       if (payload !== undefined) options.payload = payload as NonNullable<InjectOptions['payload']>;
       const res = await root.inject(options);
       const body = res.body ? (JSON.parse(res.body) as Record<string, unknown>) : null;
@@ -66,7 +78,11 @@ function messageRow(m: {
     id: m.id,
     role: m.role as AiMessage['role'],
     text: m.text,
-    tool_calls: m.tool_calls as AiMessage['tool_calls'],
+    // Calls stored before ids existed get a stable one from their position.
+    tool_calls: (m.tool_calls as AiMessage['tool_calls']).map((c, i) => ({
+      ...c,
+      id: c.id ?? `${m.id}:${i}`,
+    })),
     provenance: (m.provenance ?? null) as AiMessage['provenance'],
     refusal: (m.refusal ?? null) as AiMessage['refusal'],
     created_at: m.created_at.toISOString(),
@@ -191,6 +207,8 @@ export function registerAiRoutes(app: FastifyInstance, { root, db, config, provi
       history,
       text,
       ctx: toolContext(root, request),
+      writeToolsEnabled: current.write_tools_enabled,
+      tokenBudgetLeft: current.monthly_token_budget - current.tokens_used_this_month,
     });
     const row = await db
       .insertInto('ai_message')
@@ -209,5 +227,82 @@ export function registerAiRoutes(app: FastifyInstance, { root, db, config, provi
       .returning(['id', 'role', 'text', 'tool_calls', 'provenance', 'refusal', 'created_at'])
       .executeTakeFirstOrThrow();
     return respond(AiTurnSchema, messageRow(row));
+  });
+
+  // SPEC §11.4: a write the assistant proposed runs only when its owner approves it, and only once.
+  app.post('/v1/ai/conversations/:id/tool-calls/:callId/decision', async (request: CallParams) => {
+    const conversation = await ownConversation(request, request.params.id);
+    const { approve } = parse(AiDecisionBodySchema, request.body);
+    const callId = request.params.callId;
+    // Pending proposals cannot be approved once the assistant or its write tools are switched off.
+    const current = await settings(conversation.tenant_id);
+    if (approve && (!provider || !current.enabled || !current.write_tools_enabled))
+      throw new HttpError(
+        409,
+        'ai_writes_disabled',
+        'Write tools are switched off; this proposal can only be rejected.',
+      );
+    const locate = async (trx: Database) => {
+      const message = await trx
+        .selectFrom('ai_message')
+        .select(['id', 'tool_calls'])
+        .where('conversation_id', '=', conversation.id)
+        .where('role', '=', 'assistant')
+        .where(sql<boolean>`tool_calls @> ${JSON.stringify([{ id: callId }])}::jsonb`)
+        .forUpdate()
+        .executeTakeFirst();
+      const calls = (message?.tool_calls ?? []) as AiToolCall[];
+      const call = calls.find((c) => c.id === callId);
+      if (!message || !call) throw notFound('Tool call');
+      return { message, calls, call };
+    };
+    const store = (trx: Database, messageId: string, calls: AiToolCall[], next: AiToolCall) =>
+      trx
+        .updateTable('ai_message')
+        .set({ tool_calls: JSON.stringify(calls.map((c) => (c.id === callId ? next : c))) })
+        .where('id', '=', messageId)
+        .execute();
+    // 1. Claim the proposal and commit, so it can never run twice (even if step 3 fails).
+    const claimed = await db.transaction().execute(async (trx) => {
+      const { message, calls, call } = await locate(trx);
+      if (call.status !== 'pending_approval')
+        throw new HttpError(
+          409,
+          'already_decided',
+          `This proposal was already ${call.status === 'rejected' ? 'rejected' : 'decided'}.`,
+        );
+      const next: AiToolCall = approve
+        ? { ...call, status: 'error', error: 'Approved; running…' }
+        : { ...call, status: 'rejected' };
+      await store(trx, message.id, calls, next);
+      await insertAudit(trx, requestActor(request), {
+        action: approve ? 'ai.approve' : 'ai.reject',
+        entityType: 'ai_conversation',
+        entityId: conversation.id,
+        before: { call_id: callId, tool: call.tool, status: call.status },
+        after: { call_id: callId, tool: call.tool, status: approve ? 'approved' : 'rejected' },
+      });
+      return { call, next };
+    });
+    if (!approve) return respond(AiToolCallSchema, claimed.next);
+    // 2. Run the write as the user. 3. Record its outcome.
+    const result = await runApproved(toolContext(root, request), claimed.call, conversation.id);
+    const decided = await db.transaction().execute(async (trx) => {
+      const { message, calls } = await locate(trx);
+      await store(trx, message.id, calls, result);
+      await auditCall(trx, requestActor(request), conversation.id, result);
+      return result;
+    });
+    return respond(AiToolCallSchema, decided);
+  });
+
+  // SPEC §11.5: curation suggestions from ontology lookups only (run as the user; no model involved).
+  app.post('/v1/ai/curation/suggest', async (request) => {
+    requirePrincipal(request);
+    const body = parse(CurationSuggestBodySchema, request.body);
+    return respond(
+      CurationSuggestResponseSchema,
+      await suggestTerms(toolContext(root, request), body.ontology, body.values),
+    );
   });
 }

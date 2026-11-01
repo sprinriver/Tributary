@@ -13,7 +13,62 @@ function explorerSearch(url: string): { q: string } | null {
 }
 
 /** One tool call (SPEC M12: always show the QuerySpec or chart spec that ran, with "open in Explorer"). */
-function ToolCard({ call }: { call: AiToolCall }) {
+const STATUS: Record<AiToolCall['status'], string> = {
+  ok: 'ran',
+  error: 'failed',
+  pending_approval: 'needs approval',
+  rejected: 'rejected',
+};
+
+/** Approve or reject a proposed write (SPEC §11.4); an approved write runs with the user's own permissions. */
+function Decision({
+  conversation,
+  call,
+  onDecided,
+}: {
+  conversation: string;
+  call: AiToolCall;
+  onDecided: (c: AiToolCall) => void;
+}) {
+  const decide = useMutation({
+    mutationFn: (approve: boolean) =>
+      api('decideAiToolCall', { params: { id: conversation, callId: call.id }, body: { approve } }),
+    onSuccess: onDecided,
+  });
+  return (
+    <>
+      <p>Waiting for your approval. Nothing changes until you approve.</p>
+      <details>
+        <summary>Proposed change</summary>
+        <pre>{JSON.stringify(call.input, null, 2)}</pre>
+      </details>
+      <div className="toolbar">
+        <button
+          type="button"
+          className="primary"
+          disabled={decide.isPending}
+          onClick={() => decide.mutate(true)}
+        >
+          Approve
+        </button>
+        <button type="button" disabled={decide.isPending} onClick={() => decide.mutate(false)}>
+          Reject
+        </button>
+      </div>
+      <ErrorMessage error={decide.error} />
+    </>
+  );
+}
+
+function ToolCard({
+  call,
+  conversation,
+  onDecided,
+}: {
+  call: AiToolCall;
+  conversation?: string | undefined;
+  onDecided: (c: AiToolCall) => void;
+}) {
   const output = call.output as Record<string, unknown> | null;
   const spec = (output?.query_spec ?? (call.input as { query_spec?: unknown } | null)?.query_spec) as
     unknown | undefined;
@@ -23,11 +78,16 @@ function ToolCard({ call }: { call: AiToolCall }) {
     <article className={`ai-tool ai-tool-${call.status}`} aria-label={`${call.tool} (${call.status})`}>
       <header>
         <code>{call.tool}</code>
-        <span className={call.status === 'ok' ? 'ai-ok' : 'ai-error'}>
-          {call.status === 'ok' ? 'ran' : 'failed'}
+        <span
+          className={call.status === 'ok' ? 'ai-ok' : call.status === 'error' ? 'ai-error' : 'ai-pending'}
+        >
+          {STATUS[call.status]}
         </span>
       </header>
       {call.error && <p className="ai-error-text">{call.error}</p>}
+      {call.status === 'pending_approval' && conversation && (
+        <Decision conversation={conversation} call={call} onDecided={onDecided} />
+      )}
       {spec !== undefined && call.tool === 'build_query' && (
         <details open>
           <summary>QuerySpec</summary>
@@ -41,6 +101,11 @@ function ToolCard({ call }: { call: AiToolCall }) {
             ? ` of ${output.total_rows}${output.total_capped ? '+' : ''}`
             : ''}
         </p>
+      )}
+      {call.status === 'ok' && typeof output?.view_id === 'string' && (
+        <Link to="/explore" search={{ view: output.view_id }} className="button">
+          Open view
+        </Link>
       )}
       {link && (
         <Link to="/explore" search={link} className="button">
@@ -57,10 +122,21 @@ function ToolCard({ call }: { call: AiToolCall }) {
   );
 }
 
-function Message({ message }: { message: AiMessage }) {
+function Message({
+  message,
+  conversation,
+  onDecided,
+}: {
+  message: AiMessage;
+  conversation?: string | undefined;
+  onDecided: (c: AiToolCall) => void;
+}) {
   return (
     <div className={`ai-msg ai-${message.role}`}>
-      {message.role === 'assistant' && message.tool_calls.map((c, i) => <ToolCard key={i} call={c} />)}
+      {message.role === 'assistant' &&
+        message.tool_calls.map((c) => (
+          <ToolCard key={c.id} call={c} conversation={conversation} onDecided={onDecided} />
+        ))}
       {message.text && <p className="ai-text">{message.text}</p>}
       {message.provenance && (
         <p className="ai-prov">
@@ -130,7 +206,19 @@ export function AssistantPanel({ onClose }: { onClose: () => void }) {
       </p>
       <div className="ai-log" role="log" aria-live="polite" aria-label="Conversation">
         {messages.map((m) => (
-          <Message key={m.id} message={m} />
+          <Message
+            key={m.id}
+            message={m}
+            conversation={conversation}
+            onDecided={(decided) =>
+              setMessages((all) =>
+                all.map((x) => ({
+                  ...x,
+                  tool_calls: x.tool_calls.map((c) => (c.id === decided.id ? decided : c)),
+                })),
+              )
+            }
+          />
         ))}
         {send.isPending && <p className="ai-pending">Working…</p>}
         <div ref={end} />

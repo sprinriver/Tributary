@@ -1,3 +1,4 @@
+import { ViewsPage } from './explorer/ViewsPage.tsx';
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
 import { ForbiddenPage, Layout } from './components/Layout.tsx';
 import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
@@ -93,6 +94,7 @@ const compoundRoute = createRoute({
   path: '/compounds/$id',
   component: CompoundPage,
 });
+const viewsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/views', component: ViewsPage });
 const compareRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/compare',
@@ -176,6 +178,7 @@ export const router = createRouter({
     proteinRoute,
     compoundRoute,
     compareRoute,
+    viewsRoute,
     releaseRoute,
     runRoute,
     adminPipelinesRoute,

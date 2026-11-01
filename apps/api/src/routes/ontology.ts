@@ -123,7 +123,7 @@ async function terms(db: Database, ids: string[]): Promise<OntologySearchResult[
   });
 }
 
-/** Cached terms whose label starts with the query, then built-in seed terms containing it. */
+/** Cached terms whose label starts with the query, then built-in seed terms whose label, id or synonym contains it. */
 async function localTerms(db: Database, ontology: string, q: string): Promise<OntologySearchResult['items']> {
   const cached = await db
     .selectFrom('ontology_term_cache')
@@ -136,9 +136,9 @@ async function localTerms(db: Database, ontology: string, q: string): Promise<On
   for (const term of SEED_TERMS) {
     const matches =
       term.ontology.toLowerCase() === ontology &&
-      (term.label.toLowerCase().includes(q) || term.id.toLowerCase().includes(q));
+      [term.label, term.id, ...(term.synonyms ?? [])].some((name) => name.toLowerCase().includes(q));
     if (matches && !items.some((i) => i.id === term.id))
-      items.push({ id: term.id, label: term.label, synonyms: [] });
+      items.push({ id: term.id, label: term.label, synonyms: [...(term.synonyms ?? [])] });
   }
   return items.slice(0, 10);
 }

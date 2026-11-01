@@ -109,6 +109,9 @@
     "AiToolCall": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "string"
+        },
         "tool": {
           "type": "string"
         },
@@ -116,7 +119,9 @@
           "type": "string",
           "enum": [
             "ok",
-            "error"
+            "error",
+            "pending_approval",
+            "rejected"
           ]
         },
         "input": {},
@@ -129,6 +134,7 @@
         }
       },
       "required": [
+        "id",
         "tool",
         "status",
         "input",

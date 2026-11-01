@@ -41,6 +41,21 @@ ARCHITECTURE §11 names the Vercel AI SDK tool loop, and the model SDKs (`@anthr
 - **Provenance** on every answer: provider, model, prompt version, tools called, QuerySpecs, release ids and tokens.
 - **Stub model** (`stub.ts`): a deterministic planner for tests, CI, the e2e stack and the golden eval. It maps a
   few question shapes to tool calls and summarises tool results, so it never states data the tools did not return.
+- **Writes need approval** (19b). With `write_tools_enabled`, a write tool call is validated and stored as
+  `pending_approval` with a call id; nothing runs. `POST …/tool-calls/{callId}/decision` (owner only) works in three
+  steps:
+  1. It claims the proposal and commits (a second decision gets 409). It refuses to approve while the assistant or
+     its write tools are switched off.
+  2. It runs the write through the API as the user, with `X-Change-Reason` saying the assistant proposed it.
+  3. It records the outcome.
+  - Tool calls carry an `id` (calls stored before 19b are given `<message id>:<index>` on read).
+- **Curation** (`curation.ts`): suggestions come only from `/v1/ontology/search` run as the user. A value is
+  matched only when a returned label or synonym equals it, ignoring case, punctuation and "cells". Otherwise the
+  answer is "no match", with the lookup's results as candidates. `apply_metadata_suggestions` looks each term up
+  again at approval time.
+- **Audit redaction**: tool input in `audit_log` keeps ids and term ids; other text is replaced by its length.
+- **Budget**: checked before a turn and again between model calls.
+- **Deferred**: streaming turns and `run_analysis` (budgeted compute), recorded in PLAN Phase 19.
 ## Consequences
 - The assistant can do nothing the user could not do through the API, including scopes and CSRF.
 - The stub's eval score measures the tools and search, not a model's reasoning. A real provider is run by hand

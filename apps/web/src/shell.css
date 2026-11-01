@@ -423,6 +423,9 @@
 .ai-ok {
   color: var(--success-text);
 }
+.ai-pending {
+  color: var(--warning-text, var(--text-2));
+}
 .ai-error,
 .ai-error-text {
   color: var(--danger-text, var(--danger));

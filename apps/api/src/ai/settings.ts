@@ -3,7 +3,7 @@ import type { Database } from '@tributary/db';
 import { sql } from 'kysely';
 import { getSetting } from '../admin/settings.ts';
 import type { AiConfig } from './provider.ts';
-import { TOOLS } from './tools.ts';
+import { REGISTRY } from './registry.ts';
 
 /** Tokens the assistant used this calendar month (UTC), summed from assistant messages. */
 export async function tokensThisMonth(db: Database, tenantId: string): Promise<number> {
@@ -32,6 +32,6 @@ export async function aiSettings(db: Database, tenantId: string, config: AiConfi
     write_tools_enabled: saved?.write_tools_enabled ?? false,
     monthly_token_budget: saved?.monthly_token_budget ?? config.monthlyTokenBudget,
     tokens_used_this_month: await tokensThisMonth(db, tenantId),
-    tools: TOOLS.map((t) => ({ name: t.name, risk: t.risk, description: t.description })),
+    tools: REGISTRY.map((t) => ({ name: t.name, risk: t.risk, description: t.description })),
   };
 }

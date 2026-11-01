@@ -914,3 +914,54 @@ Entry template:
 - Gaps (19b): write tools with approval, the curation assistant in the manifest editor, streaming, and
   `run_analysis`.
 - Commit: 244bc8c
+
+## 2026-11-01 — Phase 19b: writes with approval, curation, refusals — Phase 19 done
+- Built (SPEC M12, §11.4–7; ADR 0022 updated):
+  - **Write tools** (offered only when an admin allows them): `create_saved_view` and
+    `apply_metadata_suggestions`.
+    - A proposal is stored as `pending_approval` and nothing runs.
+    - `POST /v1/ai/conversations/{id}/tool-calls/{callId}/decision` (owner only) claims the proposal and commits,
+      runs the write through the API as the user, then records the outcome.
+    - The write's audit reason says the assistant proposed it; `ai.approve`/`ai.reject` are audited too.
+    - A second decision gets 409 `already_decided`. Approving while write tools are off gets 409
+      `ai_writes_disabled`; rejecting still works.
+  - **Curation** (SPEC §11.5):
+    - `POST /v1/ai/curation/suggest` and the `suggest_ontology_terms` tool return terms only from the ontology
+      lookup run as the user.
+    - A value matches only when a returned label or synonym equals it; otherwise "no match", with the lookup's
+      results as candidates.
+    - `apply_metadata_suggestions` re-checks every term at approval and refuses any the lookup did not return.
+  - **Manifest editor:** "Suggest ontology terms" lists the invalid values of each ontology column with their
+    suggestions. Only ticked rows are applied to the grid, which is then saved as usual.
+  - **Refusals:** explained to the user ("declined … your own experiments and datasets"), stored with their
+    category, and their tokens count against the budget.
+  - **Assistant panel:** proposals show "Waiting for your approval" with the proposed change and Approve/Reject
+    buttons. An approved view has an "Open view" link.
+  - **Saved views page** (`/views`, "Saved views" in the sidebar): lists your views and your programs' views and
+    opens them in the Explorer.
+  - **Fix:** the built-in ontology fallback (used when OLS4 is unreachable) now matches and returns the seed terms'
+    synonyms (A549 → A-549).
+- Reviewer findings (plan-reviewer), all fixed:
+  - **Old conversations:** tool calls stored without an id are given one on read.
+  - **Approvals after switch-off:** approvals re-check the settings.
+  - **Double run:** the approval claim is committed before the write runs.
+  - **Budget:** it is re-checked between model calls.
+  - **Provenance:** it includes join releases.
+  - **Audit:** tool input in the audit log is redacted to ids and term ids.
+  - **Scope:** streaming and `run_analysis` are deferred, and the deferral is recorded in PLAN.
+- Evidence:
+  - `pnpm check` ✓ (api 177 tests before the review fixes)
+  - `pnpm run test:api AI-` ✓ (17)
+  - `pnpm e2e "AI-0|REG-07"` ✓ (5)
+  - Screenshots: `artifacts/phase-19/assistant-approval.png`, `curation-suggestions.png`.
+- Full `pnpm e2e`: 45 passed, 1 failed.
+  - The failure was RES-01: the volcano got "The query service answered HTTP 500".
+  - RES-01 passes alone (26.9 s). Playwright does not capture the servers' output, so the cause is not known yet.
+  - This phase does not change the chart or query path. Open: capture web-server logs in e2e and find the cause
+    (Phase 22 hardening at the latest).
+- Tests added after the tests-first commit:
+  - AI-04: a pending proposal cannot be approved after write tools are switched off.
+  - AI-02: audit redaction unit test.
+- Test infrastructure: `startTestApi` takes an `aiProvider` (a scripted model, used for the refusal test).
+- Still waiting on you: approval of the model SDKs (see 19a). The real-provider eval is not run until then.
+- Commit: (pending)

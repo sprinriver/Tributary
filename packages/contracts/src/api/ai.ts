@@ -33,8 +33,11 @@ export type PutAiSettingsBody = z.infer<typeof PutAiSettingsBodySchema>;
 
 export const AiToolCallSchema = z
   .object({
+    /** Stable id of the call within its conversation (approvals refer to it). */
+    id: z.string(),
     tool: z.string(),
-    status: z.enum(['ok', 'error']),
+    /** Write tools stop at `pending_approval` until the user approves (→ ok or error) or rejects (SPEC §11.4). */
+    status: z.enum(['ok', 'error', 'pending_approval', 'rejected']),
     input: z.unknown(),
     output: z.unknown(),
     error: z.string().nullable(),
@@ -92,3 +95,36 @@ export const PostAiMessageBodySchema = z
 /** One assistant turn: the answer and every tool call it made, in order. */
 export const AiTurnSchema = AiMessageSchema.meta({ id: 'AiTurn' });
 export type AiTurn = z.infer<typeof AiTurnSchema>;
+
+export const AiDecisionBodySchema = z.strictObject({ approve: z.boolean() }).meta({ id: 'AiDecisionBody' });
+
+/** Ontology-constrained curation (SPEC §11.5): terms come only from ontology lookups. */
+export const CurationSuggestBodySchema = z
+  .strictObject({
+    ontology: z.string().trim().min(1).max(50),
+    values: z.array(z.string().trim().min(1).max(200)).min(1).max(200),
+  })
+  .meta({ id: 'CurationSuggestBody' });
+export type CurationSuggestBody = z.infer<typeof CurationSuggestBodySchema>;
+
+const TermRefSchema = z.object({ id: z.string(), label: z.string() });
+export const CurationSuggestionSchema = z
+  .object({
+    value: z.string(),
+    /** A lookup result whose label or synonym equals the value (ignoring case, punctuation and "cells"). */
+    term: TermRefSchema.nullable(),
+    /** Other lookup results the user may pick instead; never invented. */
+    candidates: z.array(TermRefSchema),
+    note: z.string(),
+  })
+  .meta({ id: 'CurationSuggestion' });
+export type CurationSuggestion = z.infer<typeof CurationSuggestionSchema>;
+export const CurationSuggestResponseSchema = z
+  .object({
+    ontology: z.string(),
+    /** Where the lookups were answered from (OLS, the cache, or the built-in terms when OLS is unreachable). */
+    sources: z.array(z.enum(['ols', 'cache', 'local'])),
+    items: z.array(CurationSuggestionSchema),
+  })
+  .meta({ id: 'CurationSuggestResponse' });
+export type CurationSuggestResponse = z.infer<typeof CurationSuggestResponseSchema>;

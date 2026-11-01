@@ -76,7 +76,7 @@
   {"id": "AI-01", "phase": 19, "parity": "new", "description": "Provider abstraction (Anthropic, Bedrock, none), off by default, with budgets", "verify": "pnpm run test:api AI-01", "passes": true},
   {"id": "AI-02", "phase": 19, "parity": "new", "description": "Tool registry executes with the end user's identity; viewer cannot reach other programs", "verify": "pnpm run test:api AI-02", "passes": true},
   {"id": "AI-03", "phase": 19, "parity": "new", "description": "Assistant builds validated QuerySpecs/ChartSpecs and shows them with open-in-Explorer", "verify": "pnpm e2e AI-03", "passes": true},
-  {"id": "AI-04", "phase": 19, "parity": "new", "description": "Write tools pause for approval; OLS-constrained curation suggestions", "verify": "pnpm run test:api AI-04 && pnpm e2e AI-04", "passes": false},
+  {"id": "AI-04", "phase": 19, "parity": "new", "description": "Write tools pause for approval; OLS-constrained curation suggestions", "verify": "pnpm run test:api AI-04 && pnpm e2e AI-04", "passes": true},
   {"id": "AI-05", "phase": 19, "parity": "new", "description": "Golden-question eval harness (>= 30 questions) passes with the stub provider", "verify": "pnpm eval:ai", "passes": true},
   {"id": "MCP-01", "phase": 20, "parity": "new", "description": "MCP server at /mcp exposes registry tools with per-user results", "verify": "pnpm run test:api MCP-01", "passes": false},
   {"id": "MCP-02", "phase": 20, "parity": "new", "description": "OAuth 2.1 token validation for MCP clients with PAT fallback; write tools flagged", "verify": "pnpm run test:api MCP-02", "passes": false},

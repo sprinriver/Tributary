@@ -127,6 +127,22 @@ describe('AI assistant writes and curation (SPEC M12)', () => {
     expect(stored.find((c) => c.id === call.id)).toMatchObject({ status: 'rejected' });
   });
 
+  it('AI-04: a pending proposal cannot be approved after write tools are switched off', async () => {
+    await setWrites(true);
+    const asked = await ask(contributor, `Save a view of release ${release} named Late view`);
+    const pending = (asked.turn.tool_calls as Json[]).find((c) => c.tool === 'create_saved_view')!;
+    await setWrites(false);
+    const late = await decide(contributor, asked.id, pending.id, true);
+    expect(late.statusCode).toBe(409);
+    expect((late.json() as Json).code).toBe('ai_writes_disabled');
+    expect((await views(contributor)).some((v) => v.name === 'Late view')).toBe(false);
+    // Rejecting still works.
+    expect((await decide(contributor, asked.id, pending.id, false)).json()).toMatchObject({
+      status: 'rejected',
+    });
+    await setWrites(true);
+  });
+
   it('AI-04: curation suggestions come only from ontology lookups; unknown values get no match', async () => {
     const res = await t.call(contributor, {
       method: 'POST',

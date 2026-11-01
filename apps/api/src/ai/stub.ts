@@ -1,3 +1,4 @@
+import { FIELD_ONTOLOGY } from './tools-write.ts';
 import type { ModelBlock, ModelMessage, ModelProvider, ModelRequest, ModelTurn } from './provider.ts';
 
 /**
@@ -59,8 +60,33 @@ function results(messages: ModelMessage[]): Result[] {
   return out;
 }
 
+const TERM_ID = /\b[A-Za-z]+:[A-Za-z0-9_]+\b/;
+
 function plan(question: string): { name: string; input: unknown } {
   const id = UUID.exec(question)?.[0];
+  const saveView = /save a view of release (\S+) named (.+)$/i.exec(question);
+  if (saveView)
+    return {
+      name: 'create_saved_view',
+      input: { name: saveView[2]!.trim(), query_spec: { source: { releaseIds: [saveView[1]] } } },
+    };
+  const fix = /fix the (\w+) terms in version/i.exec(question);
+  if (fix && id)
+    return {
+      name: 'suggest_ontology_terms',
+      input: { ontology: FIELD_ONTOLOGY[fix[1]!] ?? fix[1], version_id: id, field: fix[1] },
+    };
+  const set = /set (\w+) "([^"]+)" to (\S+) in version/i.exec(question);
+  if (set && id && TERM_ID.test(set[3]!))
+    return {
+      name: 'apply_metadata_suggestions',
+      input: {
+        version_id: id,
+        field: set[1],
+        ontology: FIELD_ONTOLOGY[set[1]!] ?? set[3]!.split(':')[0],
+        changes: [{ from: set[2], term_id: set[3] }],
+      },
+    };
   if (/invalid query/i.test(question)) return { name: 'build_query', input: { query_spec: { source: {} } } };
   if (id && /release/i.test(question))
     return {
@@ -77,6 +103,8 @@ function plan(question: string): { name: string; input: unknown } {
 function summarise(question: string, last: Result): string {
   if (!last.ok) return `I could not do that: ${String(last.output.error)}`;
   const o = last.output;
+  if (o.status === 'pending_approval')
+    return `I have proposed ${last.name.replaceAll('_', ' ')}. Approve or reject it below; nothing changes until you approve.`;
   switch (last.name) {
     case 'search_experiments': {
       const hits = (o.experiments as { name: string }[]) ?? [];
@@ -88,6 +116,12 @@ function summarise(question: string, last: Result): string {
       return `The query returned ${(o.rows as unknown[]).length} rows (first page). Open it in the Explorer to filter or export.`;
     case 'get_experiment':
       return `${String(o.name)} (${String(o.assay_type)}, program ${String(o.program_code)}).`;
+    case 'suggest_ontology_terms': {
+      const items = o.items as { value: string; term: { label: string } | null }[];
+      return items.length
+        ? items.map((i) => `${i.value}: ${i.term ? i.term.label : 'no match'}`).join('; ')
+        : 'No values need a term.';
+    }
     case 'list_datasets':
       return `You can see ${(o.datasets as unknown[]).length} datasets.`;
     default:
@@ -117,6 +151,19 @@ export function stubProvider(model: string): ModelProvider {
       // A validated query is run next (first page only).
       if (last.name === 'build_query' && last.ok)
         return call('run_query', { query_spec: last.output.query_spec });
+      // Matched terms of a version's field are proposed as one change (the user approves it).
+      if (last.name === 'suggest_ontology_terms' && last.ok && last.output.version_id) {
+        const matched = (last.output.items as { value: string; term: { id: string } | null }[]).filter(
+          (i) => i.term,
+        );
+        if (matched.length)
+          return call('apply_metadata_suggestions', {
+            version_id: last.output.version_id,
+            field: last.output.field,
+            ontology: last.output.ontology,
+            changes: matched.map((i) => ({ from: i.value, term_id: i.term!.id })),
+          });
+      }
       const text = summarise(question, last);
       usage.output_tokens = tokens(text);
       return { text, tool_calls: [], stop: 'end_turn', usage };

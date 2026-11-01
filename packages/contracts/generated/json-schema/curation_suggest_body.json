@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/CurationSuggestBody",
+  "$defs": {
+    "CurationSuggestBody": {
+      "type": "object",
+      "properties": {
+        "ontology": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50
+        },
+        "values": {
+          "minItems": 1,
+          "maxItems": 200,
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        }
+      },
+      "required": [
+        "ontology",
+        "values"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

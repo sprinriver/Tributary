@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/CurationSuggestResponse",
+  "$defs": {
+    "CurationSuggestResponse": {
+      "type": "object",
+      "properties": {
+        "ontology": {
+          "type": "string"
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "ols",
+              "cache",
+              "local"
+            ]
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CurationSuggestion"
+          }
+        }
+      },
+      "required": [
+        "ontology",
+        "sources",
+        "items"
+      ],
+      "additionalProperties": false
+    },
+    "CurationSuggestion": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "term": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "label"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "label": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "label"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "term",
+        "candidates",
+        "note"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
