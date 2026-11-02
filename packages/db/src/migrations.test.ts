@@ -33,6 +33,8 @@ const TABLES = [
   'mapping_preset',
   'metadata_field_def',
   'metadata_template',
+  'onboarding_item',
+  'onboarding_run',
   'ontology_query_cache',
   'ontology_term_cache',
   'picklist_value',

@@ -1,4 +1,5 @@
 import cookie from '@fastify/cookie';
+import { genRequestId, registerTracing, traceChildLogger, tracedFetch } from './tracing.ts';
 import type { HealthStatus } from '@tributary/contracts';
 import { createDb, type Database } from '@tributary/db';
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
@@ -34,6 +35,7 @@ import { registerAdminTemplateRoutes } from './routes/admin-templates.ts';
 import { registerAdminSettingsRoutes } from './routes/admin-settings.ts';
 import { registerAiRoutes } from './routes/ai.ts';
 import { registerWebhookRoutes } from './routes/webhooks.ts';
+import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { providerFor, type ModelProvider } from './ai/provider.ts';
 import { systemHealth } from './admin/health.ts';
 import { HealthReportSchema, InstanceInfoSchema } from '@tributary/contracts';
@@ -66,9 +68,11 @@ export interface AppOptions {
 export function buildApp(options: AppOptions = {}): FastifyInstance {
   const config = options.config ?? loadConfig();
   const db = options.db ?? createDb(config.databaseUrl);
-  const fetchImpl = options.fetch ?? fetch;
+  // Calls to query and compute carry the request id and trace context (tracing.ts).
+  const fetchImpl = tracedFetch(options.fetch ?? fetch, [config.queryUrl, config.computeUrl]);
   const storage = options.storage ?? new Storage(config.s3);
-  const app = Fastify({ ...options.server, genReqId: () => crypto.randomUUID() });
+  const app = Fastify({ ...options.server, genReqId: genRequestId, childLoggerFactory: traceChildLogger });
+  registerTracing(app);
   const ingestQueue: IngestQueue = options.ingestQueue ?? {
     async enqueue(fileId) {
       setImmediate(() => {
@@ -147,6 +151,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerAdminSettingsRoutes(scoped, db, config);
     registerAiRoutes(scoped, { root: app, db, config, provider: aiProvider });
     registerWebhookRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerOnboardingRoutes(scoped, db, storage);
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

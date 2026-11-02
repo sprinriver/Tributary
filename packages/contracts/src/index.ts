@@ -14,6 +14,7 @@ export * from './api/admin-templates.ts';
 export * from './api/admin-settings.ts';
 export * from './api/ai.ts';
 export * from './api/webhooks.ts';
+export * from './api/onboarding.ts';
 export * from './api/instance.ts';
 export * from './api/registry.ts';
 export * from './api/routes.ts';

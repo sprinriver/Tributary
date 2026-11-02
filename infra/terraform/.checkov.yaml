@@ -1,0 +1,27 @@
+# checkov for infra/terraform (`pnpm run infra:validate`). Each skipped check is a deliberate choice:
+compact: true
+quiet: true
+framework:
+  - terraform
+skip-check:
+  # S3 cross-region replication: not required for a single-region deployment; backups are versioning + RDS snapshots.
+  - CKV_AWS_144
+  # S3 event notifications: nothing consumes bucket events (uploads are completed through the API).
+  - CKV2_AWS_62
+  # WAF: optional (cloudfront module input web_acl_arn); the ALB only accepts CloudFront's origin-facing addresses.
+  - CKV_AWS_68
+  - CKV2_AWS_47
+  - CKV2_AWS_28
+  # CloudFront origin failover: one origin per path by design.
+  - CKV_AWS_310
+  # CloudFront geo restriction: none required.
+  - CKV_AWS_374
+  # Secrets rotation: the cookie secret and internal token are rotated by redeploying; the IdP secret by the IdP.
+  - CKV2_AWS_57
+  # RDS Multi-AZ is an input (db_multi_az), off in dev, on in production.
+  - CKV_AWS_157
+  # Log bucket: SSE-S3 (ALB and S3 access logging cannot write with a customer KMS key), ACLs enabled for CloudFront
+  # standard logs, and it does not log access to itself.
+  - CKV_AWS_145
+  - CKV2_AWS_65
+  - CKV_AWS_18

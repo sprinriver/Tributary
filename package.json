@@ -16,6 +16,8 @@
     "test:api": "node scripts/vitest-pattern.mjs apps/api",
     "eval:ai": "node scripts/vitest-pattern.mjs apps/api AI-05",
     "dev:token": "node apps/api/scripts/dev-token.ts",
+    "infra:validate": "sh infra/terraform/validate.sh",
+    "ops:rehearse-restore": "sh scripts/ops/rehearse-restore.sh",
     "test:query": "node scripts/vitest-pattern.mjs apps/query",
     "bench:query": "node apps/query/scripts/bench.ts",
     "build:web": "pnpm --dir apps/web run build",
@@ -34,7 +36,8 @@
     "bootstrap": "pnpm install --frozen-lockfile && cd apps/compute && uv sync --frozen",
     "licence:scan": "node scripts/licence-scan.mjs",
     "e2e:install-browsers": "playwright install --with-deps chromium",
-    "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format"
+    "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format",
+    "load:test": "node scripts/ops/load-test.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",

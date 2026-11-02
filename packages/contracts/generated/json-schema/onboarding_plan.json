@@ -1,0 +1,112 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/OnboardingPlan",
+  "$defs": {
+    "OnboardingPlan": {
+      "type": "object",
+      "properties": {
+        "object_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "experiments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "samples": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "files": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "key": {
+                      "type": "string"
+                    },
+                    "size_bytes": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    },
+                    "role": {
+                      "$ref": "#/$defs/FileRole"
+                    },
+                    "sample_key": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "importer": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "key",
+                    "size_bytes",
+                    "role",
+                    "sample_key",
+                    "importer"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "name",
+              "samples",
+              "files"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "unmatched": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "object_count",
+        "experiments",
+        "unmatched",
+        "warnings"
+      ],
+      "additionalProperties": false
+    },
+    "FileRole": {
+      "type": "string",
+      "enum": [
+        "raw",
+        "processed",
+        "metadata",
+        "other"
+      ]
+    }
+  }
+}

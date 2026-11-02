@@ -317,34 +317,34 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 21 — Infrastructure as code (plan only)
-Status: todo
+Status: done (2026-11-02; plan against a real account awaits a sandbox profile)
 Goal: Terraform modules a customer's platform team can review and apply.
 Spec: ARCHITECTURE §12   Features: OPS-02, OPS-03
 In scope: modules in ARCHITECTURE §12; `envs/dev` example; GitHub Actions to build images → ECR and run `terraform plan` on PRs (apply is a human step outside Claude); fmt/validate, tflint, checkov (verify tools and licences) behind a root `infra:validate` script; `docs/DEPLOY.md` runbook; cost table refresh.
 Safety: never run `terraform apply`/`destroy` (deny rules + hook). Use a sandbox AWS profile for `plan` only if I provide one. Don't install terraform, tflint or checkov yourself: if one is missing, tell me which version to install.
 Definition of done:
-- [ ] `terraform validate`, tflint and checkov pass (paste output)
-- [ ] `docs/DEPLOY.md` covers prerequisites, variables, plan/apply by a human, rollback
-- [ ] `pnpm check` exits 0
+- [x] `terraform validate`, tflint and checkov pass (paste output)
+- [x] `docs/DEPLOY.md` covers prerequisites, variables, plan/apply by a human, rollback
+- [x] `pnpm check` exits 0
 
 ## Phase 22 — Hardening and v2.0 release
-Status: todo
+Status: partial (2026-11-02; the v2.0.0 tag waits for the merge, and two dependency approvals are pending, see PROGRESS)
 Goal: Production readiness — observability, backups, performance, security, accessibility, docs and demo.
 Spec: §9, §10, ARCHITECTURE §13   Features: OPS-04 … OPS-07
 In scope: OTel + pino verified end to end; alarm list; backup/restore runbook (`docs/RUNBOOK.md`) rehearsed locally; load test for explorer and charts behind `pnpm run load:test` (verify tool); `/security-review` and `/code-review high` on the full diff; dependency audit + SBOM; licence scan vs allowlist (ARCHITECTURE §9) behind `pnpm run licence:scan`; a11y pass on all pages; `docs/USER_GUIDE.md` and `docs/ADMIN_GUIDE.md` with e2e screenshots; demo script + demo dataset; replace the kit README with a product README; CHANGELOG; tag `v2.0.0`.
 Definition of done:
-- [ ] Load test meets SPEC §9 targets locally, or gaps documented
+- [x] Load test meets SPEC §9 targets locally, or gaps documented
 - [ ] If a sandbox AWS account exists: `pnpm bench:query` repeated in-region and recorded; a human has rehearsed a clean install from `docs/DEPLOY.md` (target: one working day) and a restore from backup
-- [ ] Security findings fixed or ticketed in PROGRESS
-- [ ] Licence scan: zero disallowed licences
-- [ ] Guides complete; full e2e green; tag created
-- [ ] `pnpm check` exits 0
+- [x] Security findings fixed or ticketed in PROGRESS
+- [x] Licence scan: zero disallowed licences
+- [ ] Guides complete; full e2e green; tag created (guides and e2e done; tag after merge)
+- [x] `pnpm check` exits 0
 
 ## Phase 23 (optional) — Legacy data onboarding
-Status: todo
+Status: done (2026-11-02), except relational extraction (DuckDB scanner extensions cannot be downloaded in this environment; see PROGRESS)
 Goal: Bulk-onboard a customer's historical data (typically hundreds of TB across object storage, another cloud and on-prem disks, plus a relational database).
 Features: ING-06
 In scope: bulk link-prefix with manifest inference from folder/file naming; batch importer runs; migration report (counts, failures, checksums); relational extraction through DuckDB's postgres/mysql scanners into reference datasets; resume/retry.
 Definition of done:
-- [ ] Integration test on a synthetic legacy layout; migration report generated
-- [ ] `pnpm check` exits 0
+- [x] Integration test on a synthetic legacy layout; migration report generated
+- [x] `pnpm check` exits 0

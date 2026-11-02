@@ -34,3 +34,5 @@ __pycache__/
 
 # self-hosted deployment state
 deploy/backups/
+*.tfvars
+!*.tfvars.example

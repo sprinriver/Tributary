@@ -282,7 +282,8 @@ function Preview({ id }: { id: string }) {
     <section className="stack">
       <h2>First rows</h2>
       <ErrorMessage error={preview.error} />
-      <div style={{ overflowX: 'auto' }}>
+      {/* Wide tables scroll sideways; the region takes focus so keyboard users can scroll it (WCAG 2.1.1). */}
+      <div style={{ overflowX: 'auto' }} tabIndex={0} role="region" aria-label="First rows, scrollable">
         <table className="data" aria-label="First rows">
           <thead>
             <tr>

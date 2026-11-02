@@ -1,0 +1,12 @@
+# Copy to terraform.tfvars (not committed) and fill in. See docs/DEPLOY.md.
+region                     = "eu-west-2"
+availability_zones         = ["eu-west-2a", "eu-west-2b"]
+owner                      = "platform-team"
+name                       = "acme-tributary-dev"
+domain_name                = "tributary-dev.example.com"
+cloudfront_certificate_arn = "arn:aws:acm:us-east-1:111122223333:certificate/REPLACE"
+alb_certificate_arn        = "arn:aws:acm:eu-west-2:111122223333:certificate/REPLACE"
+image_tag                  = "REPLACE-WITH-GIT-SHA"
+oidc_issuer                = "https://login.example.com/oauth2/default"
+oidc_client_id             = "tributary"
+auth_group_role_map        = "[{\"group\":\"tributary-admins\",\"role\":\"system_admin\"},{\"group\":\"tributary-scientists\",\"role\":\"contributor\",\"programs\":[\"*\"]}]"

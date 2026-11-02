@@ -3,7 +3,7 @@ import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastif
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { timingSafeEqual } from 'node:crypto';
+import { randomUUID, timingSafeEqual } from 'node:crypto';
 import { loadQueryConfig, type QueryConfig } from './config.ts';
 import { createDb } from '@tributary/db';
 import { registerImportRoutes } from './imports.ts';
@@ -24,7 +24,24 @@ const same = (a: string, b: string) =>
  */
 export async function buildApp(options: QueryAppOptions = {}): Promise<FastifyInstance> {
   const config = options.config ?? loadQueryConfig();
-  const app = Fastify(options.server ?? {});
+  // OPS-08: log under apps/api's request id (x-request-id) and trace id (traceparent), and echo the id.
+  const app = Fastify({
+    ...options.server,
+    genReqId: (req) => {
+      const id = req.headers['x-request-id'];
+      return typeof id === 'string' && /^[A-Za-z0-9._:-]{8,128}$/.test(id) ? id : randomUUID();
+    },
+    // Every line Fastify logs for the request (incoming, completed, errors) carries the caller's trace id.
+    childLoggerFactory(logger, bindings, opts, rawReq) {
+      const trace = /^00-([0-9a-f]{32})-[0-9a-f]{16}-[0-9a-f]{2}$/.exec(
+        String(rawReq.headers.traceparent ?? ''),
+      );
+      return logger.child(trace ? { ...bindings, traceId: trace[1] } : bindings, opts);
+    },
+  });
+  app.addHook('onRequest', async (request, reply) => {
+    void reply.header('x-request-id', request.id);
+  });
   // ARCHITECTURE §6: one DuckDB instance per process; memory, threads and spill directory from config.
   const settings: Record<string, string> = {};
   if (config.duckdb.memoryLimit) settings.memory_limit = config.duckdb.memoryLimit;
