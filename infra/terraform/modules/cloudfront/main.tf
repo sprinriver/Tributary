@@ -49,12 +49,11 @@ variable "logs_bucket_domain" {
   type        = string
 }
 
-# AWS managed policies (IDs are fixed by AWS) and our headers policy.
+# AWS managed policies (IDs are fixed by AWS).
 locals {
-  caching_optimized       = "658327ea-f89d-4fab-a63d-7e88639e58f6"
-  caching_disabled        = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
-  all_viewer_except_host  = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
-  security_headers_policy = aws_cloudfront_response_headers_policy.security.id
+  caching_optimized      = "658327ea-f89d-4fab-a63d-7e88639e58f6"
+  caching_disabled       = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
+  all_viewer_except_host = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
 }
 
 # Security headers on every response (the managed SecurityHeadersPolicy, plus a longer HSTS and no framing).
@@ -65,6 +64,7 @@ resource "aws_cloudfront_response_headers_policy" "security" {
     strict_transport_security {
       access_control_max_age_sec = 31536000
       include_subdomains         = true
+      preload                    = true
       override                   = true
     }
     content_type_options {
@@ -154,7 +154,7 @@ resource "aws_cloudfront_distribution" "this" {
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
     cache_policy_id            = local.caching_optimized
-    response_headers_policy_id = local.security_headers_policy
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
     compress                   = true
     function_association {
       event_type   = "viewer-request"
@@ -170,7 +170,7 @@ resource "aws_cloudfront_distribution" "this" {
     cached_methods             = ["GET", "HEAD"]
     cache_policy_id            = local.caching_disabled
     origin_request_policy_id   = local.all_viewer_except_host
-    response_headers_policy_id = local.security_headers_policy
+    response_headers_policy_id = aws_cloudfront_response_headers_policy.security.id
     function_association {
       event_type   = "viewer-request"
       function_arn = aws_cloudfront_function.api.arn
