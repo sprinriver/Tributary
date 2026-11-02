@@ -24,14 +24,16 @@ pg.types.setTypeParser(pg.types.builtins.DATE, (text: string) => text);
 
 /**
  * DATABASE_URL, or the same in parts (DATABASE_HOST, DATABASE_PORT, DATABASE_USER, DATABASE_PASSWORD,
- * DATABASE_NAME) for hosts that cannot compose a URL, such as Render Blueprints. The parts are URL-encoded.
+ * DATABASE_NAME, DATABASE_SSLMODE) for hosts that cannot compose a URL, such as Render Blueprints. The parts are
+ * URL-encoded.
  */
 export function databaseUrlFromEnv(env: NodeJS.ProcessEnv = process.env): string | undefined {
   if (env.DATABASE_URL) return env.DATABASE_URL;
   if (!env.DATABASE_HOST) return undefined;
   const user = encodeURIComponent(env.DATABASE_USER ?? 'tributary');
   const password = env.DATABASE_PASSWORD ? `:${encodeURIComponent(env.DATABASE_PASSWORD)}` : '';
-  return `postgres://${user}${password}@${env.DATABASE_HOST}:${env.DATABASE_PORT ?? '5432'}/${encodeURIComponent(env.DATABASE_NAME ?? 'tributary')}`;
+  const ssl = env.DATABASE_SSLMODE ? `?sslmode=${encodeURIComponent(env.DATABASE_SSLMODE)}` : '';
+  return `postgres://${user}${password}@${env.DATABASE_HOST}:${env.DATABASE_PORT ?? '5432'}/${encodeURIComponent(env.DATABASE_NAME ?? 'tributary')}${ssl}`;
 }
 
 export function createDb(connectionString: string = databaseUrlFromEnv() ?? DEFAULT_DATABASE_URL): Database {

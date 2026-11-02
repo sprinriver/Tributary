@@ -58,6 +58,23 @@ jobs:
       - if: failure()
         run: docker compose logs --no-color
 
+  # Terraform: fmt, validate (no backend), tflint, checkov. Plan-only tooling: nothing here can apply.
+  infra:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_wrapper: false
+      - uses: terraform-linters/setup-tflint@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install checkov==3.4.0
+      - run: sh infra/terraform/validate.sh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
   # Needs Dependency graph + GitHub Advanced Security on the repo (Settings → Code security). Once enabled,
   # set the repository variable DEPENDENCY_REVIEW=true. Until then licences are enforced by `licence:scan`.
   dependency-review:

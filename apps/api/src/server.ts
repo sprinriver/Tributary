@@ -9,6 +9,7 @@ import { LocalDockerRunner } from './pipelines/local.ts';
 import type { Runners } from './pipelines/runner.ts';
 import { handleRunEvent, pollRuns } from './pipelines/service.ts';
 import { consumeOnce } from './pipelines/sqs.ts';
+import { runnersFromEnv } from './pipelines/env-runners.ts';
 import { SQSClient } from '@aws-sdk/client-sqs';
 
 const port = Number(process.env.API_PORT ?? 3000);
@@ -26,11 +27,13 @@ boss.on('error', (error) => app.log.error(error, 'pg-boss'));
 await boss.start();
 await startIngestWorker(boss, { db, storage });
 
-// Pipeline runners: local Nextflow-in-Docker in development; AWS adapters are configured in Phase 21 deployments.
+// Pipeline runners: AWS Batch / HealthOmics from the environment (infra/terraform), and local Nextflow-in-Docker in
+// development.
 const repoRoot = resolve(import.meta.dirname, '../../..');
 const runners: Runners = config.production
-  ? {}
+  ? runnersFromEnv()
   : {
+      ...runnersFromEnv(),
       local: new LocalDockerRunner(
         {
           image: process.env.NEXTFLOW_IMAGE ?? 'nextflow/nextflow:25.10.0',

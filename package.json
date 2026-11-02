@@ -16,6 +16,7 @@
     "test:api": "node scripts/vitest-pattern.mjs apps/api",
     "eval:ai": "node scripts/vitest-pattern.mjs apps/api AI-05",
     "dev:token": "node apps/api/scripts/dev-token.ts",
+    "infra:validate": "sh infra/terraform/validate.sh",
     "test:query": "node scripts/vitest-pattern.mjs apps/query",
     "bench:query": "node apps/query/scripts/bench.ts",
     "build:web": "pnpm --dir apps/web run build",
