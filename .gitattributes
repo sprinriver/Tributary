@@ -1,3 +1,5 @@
 # Shell scripts and Caddyfiles run inside Linux containers: always check them out with LF line endings.
 *.sh text eol=lf
 Caddyfile text eol=lf
+# Demo and test data: keep the exact bytes (checksums are recorded; no line-ending conversion on Windows).
+fixtures/** -text
