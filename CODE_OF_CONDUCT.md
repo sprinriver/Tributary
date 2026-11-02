@@ -7,6 +7,6 @@ personal attacks and publishing others' private information are not accepted in 
 discussions or any other project space.
 
 ## Reporting
-Report unacceptable behaviour privately to the maintainers at **conduct@REPLACE-WITH-YOUR-DOMAIN**. Reports are
+Report unacceptable behaviour privately to the maintainers at **technologysprinriver@gmail.com**. Reports are
 handled confidentially. Maintainers may remove comments, lock threads, or ban participants who break this code,
 following the Contributor Covenant's enforcement guidelines.
