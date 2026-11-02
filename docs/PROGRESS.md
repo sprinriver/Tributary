@@ -1302,3 +1302,8 @@ Entry template:
   - **Linking by key:** a file whose key is a prefix of another object's key is refused, with a reason, rather
     than linked.
 - Commits: e55e0d0, 0f5ed21, 2014c8d, 2a0718c
+- **Follow-up (Phase 22):** CI e2e failed on OPS-09.
+  - **Cause:** on a freshly seeded stack, run in parallel, no dataset release existed yet. The test had assumed
+    data created by other tests.
+  - **Fix:** the test now creates its own published experiment and release (56601be). The pages and checks are
+    unchanged, and it passes locally (2/2).
