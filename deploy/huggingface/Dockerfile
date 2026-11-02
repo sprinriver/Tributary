@@ -77,8 +77,10 @@ COPY --from=source /deploy/huggingface/start.sh /deploy/huggingface/Caddyfile /d
 COPY --from=source /infra/local/keycloak/tributary-realm.json /opt/keycloak/data/import/tributary-realm.json
 
 # Hugging Face runs the container as uid 1000 with HOME=/home/user; everything it writes lives there.
+# Scripts lose Windows line endings (CRLF) if the checkout was made on Windows.
 RUN useradd -m -u 1000 user \
  && chown -R user:user /opt/keycloak /app \
+ && sed -i 's/\r$//' /opt/tributary/*.sh /opt/tributary/Caddyfile \
  && chmod +x /opt/tributary/*.sh
 USER user
 ENV HOME=/home/user PORT=7860 NODE_ENV=production
