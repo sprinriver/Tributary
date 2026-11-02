@@ -1143,3 +1143,47 @@ Entry template:
 - **Follow-up:** the "open in a new tab" banner change had not been applied in that commit; my text replacement did
   not match the formatted file and nothing failed loudly. It is added now, with a unit test
   (`isEmbedded`, `OSS-01: the app knows when it runs inside a frame`).
+
+## 2026-11-02 — Phase 21: Infrastructure as code (plan only) — done
+- Built:
+  - **Modules** (`infra/terraform/modules`): kms, network, s3, s3tables, rds, ecs-service, alb, cloudfront,
+    eventbridge-sqs, batch, healthomics, iam. `envs/dev` composes them, with `terraform.tfvars.example`.
+  - **Validation:** `pnpm run infra:validate` (`infra/terraform/validate.sh`: fmt, validate, tflint, checkov).
+  - **CI:** an `infra` job in CI. `.github/workflows/aws.yml` builds arm64 images to ECR and runs `terraform plan`,
+    only once `AWS_PLAN_ROLE_ARN` is set.
+  - **API:** builds the AWS Batch and HealthOmics runners from its environment (`env-runners.ts`, PIPE-01 test).
+  - **Database:** `DATABASE_SSLMODE` for connections configured from parts (OSS-01 test).
+  - **Docs:** `docs/DEPLOY.md`, the AWS runbook (resources, cost table, tools, prerequisites, variables, plan,
+    apply by a human, updating, rollback, production notes).
+- Decisions (and why): ADR 0026.
+  - Validation runs in CI because the plan forbids installing the tools here.
+  - IAM write actions are scoped to account ARNs.
+  - Availability zones are explicit.
+  - The KMS key policy skips are inline, with reasons.
+- Dependencies added: none (CI installs terraform via hashicorp/setup-terraform@v3, tflint via
+  terraform-linters/setup-tflint@v4, and checkov==3.4.0 via pip on the runner only).
+- Evidence, CI `infra` job on a6c4ca8 + aa17219 (run 41396468101):
+  ```
+  == terraform fmt
+  == terraform validate envs/dev/
+  Success! The configuration is valid.
+  == tflint
+  == checkov
+  Passed checks: 463, Failed checks: 0, Skipped checks: 3
+  infra:validate: all checks passed
+  ```
+  The 3 skips are the inline KMS key-policy skips; the rest are skipped by `.checkov.yaml` with reasons.
+  The first CI run found 10 checkov issues, then 2 more. All were fixed:
+  - scoped Batch, Omics and Logs IAM
+  - pinned AZs
+  - multipart abort on exports
+  - our own CloudFront headers policy with HSTS preload
+  - KMS inline skips
+
+  `pnpm check` ✓ (local, exit 0).
+- Gaps and follow-ups:
+  - **No real plan yet:** `terraform plan` has not run against an account, because no sandbox profile was
+    provided. `aws.yml` runs it once the repository variables are set.
+  - **Alarms:** CloudWatch alarms are listed in `docs/RUNBOOK.md` but are not in Terraform.
+  - **Production database TLS:** use `verify-full` with the RDS CA bundle.
+- Commits: cf618dd, a6c4ca8, aa17219

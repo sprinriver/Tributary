@@ -317,15 +317,15 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 21 — Infrastructure as code (plan only)
-Status: todo
+Status: done (2026-11-02; plan against a real account awaits a sandbox profile)
 Goal: Terraform modules a customer's platform team can review and apply.
 Spec: ARCHITECTURE §12   Features: OPS-02, OPS-03
 In scope: modules in ARCHITECTURE §12; `envs/dev` example; GitHub Actions to build images → ECR and run `terraform plan` on PRs (apply is a human step outside Claude); fmt/validate, tflint, checkov (verify tools and licences) behind a root `infra:validate` script; `docs/DEPLOY.md` runbook; cost table refresh.
 Safety: never run `terraform apply`/`destroy` (deny rules + hook). Use a sandbox AWS profile for `plan` only if I provide one. Don't install terraform, tflint or checkov yourself: if one is missing, tell me which version to install.
 Definition of done:
-- [ ] `terraform validate`, tflint and checkov pass (paste output)
-- [ ] `docs/DEPLOY.md` covers prerequisites, variables, plan/apply by a human, rollback
-- [ ] `pnpm check` exits 0
+- [x] `terraform validate`, tflint and checkov pass (paste output)
+- [x] `docs/DEPLOY.md` covers prerequisites, variables, plan/apply by a human, rollback
+- [x] `pnpm check` exits 0
 
 ## Phase 22 — Hardening and v2.0 release
 Status: todo
