@@ -10,10 +10,13 @@ variable "cidr" {
   default     = "10.40.0.0/16"
 }
 
-variable "az_count" {
-  description = "Number of availability zones (2 or 3)."
-  type        = number
-  default     = 2
+variable "availability_zones" {
+  description = "Availability zone names to use (2 or 3). Explicit, so the network never moves when AWS adds a zone."
+  type        = list(string)
+  validation {
+    condition     = length(var.availability_zones) >= 2 && length(var.availability_zones) <= 3
+    error_message = "Give 2 or 3 availability zones."
+  }
 }
 
 variable "single_nat_gateway" {
@@ -33,12 +36,8 @@ variable "flow_log_retention_days" {
   default     = 365
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
 locals {
-  azs = slice(data.aws_availability_zones.available.names, 0, var.az_count)
+  azs = var.availability_zones
 }
 
 resource "aws_vpc" "this" {
@@ -59,7 +58,7 @@ resource "aws_internet_gateway" "this" {
 }
 
 resource "aws_subnet" "public" {
-  count             = var.az_count
+  count             = length(local.azs)
   vpc_id            = aws_vpc.this.id
   availability_zone = local.azs[count.index]
   cidr_block        = cidrsubnet(var.cidr, 8, count.index)
@@ -67,7 +66,7 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  count             = var.az_count
+  count             = length(local.azs)
   vpc_id            = aws_vpc.this.id
   availability_zone = local.azs[count.index]
   cidr_block        = cidrsubnet(var.cidr, 8, count.index + 10)
@@ -75,13 +74,13 @@ resource "aws_subnet" "private" {
 }
 
 resource "aws_eip" "nat" {
-  count  = var.single_nat_gateway ? 1 : var.az_count
+  count  = var.single_nat_gateway ? 1 : length(local.azs)
   domain = "vpc"
   tags   = { Name = "${var.name}-nat-${count.index}" }
 }
 
 resource "aws_nat_gateway" "this" {
-  count         = var.single_nat_gateway ? 1 : var.az_count
+  count         = var.single_nat_gateway ? 1 : length(local.azs)
   allocation_id = aws_eip.nat[count.index].id
   subnet_id     = aws_subnet.public[count.index].id
   tags          = { Name = "${var.name}-${count.index}" }
@@ -98,13 +97,13 @@ resource "aws_route_table" "public" {
 }
 
 resource "aws_route_table_association" "public" {
-  count          = var.az_count
+  count          = length(local.azs)
   subnet_id      = aws_subnet.public[count.index].id
   route_table_id = aws_route_table.public.id
 }
 
 resource "aws_route_table" "private" {
-  count  = var.az_count
+  count  = length(local.azs)
   vpc_id = aws_vpc.this.id
   route {
     cidr_block     = "0.0.0.0/0"
@@ -114,7 +113,7 @@ resource "aws_route_table" "private" {
 }
 
 resource "aws_route_table_association" "private" {
-  count          = var.az_count
+  count          = length(local.azs)
   subnet_id      = aws_subnet.private[count.index].id
   route_table_id = aws_route_table.private[count.index].id
 }

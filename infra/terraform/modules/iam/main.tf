@@ -44,6 +44,15 @@ variable "batch_job_role_arn" {
   type        = string
 }
 
+data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
+
+locals {
+  region  = data.aws_region.current.region
+  account = data.aws_caller_identity.current.account_id
+}
+
 data "aws_iam_policy_document" "ecs_assume" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -120,14 +129,23 @@ data "aws_iam_policy_document" "api" {
     resources = [var.batch_job_queue_arn, "${var.batch_job_definition_arn_prefix}*"]
   }
   statement {
+    # DescribeJobs and ListJobs do not support resource-level permissions.
     sid       = "BatchRead"
-    actions   = ["batch:DescribeJobs", "batch:TerminateJob", "batch:ListJobs"]
+    actions   = ["batch:DescribeJobs", "batch:ListJobs"]
     resources = ["*"]
   }
   statement {
-    sid       = "Omics"
-    actions   = ["omics:StartRun", "omics:GetRun", "omics:CancelRun", "omics:ListRunTasks", "omics:GetRunTask"]
-    resources = ["*"]
+    sid       = "BatchCancel"
+    actions   = ["batch:TerminateJob"]
+    resources = ["arn:aws:batch:${local.region}:${local.account}:job/*"]
+  }
+  statement {
+    sid     = "Omics"
+    actions = ["omics:StartRun", "omics:GetRun", "omics:CancelRun", "omics:ListRunTasks", "omics:GetRunTask"]
+    resources = [
+      "arn:aws:omics:${local.region}:${local.account}:workflow/*",
+      "arn:aws:omics:${local.region}:${local.account}:run/*",
+    ]
   }
   statement {
     sid       = "PassRunRoles"
@@ -135,9 +153,12 @@ data "aws_iam_policy_document" "api" {
     resources = [var.omics_service_role_arn, var.batch_job_role_arn]
   }
   statement {
-    sid       = "RunLogs"
-    actions   = ["logs:GetLogEvents", "logs:FilterLogEvents"]
-    resources = ["*"]
+    sid     = "RunLogs"
+    actions = ["logs:GetLogEvents", "logs:FilterLogEvents"]
+    resources = [
+      "arn:aws:logs:${local.region}:${local.account}:log-group:/aws/batch/job:*",
+      "arn:aws:logs:${local.region}:${local.account}:log-group:/aws/omics/WorkflowLog:*",
+    ]
   }
 }
 

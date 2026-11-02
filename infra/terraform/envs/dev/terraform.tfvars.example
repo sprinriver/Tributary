@@ -1,5 +1,6 @@
 # Copy to terraform.tfvars (not committed) and fill in. See docs/DEPLOY.md.
 region                     = "eu-west-2"
+availability_zones         = ["eu-west-2a", "eu-west-2b"]
 name                       = "acme-tributary-dev"
 domain_name                = "tributary-dev.example.com"
 cloudfront_certificate_arn = "arn:aws:acm:us-east-1:111122223333:certificate/REPLACE"

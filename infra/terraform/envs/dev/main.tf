@@ -1,8 +1,9 @@
 # Tributary in one AWS account and region (ARCHITECTURE §12). Plan-only from tooling: `terraform apply` is a human
 # step (docs/DEPLOY.md). The customer's IdP provides sign-in (no Keycloak on AWS).
 locals {
-  tenant_id = "00000000-0000-7000-8000-000000000001"
-  app_url   = "https://${var.domain_name}"
+  tenant_id          = "00000000-0000-7000-8000-000000000001"
+  app_url            = "https://${var.domain_name}"
+  availability_zones = length(var.availability_zones) > 0 ? var.availability_zones : ["${var.region}a", "${var.region}b"]
 }
 
 module "kms" {
@@ -11,9 +12,10 @@ module "kms" {
 }
 
 module "network" {
-  source      = "../../modules/network"
-  name        = var.name
-  kms_key_arn = module.kms.key_arn
+  source             = "../../modules/network"
+  name               = var.name
+  availability_zones = local.availability_zones
+  kms_key_arn        = module.kms.key_arn
 }
 
 module "s3" {

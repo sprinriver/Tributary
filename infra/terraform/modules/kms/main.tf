@@ -14,6 +14,10 @@ variable "deletion_window_days" {
 }
 
 data "aws_iam_policy_document" "key" {
+  # In a key policy, resources = ["*"] means "this key"; a key policy cannot name other resources.
+  #checkov:skip=CKV_AWS_356:Key policy: "*" refers to this key only
+  #checkov:skip=CKV_AWS_109:Key policy: account root administers its own key (AWS default key policy)
+  #checkov:skip=CKV_AWS_111:Key policy: "*" refers to this key only
   statement {
     sid       = "AccountAdministers"
     actions   = ["kms:*"]

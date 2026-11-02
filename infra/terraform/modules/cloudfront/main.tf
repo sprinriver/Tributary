@@ -49,12 +49,41 @@ variable "logs_bucket_domain" {
   type        = string
 }
 
-# AWS managed policies (IDs are fixed by AWS).
+# AWS managed policies (IDs are fixed by AWS) and our headers policy.
 locals {
   caching_optimized       = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   caching_disabled        = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
   all_viewer_except_host  = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
-  security_headers_policy = "67f7725c-6f97-4210-82d7-5512b31e9d03"
+  security_headers_policy = aws_cloudfront_response_headers_policy.security.id
+}
+
+# Security headers on every response (the managed SecurityHeadersPolicy, plus a longer HSTS and no framing).
+resource "aws_cloudfront_response_headers_policy" "security" {
+  name    = "${var.name}-security-headers"
+  comment = "Tributary security headers"
+  security_headers_config {
+    strict_transport_security {
+      access_control_max_age_sec = 31536000
+      include_subdomains         = true
+      override                   = true
+    }
+    content_type_options {
+      override = true
+    }
+    frame_options {
+      frame_option = "DENY"
+      override     = true
+    }
+    referrer_policy {
+      referrer_policy = "strict-origin-when-cross-origin"
+      override        = true
+    }
+    xss_protection {
+      protection = true
+      mode_block = true
+      override   = true
+    }
+  }
 }
 
 resource "aws_cloudfront_origin_access_control" "web" {

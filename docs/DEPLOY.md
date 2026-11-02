@@ -71,6 +71,7 @@ Copy `terraform.tfvars.example` to `terraform.tfvars`; that file is git-ignored.
 | Variable | Example | Notes |
 |---|---|---|
 | `region` | `eu-west-2` | |
+| `availability_zones` | `["eu-west-2a", "eu-west-2b"]` | 2 or 3 zones; empty means `<region>a` and `<region>b`. Fixed, so the network never moves when AWS adds a zone |
 | `name` | `acme-tributary-dev` | Prefix for everything; bucket names must be globally unique |
 | `domain_name` | `tributary-dev.example.com` | The address users open |
 | `cloudfront_certificate_arn` | `arn:aws:acm:us-east-1:…` | us-east-1 |

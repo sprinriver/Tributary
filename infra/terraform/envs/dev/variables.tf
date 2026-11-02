@@ -3,6 +3,12 @@ variable "region" {
   type        = string
 }
 
+variable "availability_zones" {
+  description = "Availability zones (2 or 3). Empty means <region>a and <region>b."
+  type        = list(string)
+  default     = []
+}
+
 variable "environment" {
   description = "Environment name (dev, staging)."
   type        = string

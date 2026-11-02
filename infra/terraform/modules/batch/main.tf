@@ -116,8 +116,28 @@ data "aws_iam_policy_document" "job" {
     resources = [var.kms_key_arn]
   }
   statement {
-    sid       = "NextflowSubmitsTasks"
-    actions   = ["batch:SubmitJob", "batch:DescribeJobs", "batch:TerminateJob", "batch:RegisterJobDefinition", "batch:DescribeJobDefinitions", "batch:DescribeJobQueues", "batch:ListJobs"]
+    sid     = "NextflowSubmitsTasks"
+    actions = ["batch:SubmitJob"]
+    resources = [
+      aws_batch_job_queue.this.arn,
+      "arn:aws:batch:${local.region}:${local.account}:job-definition/nf-*",
+    ]
+  }
+  statement {
+    # Nextflow registers one job definition per task image, named nf-<image>.
+    sid       = "NextflowTaskDefinitions"
+    actions   = ["batch:RegisterJobDefinition"]
+    resources = ["arn:aws:batch:${local.region}:${local.account}:job-definition/nf-*"]
+  }
+  statement {
+    sid       = "NextflowStopsTasks"
+    actions   = ["batch:TerminateJob"]
+    resources = ["arn:aws:batch:${local.region}:${local.account}:job/*"]
+  }
+  statement {
+    # These Describe/List actions do not support resource-level permissions.
+    sid       = "NextflowReadsBatch"
+    actions   = ["batch:DescribeJobs", "batch:DescribeJobDefinitions", "batch:DescribeJobQueues", "batch:ListJobs"]
     resources = ["*"]
   }
   statement {
@@ -126,7 +146,7 @@ data "aws_iam_policy_document" "job" {
   }
   statement {
     actions   = ["logs:GetLogEvents"]
-    resources = ["*"]
+    resources = ["arn:aws:logs:${local.region}:${local.account}:log-group:/aws/batch/job:*"]
   }
 }
 
@@ -137,6 +157,13 @@ resource "aws_iam_role_policy" "job" {
 }
 
 data "aws_region" "current" {}
+
+data "aws_caller_identity" "current" {}
+
+locals {
+  region  = data.aws_region.current.region
+  account = data.aws_caller_identity.current.account_id
+}
 
 resource "aws_batch_job_definition" "head" {
   name                  = "${var.name}-nextflow-head"
