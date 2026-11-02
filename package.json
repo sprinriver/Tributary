@@ -36,7 +36,8 @@
     "bootstrap": "pnpm install --frozen-lockfile && cd apps/compute && uv sync --frozen",
     "licence:scan": "node scripts/licence-scan.mjs",
     "e2e:install-browsers": "playwright install --with-deps chromium",
-    "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format"
+    "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format",
+    "load:test": "node scripts/ops/load-test.mjs"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.14.0",
