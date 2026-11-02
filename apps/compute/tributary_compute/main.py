@@ -29,8 +29,10 @@ from tributary_compute.embed import embed
 from tributary_compute.sdrf import ExportResult, ImportResult, export_sdrf, import_sdrf
 from tributary_compute.stats import cluster, groups, simple
 from tributary_compute.stats.errors import ComputeError
+from tributary_compute.tracing import request_context
 
 app = FastAPI(title="tributary-compute", version=__version__)
+app.middleware("http")(request_context)
 
 
 @app.exception_handler(ComputeError)

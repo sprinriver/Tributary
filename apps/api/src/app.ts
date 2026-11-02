@@ -1,4 +1,5 @@
 import cookie from '@fastify/cookie';
+import { genRequestId, registerTracing, tracedFetch } from './tracing.ts';
 import type { HealthStatus } from '@tributary/contracts';
 import { createDb, type Database } from '@tributary/db';
 import Fastify, { type FastifyInstance, type FastifyServerOptions } from 'fastify';
@@ -66,9 +67,11 @@ export interface AppOptions {
 export function buildApp(options: AppOptions = {}): FastifyInstance {
   const config = options.config ?? loadConfig();
   const db = options.db ?? createDb(config.databaseUrl);
-  const fetchImpl = options.fetch ?? fetch;
+  // Calls to query and compute carry the request id and trace context (tracing.ts).
+  const fetchImpl = tracedFetch(options.fetch ?? fetch, [config.queryUrl, config.computeUrl]);
   const storage = options.storage ?? new Storage(config.s3);
-  const app = Fastify({ ...options.server, genReqId: () => crypto.randomUUID() });
+  const app = Fastify({ ...options.server, genReqId: genRequestId });
+  registerTracing(app);
   const ingestQueue: IngestQueue = options.ingestQueue ?? {
     async enqueue(fileId) {
       setImmediate(() => {

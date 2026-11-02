@@ -1,6 +1,7 @@
 import asyncio
 
 import httpx
+import pytest
 
 from tributary_compute.main import app
 
@@ -17,7 +18,7 @@ def test_OPS_01_healthz_reports_ok() -> None:
     assert response.json() == {"service": "compute", "status": "ok", "version": "0.0.0"}
 
 
-def test_OPS_08_request_id_from_the_api_is_echoed(caplog) -> None:  # noqa: ANN001
+def test_OPS_08_request_id_from_the_api_is_echoed(caplog: pytest.LogCaptureFixture) -> None:
     caplog.set_level("INFO", logger="tributary_compute.requests")
     trace = "00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01"
     response = asyncio.run(_get("/healthz", {"x-request-id": "req-abc12345", "traceparent": trace}))
