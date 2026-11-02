@@ -178,7 +178,20 @@ describe('legacy onboarding (ING-06)', () => {
     const broken = again.items.find((i: Json) => i.kind === 'import' && i.key.includes('LEG-B/'));
     expect(broken.status).toBe('failed');
     expect(broken.error).toBeTruthy();
-    expect(broken.attempts).toBe(2); // retried by the second resume, still failing
+    expect(broken.attempts).toBe(1);
+
+    // A further resume retries the failed import; it fails again and the attempt is counted.
+    const retried = (
+      await t.call(contributor, {
+        method: 'POST',
+        url: `/v1/onboarding/runs/${runId}/resume`,
+        headers: reason,
+      })
+    ).json() as Json;
+    const brokenAgain = retried.items.find((i: Json) => i.kind === 'import' && i.key.includes('LEG-B/'));
+    expect(brokenAgain).toMatchObject({ status: 'failed' });
+    expect(brokenAgain.attempts).toBe(2);
+    expect(retried.counts.imports).toEqual({ done: 1, pending: 0, failed: 1 });
   });
 
   it('ING-06: the migration report has counts, failures and every checksum', async () => {
