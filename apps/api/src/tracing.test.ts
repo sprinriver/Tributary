@@ -71,7 +71,11 @@ describe('request IDs and trace context', () => {
     const app = buildApp();
     afterAll(() => app.close());
     it('OPS-08: the API echoes the request id it logs', async () => {
-      const res = await app.inject({ method: 'GET', url: '/healthz', headers: { 'x-request-id': 'req-xyz98765' } });
+      const res = await app.inject({
+        method: 'GET',
+        url: '/healthz',
+        headers: { 'x-request-id': 'req-xyz98765' },
+      });
       expect(res.headers['x-request-id']).toBe('req-xyz98765');
     });
   });

@@ -19,7 +19,10 @@ describe('query service', () => {
     const res = await app.inject({
       method: 'GET',
       url: '/healthz',
-      headers: { 'x-request-id': 'req-abc12345', traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01' },
+      headers: {
+        'x-request-id': 'req-abc12345',
+        traceparent: '00-0af7651916cd43dd8448eb211c80319c-b7ad6b7169203331-01',
+      },
     });
     expect(res.headers['x-request-id']).toBe('req-abc12345');
   });
