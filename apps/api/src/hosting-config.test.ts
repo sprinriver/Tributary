@@ -78,3 +78,15 @@ describe('plain-http identity provider', () => {
     expect(allowInsecureIssuer('https://idp.example.com/realms/x', true)).toBe(false);
   });
 });
+
+describe('database TLS', () => {
+  it('OSS-01: DATABASE_SSLMODE is added to a URL built from parts (RDS enforces TLS)', () => {
+    expect(
+      databaseUrlFromEnv({
+        DATABASE_HOST: 'db.rds.amazonaws.com',
+        DATABASE_PASSWORD: 'p',
+        DATABASE_SSLMODE: 'no-verify',
+      }),
+    ).toBe('postgres://tributary:p@db.rds.amazonaws.com:5432/tributary?sslmode=no-verify');
+  });
+});
