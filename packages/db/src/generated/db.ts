@@ -436,6 +436,38 @@ export interface MetadataTemplate {
   version: string;
 }
 
+export interface OnboardingItem {
+  attempts: Generated<number>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  entity_id: string | null;
+  error: string | null;
+  experiment: string;
+  id: Generated<string>;
+  key: string;
+  kind: string;
+  position: number;
+  run_id: string;
+  status: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface OnboardingRun {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  prefix: string;
+  program_id: string;
+  spec: Json;
+  status: string;
+  tenant_id: string;
+  unmatched: Generated<string[]>;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface OntologyQueryCache {
   fetched_at: Generated<Timestamp>;
   id: Generated<string>;
@@ -795,6 +827,8 @@ export interface DB {
   mapping_preset: MappingPreset;
   metadata_field_def: MetadataFieldDef;
   metadata_template: MetadataTemplate;
+  onboarding_item: OnboardingItem;
+  onboarding_run: OnboardingRun;
   ontology_query_cache: OntologyQueryCache;
   ontology_term_cache: OntologyTermCache;
   picklist_value: PicklistValue;

@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/OnboardingSpec",
+  "$defs": {
+    "OnboardingSpec": {
+      "type": "object",
+      "properties": {
+        "program_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "prefix": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "assay_type": {
+          "type": "string",
+          "enum": [
+            "proteomics_dia",
+            "proteomics_dda",
+            "proteomics_tmt",
+            "rnaseq",
+            "crispr_screen",
+            "ngs_raw"
+          ]
+        },
+        "patterns": {
+          "minItems": 1,
+          "maxItems": 20,
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/OnboardingPattern"
+          }
+        },
+        "sample_defaults": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "additionalProperties": {
+            "type": "string",
+            "maxLength": 500
+          }
+        },
+        "max_experiments": {
+          "default": 50,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 500
+        }
+      },
+      "required": [
+        "program_id",
+        "prefix",
+        "assay_type",
+        "patterns",
+        "max_experiments"
+      ],
+      "additionalProperties": false
+    },
+    "OnboardingPattern": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "role": {
+          "$ref": "#/$defs/FileRole"
+        },
+        "importer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "options": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "path",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "FileRole": {
+      "type": "string",
+      "enum": [
+        "raw",
+        "processed",
+        "metadata",
+        "other"
+      ]
+    }
+  }
+}

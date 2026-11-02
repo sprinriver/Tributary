@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/OnboardingPattern",
+  "$defs": {
+    "OnboardingPattern": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "role": {
+          "$ref": "#/$defs/FileRole"
+        },
+        "importer": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "options": {
+          "type": "object",
+          "propertyNames": {
+            "type": "string"
+          },
+          "additionalProperties": {}
+        }
+      },
+      "required": [
+        "path",
+        "role"
+      ],
+      "additionalProperties": false
+    },
+    "FileRole": {
+      "type": "string",
+      "enum": [
+        "raw",
+        "processed",
+        "metadata",
+        "other"
+      ]
+    }
+  }
+}

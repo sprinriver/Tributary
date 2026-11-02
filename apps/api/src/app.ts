@@ -35,6 +35,7 @@ import { registerAdminTemplateRoutes } from './routes/admin-templates.ts';
 import { registerAdminSettingsRoutes } from './routes/admin-settings.ts';
 import { registerAiRoutes } from './routes/ai.ts';
 import { registerWebhookRoutes } from './routes/webhooks.ts';
+import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { providerFor, type ModelProvider } from './ai/provider.ts';
 import { systemHealth } from './admin/health.ts';
 import { HealthReportSchema, InstanceInfoSchema } from '@tributary/contracts';
@@ -150,6 +151,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerAdminSettingsRoutes(scoped, db, config);
     registerAiRoutes(scoped, { root: app, db, config, provider: aiProvider });
     registerWebhookRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerOnboardingRoutes(scoped, db, storage);
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(
