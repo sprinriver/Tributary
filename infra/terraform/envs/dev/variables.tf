@@ -15,6 +15,23 @@ variable "environment" {
   default     = "dev"
 }
 
+variable "owner" {
+  description = "Team that owns the deployment (the `owner` tag on every resource)."
+  type        = string
+}
+
+variable "api_origin_domain" {
+  description = "DNS name CloudFront uses for the ALB; the ALB certificate must cover it. Empty: origin.<domain_name>."
+  type        = string
+  default     = ""
+}
+
+variable "enable_healthomics" {
+  description = "Create the HealthOmics role and run-status rule (HealthOmics is available in a few regions only)."
+  type        = bool
+  default     = false
+}
+
 variable "name" {
   description = "Resource name prefix; must be globally unique for bucket names (e.g. acme-tributary-dev)."
   type        = string

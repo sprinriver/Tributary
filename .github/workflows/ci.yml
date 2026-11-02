@@ -63,11 +63,11 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: hashicorp/setup-terraform@v3
+      - uses: hashicorp/setup-terraform@v4.0.1
         with:
           terraform_wrapper: false
-      - uses: terraform-linters/setup-tflint@v4
-      - uses: actions/setup-python@v5
+      - uses: terraform-linters/setup-tflint@v6.3.0
+      - uses: actions/setup-python@v7.0.0
         with:
           python-version: '3.12'
       - run: pip install checkov==3.4.0

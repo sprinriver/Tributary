@@ -21,8 +21,8 @@ variable "web_bucket_regional_domain" {
   type        = string
 }
 
-variable "alb_dns_name" {
-  description = "ALB DNS name (API origin)."
+variable "api_origin_domain" {
+  description = "DNS name of the ALB (API origin), covered by the ALB's certificate; CloudFront verifies it over HTTPS."
   type        = string
 }
 
@@ -139,7 +139,7 @@ resource "aws_cloudfront_distribution" "this" {
 
   origin {
     origin_id   = "api"
-    domain_name = var.alb_dns_name
+    domain_name = var.api_origin_domain
     custom_origin_config {
       http_port              = 80
       https_port             = 443

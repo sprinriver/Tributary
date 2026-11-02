@@ -4,6 +4,7 @@ locals {
   tenant_id          = "00000000-0000-7000-8000-000000000001"
   app_url            = "https://${var.domain_name}"
   availability_zones = length(var.availability_zones) > 0 ? var.availability_zones : ["${var.region}a", "${var.region}b"]
+  api_origin_domain  = var.api_origin_domain != "" ? var.api_origin_domain : "origin.${var.domain_name}"
 }
 
 module "kms" {
@@ -26,8 +27,9 @@ module "s3" {
 }
 
 module "s3tables" {
-  source = "../../modules/s3tables"
-  name   = var.name
+  source      = "../../modules/s3tables"
+  name        = var.name
+  kms_key_arn = module.kms.key_arn
 }
 
 # --- container images --------------------------------------------------------------------------------------------
@@ -48,10 +50,11 @@ resource "aws_ecr_lifecycle_policy" "this" {
   for_each   = aws_ecr_repository.this
   repository = each.value.name
   policy = jsonencode({
+    # Only untagged layers expire: tagged images (git SHAs) stay, so any deployed or previous tag can be pulled.
     rules = [{
       rulePriority = 1
-      description  = "Keep the last 50 images"
-      selection    = { tagStatus = "any", countType = "imageCountMoreThan", countNumber = 50 }
+      description  = "Expire untagged images after 14 days"
+      selection    = { tagStatus = "untagged", countType = "sinceImagePushed", countUnit = "days", countNumber = 14 }
       action       = { type = "expire" }
     }]
   })
@@ -98,6 +101,7 @@ module "batch" {
 }
 
 module "healthomics" {
+  count           = var.enable_healthomics ? 1 : 0
   source          = "../../modules/healthomics"
   name            = var.name
   work_bucket_arn = module.s3.bucket_arns["work"]
@@ -110,6 +114,7 @@ module "run_events" {
   name                = var.name
   kms_key_arn         = module.kms.key_arn
   batch_job_queue_arn = module.batch.job_queue_arn
+  enable_healthomics  = var.enable_healthomics
 }
 
 module "iam" {
@@ -121,7 +126,8 @@ module "iam" {
   run_events_queue_arn            = module.run_events.queue_arn
   batch_job_queue_arn             = module.batch.job_queue_arn
   batch_job_definition_arn_prefix = module.batch.job_definition_arn_prefix
-  omics_service_role_arn          = module.healthomics.service_role_arn
+  enable_healthomics              = var.enable_healthomics
+  omics_service_role_arn          = var.enable_healthomics ? module.healthomics[0].service_role_arn : ""
   batch_job_role_arn              = module.batch.job_role_arn
 }
 
@@ -222,7 +228,7 @@ module "api" {
     BATCH_JOB_QUEUE      = module.batch.job_queue_arn
     BATCH_JOB_DEFINITION = module.batch.job_definition_name
     OMICS_WORKFLOW_ID    = var.omics_workflow_id
-    OMICS_ROLE_ARN       = var.omics_workflow_id == "" ? "" : module.healthomics.service_role_arn
+    OMICS_ROLE_ARN       = var.enable_healthomics && var.omics_workflow_id != "" ? module.healthomics[0].service_role_arn : ""
   })
   secrets = merge(local.db_password, {
     COOKIE_SECRET        = aws_secretsmanager_secret.app["cookie-secret"].arn
@@ -281,7 +287,7 @@ module "cloudfront" {
   web_bucket_name            = module.s3.bucket_names["web"]
   web_bucket_arn             = module.s3.bucket_arns["web"]
   web_bucket_regional_domain = module.s3.web_bucket_regional_domain
-  alb_dns_name               = module.alb.dns_name
+  api_origin_domain          = local.api_origin_domain
   aliases                    = [var.domain_name]
   certificate_arn            = var.cloudfront_certificate_arn
   logs_bucket_domain         = module.s3.logs_bucket_domain

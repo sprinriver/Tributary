@@ -20,7 +20,7 @@ For a quick public demo instead, see [`DEPLOY_HUGGINGFACE.md`](DEPLOY_HUGGINGFAC
 | Edge | CloudFront serves the SPA from the `web` bucket (Origin Access Control) and sends `/api/*` to the ALB, with the prefix removed. The ALB accepts only CloudFront's origin-facing addresses, over HTTPS. |
 | Pipelines | AWS Batch (Fargate Spot), a job queue and the Nextflow head-job definition. A HealthOmics service role. EventBridge → SQS (with a DLQ) for run status. |
 | Access | One IAM role per service, least privilege; the task execution role reads only the app's secrets |
-| Images | ECR repositories `<name>/node` and `<name>/compute`: immutable tags, scan on push, KMS |
+| Images | ECR repositories `<name>/node` and `<name>/compute`: immutable tags, scan on push, KMS. Only untagged images expire, so every deployed tag stays available for rollback |
 
 **Indicative cost** (one environment, us-east-1, before pipeline compute; ARCHITECTURE §12):
 
@@ -55,8 +55,9 @@ written there.
 3. **Domain** for the app, for example `tributary.example.com`, in a DNS zone you control.
 4. **Two ACM certificates:**
    - **For CloudFront:** for the domain, in **us-east-1**.
-   - **For the ALB:** in **your region**. It can be for the same name, or `*.example.com`; CloudFront connects to the
-     ALB by its AWS name over HTTPS, so a wildcard on your domain is fine.
+   - **For the ALB:** in **your region**, covering the API origin name `origin.<domain>` (or your
+     `api_origin_domain`), for example `*.example.com`. CloudFront connects to the ALB by that name over HTTPS and
+     checks the certificate. The ALB's own `*.elb.amazonaws.com` name cannot have an ACM certificate.
 5. **An OIDC client in your identity provider** (Okta, Entra ID, Auth0, Keycloak, …):
    - **Redirect URI:** `https://<domain>/api/v1/auth/callback`
    - **Post-logout redirect:** `https://<domain>/`
@@ -74,6 +75,8 @@ Copy `terraform.tfvars.example` to `terraform.tfvars`; that file is git-ignored.
 | `availability_zones` | `["eu-west-2a", "eu-west-2b"]` | 2 or 3 zones; empty means `<region>a` and `<region>b`. Fixed, so the network never moves when AWS adds a zone |
 | `name` | `acme-tributary-dev` | Prefix for everything; bucket names must be globally unique |
 | `domain_name` | `tributary-dev.example.com` | The address users open |
+| `owner` | `platform-team` | The `owner` tag on every resource (with `app` and `env`) |
+| `api_origin_domain` | empty | Name CloudFront uses for the ALB; empty means `origin.<domain_name>` |
 | `cloudfront_certificate_arn` | `arn:aws:acm:us-east-1:…` | us-east-1 |
 | `alb_certificate_arn` | `arn:aws:acm:eu-west-2:…` | your region |
 | `image_tag` | git SHA | CI pushes `<sha>` tags; pass it with `-var image_tag=…` |
@@ -81,7 +84,7 @@ Copy `terraform.tfvars.example` to `terraform.tfvars`; that file is git-ignored.
 | `auth_group_role_map` | JSON | IdP groups → roles |
 | `db_instance_class`, `db_multi_az` | `db.t4g.medium`, `false` | use Multi-AZ in production |
 | `api_desired_count` | `2` | |
-| `omics_workflow_id` | empty | set to switch on the HealthOmics runner |
+| `enable_healthomics`, `omics_workflow_id` | `false`, empty | `true` and a workflow id switch on the HealthOmics runner (only in regions with HealthOmics) |
 
 ## Plan (automated or local)
 - **CI** (`.github/workflows/aws.yml`): set these repository variables, then the workflow builds and pushes the
@@ -110,7 +113,10 @@ Read the plan, especially every `destroy` or `replace` line.
    aws secretsmanager put-secret-value --secret-id <name>/oidc-client-secret --secret-string '<client secret>'
    ```
 
-3. **DNS:** point the domain at the `cloudfront_domain` output, with an alias (Route 53) or a CNAME.
+3. **DNS:**
+   - Point the domain at the `cloudfront_domain` output, with an alias (Route 53) or a CNAME.
+   - Point the `api_origin_domain` output (`origin.<domain>`) at the `alb_dns_name` output. CloudFront reaches
+     the API through this name.
 4. **Images:** CI pushes them for every commit. To push by hand, use the `ecr_repositories` output:
 
    ```sh

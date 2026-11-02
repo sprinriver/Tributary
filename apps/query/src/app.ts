@@ -31,12 +31,15 @@ export async function buildApp(options: QueryAppOptions = {}): Promise<FastifyIn
       const id = req.headers['x-request-id'];
       return typeof id === 'string' && /^[A-Za-z0-9._:-]{8,128}$/.test(id) ? id : randomUUID();
     },
+    // Every line Fastify logs for the request (incoming, completed, errors) carries the caller's trace id.
+    childLoggerFactory(logger, bindings, opts, rawReq) {
+      const trace = /^00-([0-9a-f]{32})-[0-9a-f]{16}-[0-9a-f]{2}$/.exec(
+        String(rawReq.headers.traceparent ?? ''),
+      );
+      return logger.child(trace ? { ...bindings, traceId: trace[1] } : bindings, opts);
+    },
   });
   app.addHook('onRequest', async (request, reply) => {
-    const trace = /^00-([0-9a-f]{32})-[0-9a-f]{16}-[0-9a-f]{2}$/.exec(
-      String(request.headers.traceparent ?? ''),
-    );
-    if (trace) request.log = request.log.child({ traceId: trace[1] });
     void reply.header('x-request-id', request.id);
   });
   // ARCHITECTURE §6: one DuckDB instance per process; memory, threads and spill directory from config.

@@ -15,6 +15,12 @@ variable "batch_job_queue_arn" {
   type        = string
 }
 
+variable "enable_healthomics" {
+  description = "Also forward HealthOmics run status changes."
+  type        = bool
+  default     = false
+}
+
 resource "aws_sqs_queue" "dlq" {
   name                      = "${var.name}-run-events-dlq"
   kms_master_key_id         = var.kms_key_arn
@@ -39,6 +45,7 @@ resource "aws_cloudwatch_event_rule" "batch" {
 }
 
 resource "aws_cloudwatch_event_rule" "omics" {
+  count       = var.enable_healthomics ? 1 : 0
   name        = "${var.name}-omics-run-status"
   description = "HealthOmics run status changes"
   event_pattern = jsonencode({
@@ -53,8 +60,9 @@ resource "aws_cloudwatch_event_target" "batch" {
 }
 
 resource "aws_cloudwatch_event_target" "omics" {
-  rule = aws_cloudwatch_event_rule.omics.name
-  arn  = aws_sqs_queue.this.arn
+  count = var.enable_healthomics ? 1 : 0
+  rule  = aws_cloudwatch_event_rule.omics[0].name
+  arn   = aws_sqs_queue.this.arn
 }
 
 data "aws_iam_policy_document" "queue" {
@@ -68,7 +76,7 @@ data "aws_iam_policy_document" "queue" {
     condition {
       test     = "ArnEquals"
       variable = "aws:SourceArn"
-      values   = [aws_cloudwatch_event_rule.batch.arn, aws_cloudwatch_event_rule.omics.arn]
+      values   = concat([aws_cloudwatch_event_rule.batch.arn], aws_cloudwatch_event_rule.omics[*].arn)
     }
   }
 }

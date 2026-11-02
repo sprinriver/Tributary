@@ -27,23 +27,36 @@ jobs:
       TAG: ${{ github.sha }}
     steps:
       - uses: actions/checkout@v7.0.1
-      - uses: aws-actions/configure-aws-credentials@v4
+      - uses: aws-actions/configure-aws-credentials@v6.2.3
         with:
           role-to-assume: ${{ vars.AWS_PLAN_ROLE_ARN }}
           aws-region: ${{ vars.AWS_REGION }}
       - id: ecr
-        uses: aws-actions/amazon-ecr-login@v2
-      - uses: docker/setup-qemu-action@v3
-      - uses: docker/setup-buildx-action@v3
+        uses: aws-actions/amazon-ecr-login@v2.1.6
+      - uses: docker/setup-qemu-action@v4.2.0
+      - uses: docker/setup-buildx-action@v4.2.0
       - name: Build and push images
+        shell: bash
         run: |
+          set -euo pipefail
           REG=${{ steps.ecr.outputs.registry }}/${{ vars.TRIBUTARY_NAME }}
-          docker buildx build --platform linux/arm64 -f deploy/render/node.Dockerfile -t "$REG/node:$TAG" --push .
-          docker buildx build --platform linux/arm64 -f apps/compute/Dockerfile -t "$REG/compute:$TAG" --push .
-      - uses: hashicorp/setup-terraform@v3
+          # Tags are immutable: a re-run for the same commit keeps the image already pushed.
+          push() {
+            if aws ecr describe-images --repository-name "${{ vars.TRIBUTARY_NAME }}/$1" \
+              --image-ids imageTag="$TAG" >/dev/null 2>&1; then
+              echo "$1:$TAG already in ECR"
+            else
+              docker buildx build --platform linux/arm64 -f "$2" -t "$REG/$1:$TAG" --push .
+            fi
+          }
+          push node deploy/render/node.Dockerfile
+          push compute apps/compute/Dockerfile
+      - uses: hashicorp/setup-terraform@v4.0.1
       - name: terraform plan (envs/dev)
         working-directory: infra/terraform/envs/dev
+        shell: bash
         run: |
+          set -euo pipefail
           printf '%s\n' '${{ vars.TF_VARS_DEV }}' > terraform.tfvars
           terraform init -input=false -backend-config="bucket=${{ vars.TF_STATE_BUCKET }}" \
             -backend-config="key=tributary/dev.tfstate" -backend-config="region=$AWS_REGION" \

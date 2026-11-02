@@ -19,6 +19,6 @@ terraform {
 provider "aws" {
   region = var.region
   default_tags {
-    tags = { Application = "tributary", Environment = var.environment, ManagedBy = "terraform" }
+    tags = { app = "tributary", env = var.environment, owner = var.owner, ManagedBy = "terraform" }
   }
 }

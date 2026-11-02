@@ -7,7 +7,7 @@
 //   share the id. Third-party calls never receive either header.
 import { AsyncLocalStorage, AsyncResource } from 'node:async_hooks';
 import { randomBytes, randomUUID } from 'node:crypto';
-import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { FastifyInstance, FastifyRequest, FastifyServerOptions } from 'fastify';
 import type { IncomingMessage } from 'node:http';
 
 export interface TraceContext {
@@ -42,6 +42,33 @@ export function parseTraceparent(value: string | undefined): { traceId: string; 
 
 const newSpanId = () => randomBytes(8).toString('hex');
 
+/** The request's trace (continued from its traceparent, else new), fixed per raw request. */
+const traces = new WeakMap<IncomingMessage, { traceId: string; flags: string }>();
+export function traceFor(raw: IncomingMessage): { traceId: string; flags: string } {
+  let trace = traces.get(raw);
+  if (!trace) {
+    trace = parseTraceparent(header(raw.headers.traceparent)) ?? {
+      traceId: randomBytes(16).toString('hex'),
+      flags: '01',
+    };
+    traces.set(raw, trace);
+  }
+  return trace;
+}
+
+/**
+ * Fastify `childLoggerFactory`: the request logger, and so every line Fastify writes for the request (incoming,
+ * completed, errors through reply.log), carries `traceId` next to `reqId`.
+ */
+export const traceChildLogger: NonNullable<FastifyServerOptions['childLoggerFactory']> = function (
+  logger,
+  bindings,
+  options,
+  rawReq,
+) {
+  return logger.child({ ...bindings, traceId: traceFor(rawReq).traceId }, options);
+};
+
 export const currentTrace = (): TraceContext | undefined => storage.getStore();
 
 /** Hooks that open the trace context for each request and keep it across body parsing (as @fastify/request-context does). */
@@ -49,15 +76,7 @@ export function registerTracing(app: FastifyInstance): void {
   app.addHook('onRequest', (request, reply, done) => {
     const requestId =
       validRequestId(request.headers['x-request-id']) ?? (UUID.test(request.id) ? request.id : randomUUID());
-    const parent = parseTraceparent(header(request.headers.traceparent));
-    const context: TraceContext = {
-      requestId,
-      traceId: parent?.traceId ?? randomBytes(16).toString('hex'),
-      flags: parent?.flags ?? '01',
-    };
-    request.log = request.log.child(
-      requestId === request.id ? { traceId: context.traceId } : { traceId: context.traceId, requestId },
-    );
+    const context: TraceContext = { requestId, ...traceFor(request.raw) };
     void reply.header('x-request-id', requestId);
     storage.run(context, () => {
       resources.set(request, new AsyncResource('tributary-request'));

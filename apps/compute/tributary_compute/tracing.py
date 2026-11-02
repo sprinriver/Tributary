@@ -7,6 +7,7 @@ its W3C ``traceparent`` (https://www.w3.org/TR/trace-context/#traceparent-header
 import json
 import logging
 import re
+import sys
 import time
 import uuid
 from collections.abc import Awaitable, Callable
@@ -14,6 +15,12 @@ from collections.abc import Awaitable, Callable
 from fastapi import Request, Response
 
 logger = logging.getLogger("tributary_compute.requests")
+# Uvicorn configures only its own loggers: request lines get a stdout handler (one JSON object a line).
+if not logger.handlers:
+    _handler = logging.StreamHandler(sys.stdout)
+    _handler.setFormatter(logging.Formatter("%(message)s"))
+    logger.addHandler(_handler)
+logger.setLevel(logging.INFO)
 _REQUEST_ID = re.compile(r"^[A-Za-z0-9._:-]{8,128}$")
 _TRACEPARENT = re.compile(r"^00-([0-9a-f]{32})-[0-9a-f]{16}-[0-9a-f]{2}$")
 

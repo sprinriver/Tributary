@@ -44,6 +44,36 @@ data "aws_iam_policy_document" "key" {
     }
   }
   statement {
+    # CloudFront Origin Access Control reads the SPA from the SSE-KMS web bucket (this account's distributions only).
+    sid       = "CloudFrontReadsWebBucket"
+    actions   = ["kms:Decrypt"]
+    resources = ["*"]
+    principals {
+      type        = "Service"
+      identifiers = ["cloudfront.amazonaws.com"]
+    }
+    condition {
+      test     = "ArnLike"
+      variable = "aws:SourceArn"
+      values   = ["arn:aws:cloudfront::${data.aws_caller_identity.current.account_id}:distribution/*"]
+    }
+  }
+  statement {
+    # S3 Tables maintenance (compaction, unreferenced file removal) reads and writes encrypted table data.
+    sid       = "S3TablesMaintenance"
+    actions   = ["kms:Decrypt", "kms:GenerateDataKey"]
+    resources = ["*"]
+    principals {
+      type        = "Service"
+      identifiers = ["maintenance.s3tables.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
+  statement {
     sid       = "EventBridgeToSqs"
     actions   = ["kms:Decrypt", "kms:GenerateDataKey*"]
     resources = ["*"]

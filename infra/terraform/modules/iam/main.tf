@@ -34,9 +34,16 @@ variable "batch_job_definition_arn_prefix" {
   type        = string
 }
 
+variable "enable_healthomics" {
+  description = "Grant the API the HealthOmics run permissions."
+  type        = bool
+  default     = false
+}
+
 variable "omics_service_role_arn" {
-  description = "Role HealthOmics runs assume (the API passes it)."
+  description = "Role HealthOmics runs assume (the API passes it); empty when HealthOmics is off."
   type        = string
+  default     = ""
 }
 
 variable "batch_job_role_arn" {
@@ -139,18 +146,21 @@ data "aws_iam_policy_document" "api" {
     actions   = ["batch:TerminateJob"]
     resources = ["arn:aws:batch:${local.region}:${local.account}:job/*"]
   }
-  statement {
-    sid     = "Omics"
-    actions = ["omics:StartRun", "omics:GetRun", "omics:CancelRun", "omics:ListRunTasks", "omics:GetRunTask"]
-    resources = [
-      "arn:aws:omics:${local.region}:${local.account}:workflow/*",
-      "arn:aws:omics:${local.region}:${local.account}:run/*",
-    ]
+  dynamic "statement" {
+    for_each = var.enable_healthomics ? [1] : []
+    content {
+      sid     = "Omics"
+      actions = ["omics:StartRun", "omics:GetRun", "omics:CancelRun", "omics:ListRunTasks", "omics:GetRunTask"]
+      resources = [
+        "arn:aws:omics:${local.region}:${local.account}:workflow/*",
+        "arn:aws:omics:${local.region}:${local.account}:run/*",
+      ]
+    }
   }
   statement {
     sid       = "PassRunRoles"
     actions   = ["iam:PassRole"]
-    resources = [var.omics_service_role_arn, var.batch_job_role_arn]
+    resources = compact([var.omics_service_role_arn, var.batch_job_role_arn])
   }
   statement {
     sid     = "RunLogs"

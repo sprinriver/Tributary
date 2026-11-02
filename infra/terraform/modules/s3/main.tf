@@ -181,8 +181,9 @@ resource "aws_s3_bucket_logging" "this" {
 resource "aws_s3_bucket_lifecycle_configuration" "this" {
   for_each = local.buckets
   bucket   = aws_s3_bucket.this[each.key].id
+  # One rule per bucket: S3 rejects two rules with the same (empty) filter and the same action type.
   rule {
-    id     = "noncurrent-versions"
+    id     = "versions-uploads-exports"
     status = "Enabled"
     filter {}
     noncurrent_version_expiration {
@@ -191,18 +192,11 @@ resource "aws_s3_bucket_lifecycle_configuration" "this" {
     abort_incomplete_multipart_upload {
       days_after_initiation = 7
     }
-  }
-  dynamic "rule" {
-    for_each = each.key == "exports" ? [1] : []
-    content {
-      id     = "expire-exports"
-      status = "Enabled"
-      filter {}
-      expiration {
+    # Exports are temporary: they expire after 30 days by design.
+    dynamic "expiration" {
+      for_each = each.key == "exports" ? [1] : []
+      content {
         days = 30
-      }
-      abort_incomplete_multipart_upload {
-        days_after_initiation = 7
       }
     }
   }
