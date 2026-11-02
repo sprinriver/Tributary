@@ -32,3 +32,12 @@ def test_OPS_08_a_malformed_request_id_is_replaced() -> None:
     response = asyncio.run(_get("/healthz", {"x-request-id": "bad id"}))
     assert response.headers["x-request-id"] != "bad id"
     assert len(response.headers["x-request-id"]) == 36
+
+
+def test_OPS_08_request_lines_reach_stdout_without_test_logging_setup() -> None:
+    # Under uvicorn nothing configures the root logger: the request logger must write INFO lines itself.
+    import logging
+
+    logger = logging.getLogger("tributary_compute.requests")
+    assert logger.getEffectiveLevel() <= logging.INFO
+    assert any(isinstance(h, logging.StreamHandler) for h in logger.handlers)

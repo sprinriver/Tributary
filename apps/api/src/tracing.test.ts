@@ -67,6 +67,21 @@ describe('request IDs and trace context', () => {
     await app.close();
   });
 
+  it("OPS-08: every log line of a request carries its trace id, including Fastify's own completion line", async () => {
+    const lines: Record<string, unknown>[] = [];
+    const stream = { write: (line: string) => void lines.push(JSON.parse(line) as Record<string, unknown>) };
+    const api = buildApp({ server: { logger: { level: 'info', stream } } });
+    await api.inject({
+      method: 'GET',
+      url: '/healthz',
+      headers: { 'x-request-id': 'req-log12345', traceparent: INBOUND },
+    });
+    await api.close();
+    const mine = lines.filter((l) => l.reqId === 'req-log12345');
+    expect(mine.map((l) => l.msg)).toEqual(expect.arrayContaining(['incoming request', 'request completed']));
+    for (const line of mine) expect(line.traceId).toBe(TRACE);
+  });
+
   describe('in the API', () => {
     const app = buildApp();
     afterAll(() => app.close());
