@@ -1,6 +1,7 @@
 import AxeBuilder from '@axe-core/playwright';
 import { expect, test, type Page } from '@playwright/test';
-import { apiCall, signIn } from './helpers.ts';
+import { publishedExperiment } from './data.ts';
+import { signIn, uniqueName } from './helpers.ts';
 
 // Phase 22 accessibility pass (SPEC §9: WCAG 2.2 AA for forms, tables and navigation). Every page of the app,
 // with seeded data (`pnpm db:seed`); the list and form pages of the registry are also covered by REG-07.
@@ -18,15 +19,15 @@ async function expectNoSeriousViolations(page: Page, path: string) {
   return serious.map((v) => `${path}: ${v.id} — ${v.help} (${v.nodes.length})`);
 }
 
-type Item = { id: string; latest_release?: { id: string } | null; experiment_id?: string };
-
 test('OPS-09: every scientist page has no serious or critical accessibility violations', async ({ page }) => {
   test.setTimeout(180_000);
   await signIn(page, 'scientist');
-  const experiments = await apiCall<{ items: Item[] }>(page, 'GET', '/v1/experiments');
-  const datasets = await apiCall<{ items: Item[] }>(page, 'GET', '/v1/datasets');
-  const experiment = experiments.body.items[0]!.id;
-  const release = datasets.body.items.find((d) => d.latest_release)!.latest_release!.id;
+  // Its own published experiment and release: the suite runs in parallel, so no other test's data is assumed.
+  const made = await publishedExperiment(page, uniqueName('A11Y'), [
+    { file: 'toptable.tsv', importer: 'limma_toptable', contrast: true },
+  ]);
+  const experiment = made.experiment;
+  const release = made.releases[0]!;
   const paths = [
     '/',
     `/experiments/${experiment}`,
