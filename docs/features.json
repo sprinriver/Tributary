@@ -89,5 +89,6 @@
   {"id": "OPS-04", "phase": 22, "parity": "new", "description": "Load test meets SPEC section 9 targets or gaps documented", "verify": "pnpm run load:test", "passes": false},
   {"id": "OPS-05", "phase": 22, "parity": "new", "description": "Security review findings resolved; SBOM and licence scan clean", "verify": "pnpm run licence:scan", "passes": false},
   {"id": "OPS-06", "phase": 22, "parity": "new", "description": "Backup and restore rehearsed; runbook written", "verify": "test -f docs/RUNBOOK.md", "passes": false},
-  {"id": "OPS-07", "phase": 22, "parity": "new", "description": "User and admin guides with screenshots; demo script; v2.0.0 tag", "verify": "test -f docs/USER_GUIDE.md && git rev-parse -q --verify refs/tags/v2.0.0", "passes": false}
+  {"id": "OPS-07", "phase": 22, "parity": "new", "description": "User and admin guides with screenshots; demo script; v2.0.0 tag", "verify": "test -f docs/USER_GUIDE.md && git rev-parse -q --verify refs/tags/v2.0.0", "passes": false},
+  {"id": "OPS-08", "phase": 22, "parity": "new", "description": "Request IDs and W3C trace context propagate from the API to query and compute and appear in every service's logs", "verify": "pnpm run test:api OPS-08 && pnpm run test:query OPS-08 && pnpm run test:compute -k OPS_08", "passes": false}
 ]
