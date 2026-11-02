@@ -99,6 +99,9 @@ docker run --rm -p 7860:7860 -e PUBLIC_URL=http://localhost:7860 -e TRIBUTARY_AD
 - **A service stopped:** the container stops and Hugging Face restarts it. The last lines of each service's log
   are printed in the Space's logs.
 
+## If a free Space isn't available
+Use the same image on a free Oracle Cloud VM: [`DEPLOY_ORACLE.md`](DEPLOY_ORACLE.md).
+
 ## Paid alternative
 For a demo whose data persists, with separate services, see [`DEPLOY_RENDER.md`](DEPLOY_RENDER.md) (Render paid
 plans).

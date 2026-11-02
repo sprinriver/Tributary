@@ -4,7 +4,8 @@
 upload raw data, launch Nextflow pipelines, import tool outputs into versioned dataset releases, then explore,
 chart, compare and search the results. Every change is audited, and lineage runs from raw file to chart.
 Open source under the [Apache License 2.0](LICENSE). Try a **free public demo** on
-[Hugging Face Spaces](docs/DEPLOY_HUGGINGFACE.md), host it on [Render](docs/DEPLOY_RENDER.md) (paid plans), or
+[Hugging Face Spaces](docs/DEPLOY_HUGGINGFACE.md) or a free [Oracle Cloud VM](docs/DEPLOY_ORACLE.md), host it on
+[Render](docs/DEPLOY_RENDER.md) (paid plans), or
 install it in your own AWS account.
 
 > "Tributary" is a codename. Status: Phases 0–20 of [`docs/PLAN.md`](docs/PLAN.md) are complete. See
@@ -205,6 +206,8 @@ docs              spec, architecture, plan, progress, ADRs
 - **Free public demo, on Hugging Face Spaces:** one container with every service. Data resets on restart.
   - Create a Docker Space and add `deploy/huggingface/Dockerfile` and `README.md`. Follow
     [`docs/DEPLOY_HUGGINGFACE.md`](docs/DEPLOY_HUGGINGFACE.md).
+- **Free public demo, on an Oracle Cloud Always Free VM:** the same image behind Caddy (HTTPS), set up by a
+  cloud-init script. Follow [`docs/DEPLOY_ORACLE.md`](docs/DEPLOY_ORACLE.md).
 - **Render (paid; a persistent demo or a small team):** [`render.yaml`](render.yaml) defines all seven services. Secrets are
   generated, migrations and demo data run on deploy, and sign-in is bundled (Keycloak under `/auth`). Follow
   [`docs/DEPLOY_RENDER.md`](docs/DEPLOY_RENDER.md).
