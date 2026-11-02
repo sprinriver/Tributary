@@ -25,14 +25,14 @@ variable "noncurrent_days" {
 
 resource "aws_s3tables_table_bucket" "this" {
   name = "${var.name}-tables"
-  encryption_configuration {
+  encryption_configuration = {
     sse_algorithm = "aws:kms"
     kms_key_arn   = var.kms_key_arn
   }
-  maintenance_configuration {
-    iceberg_unreferenced_file_removal {
+  maintenance_configuration = {
+    iceberg_unreferenced_file_removal = {
       status = "enabled"
-      settings {
+      settings = {
         unreferenced_days = var.unreferenced_days
         non_current_days  = var.noncurrent_days
       }
