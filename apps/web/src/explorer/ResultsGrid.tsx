@@ -187,20 +187,25 @@ export function ResultsGrid({
             <span role="status">Exporting…</span>
           ))}
       </div>
-      {/* Pages are 25 rows: the grid takes their height instead of scrolling inside the page. */}
-      <div>
-        <AgGridReact<Row>
-          rowData={result?.rows ?? []}
-          columnDefs={colDefs}
-          onSortChanged={sortChanged}
-          defaultColDef={{ resizable: true, sortable: true, minWidth: 110 }}
-          suppressMultiSort
-          enableCellTextSelection
-          // Every column in the DOM: wide joined results stay readable by assistive tech and searchable.
-          suppressColumnVirtualisation
-          domLayout="autoHeight"
-        />
-      </div>
+      {/* Pages are 25 rows: the grid takes their height instead of scrolling inside the page.
+          Before the first query there are no columns: a header row without column headers is invalid ARIA. */}
+      {colDefs.length === 0 ? (
+        <p className="muted">Run a query to see rows.</p>
+      ) : (
+        <div>
+          <AgGridReact<Row>
+            rowData={result?.rows ?? []}
+            columnDefs={colDefs}
+            onSortChanged={sortChanged}
+            defaultColDef={{ resizable: true, sortable: true, minWidth: 110 }}
+            suppressMultiSort
+            enableCellTextSelection
+            // Every column in the DOM: wide joined results stay readable by assistive tech and searchable.
+            suppressColumnVirtualisation
+            domLayout="autoHeight"
+          />
+        </div>
+      )}
     </section>
   );
 }
