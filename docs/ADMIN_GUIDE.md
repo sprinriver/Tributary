@@ -19,6 +19,7 @@ row.
 - [Audit log](#audit-log)
 - [Search index](#search-index)
 - [The assistant](#the-assistant)
+- [Onboarding legacy data](#onboarding-legacy-data)
 - [Checklist for a new installation](#checklist-for-a-new-installation)
 
 ## Access: who can do what
@@ -105,6 +106,29 @@ Search updates as things change. After a bulk load or a restore, rebuild it with
 - **Same permissions, approved writes:** it uses the user's own permissions, and any write it proposes waits for
   that user's approval.
 - **Audited:** every tool call is in the audit log.
+
+## Onboarding legacy data
+Historical data on a shared drive or another bucket can be registered in bulk (API only for now).
+
+1. **Copy the files:** put the data under a linkable prefix (`S3_LINKABLE_PREFIXES`, default `incoming/`), keeping
+   its folder layout.
+2. **Describe the layout:** use path patterns relative to the prefix. Tokens are `{experiment}` (required),
+   `{sample}`, any other name (it becomes a manifest column), and `{*}` (ignored). For example:
+   - `{experiment}/raw/{sample}.raw` with role `raw`
+   - `{experiment}/processed/report.pg_matrix.tsv` with role `processed` and importer `diann_pg_matrix`
+3. **Dry run:** `POST /v1/onboarding/plan` shows the experiments, the inferred sample manifests and each file's
+   role. Objects no pattern matches are listed and never registered. Nothing is written.
+4. **Run:** `POST /v1/onboarding/runs` (with `X-Change-Reason`). It creates or reuses each experiment, adds the
+   samples it does not have yet, links the files (checksums run in the background) and imports matching files
+   once they pass QC.
+   - Each call handles `max_experiments` experiments.
+   - `POST /v1/onboarding/runs/<id>/resume` continues, and retries anything that failed.
+5. **Report:** `GET /v1/onboarding/runs/<id>` is the migration report: counts, failures with their reasons,
+   unmatched objects, and every file's checksum, size and QC status.
+
+Everything a run does goes through the normal endpoints as the person running it, with the same permissions,
+validation and audit rows. Inferred manifests are drafts: review them, fix the cells flagged with errors, then
+publish.
 
 ## Checklist for a new installation
 1. **Identity provider:** configure the OIDC client and group claim, and map groups to roles (**Access**).

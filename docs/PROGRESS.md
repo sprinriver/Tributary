@@ -1187,3 +1187,118 @@ Entry template:
   - **Alarms:** CloudWatch alarms are listed in `docs/RUNBOOK.md` but are not in Terraform.
   - **Production database TLS:** use `verify-full` with the RDS CA bundle.
 - Commits: cf618dd, a6c4ca8, aa17219
+
+## 2026-11-02 — Phase 22: Hardening and v2.0 release — partial
+- Built:
+  - **Observability (OPS-08):** request ids and W3C trace context go from api to query and compute.
+    - A valid inbound `x-request-id` is kept, else a UUID is used; it is echoed in the response and logged as `reqId`.
+    - `traceparent` is continued or started; `traceId` is on every request log line through Fastify's
+      `childLoggerFactory`.
+    - Only the internal services receive the headers (a fetch wrapper with an AsyncLocalStorage context that
+      survives body parsing).
+    - Compute logs one JSON line per request to stdout.
+    - No new dependencies.
+  - **Load test (OPS-04):** `pnpm run load:test` (`scripts/ops/load-test.mjs`, dependency-free), with 8 concurrent
+    users against the full stack.
+  - **Restore rehearsal (OPS-06):** `pnpm run ops:rehearse-restore` and `docs/RUNBOOK.md` (backups, restore,
+    alarms, logs, routine operations, incident checklist).
+  - **Accessibility (OPS-09):** an axe (WCAG 2.2 AA) e2e test over every page, and two fixes it found:
+    - the release preview now scrolls by keyboard;
+    - the Explorer no longer shows an empty grid header before the first query.
+  - **Docs:** `docs/USER_GUIDE.md`, `docs/ADMIN_GUIDE.md`, `docs/DEMO.md` and `CHANGELOG.md`.
+- Load test, local, 4 vCPU, seeded data, 8 users × 10 requests after one warm-up:
+
+  | Scenario | p50 ms | p95 ms | SPEC §9 target p95 |
+  |---|---:|---:|---|
+  | Explorer, one experiment: filter + sort + page | 65 | 224 | < 2,000 |
+  | Cross-experiment query | 111 | 167 | < 8,000 |
+  | Join with reference table | 85 | 208 | < 3,000 |
+  | Volcano render (figure JSON) | 33 | 51 | interactive (client) |
+  | Heatmap, rows + columns clustered | 97 | 182 | < 10,000 |
+  | Clustering 2,000 × 100, both axes (compute) | 392 | 493 | < 10,000 |
+
+  - **Gap:** seeded data is small. Engine scaling to 5M–50M rows is `pnpm bench:query` (Phase 12). An in-region
+    run waits for a sandbox AWS account.
+- Security:
+  - **Reviews:**
+    - `/security-review` on the branch diff: no findings at or above the reporting bar (noted as hardening: dev
+      `no-verify` DB TLS, no ALB origin secret).
+    - `/code-review high`: 10 findings, all fixed in cfa9a92 and b38cba0:
+      - CloudFront→ALB certificate name
+      - KMS for OAC and S3 Tables
+      - overlapping S3 lifecycle rules
+      - ECR expiring deployed tags
+      - aws.yml pipefail and immutable re-runs
+      - trace ids missing on Fastify's own log lines
+      - compute logs dropped under uvicorn
+      - required tags
+      - S3 Tables CMK and retention
+      - HealthOmics behind a flag
+      - exact action pins
+  - **Ticketed:** `pnpm audit --prod` reports 6 advisories (4 high, 2 moderate), all in
+    `@modelcontextprotocol/sdk` 1.30.0 and fixed in 1.32.0 (published 2026-10-02, under the 90-day rule).
+    - Exposure is limited: bodies are parsed and size-limited by Fastify (1 MB), the transport is per request, and
+      the SDK's OAuth client and bearer-auth helpers are not used.
+    - **Needs the owner's approval to upgrade.**
+  - **Licence scan:** 196 dependencies, all allowed. SBOM in CI.
+- Decisions:
+  - **Observability without the OTel SDK:** dependency-free id and trace propagation. Exporting spans to a
+    collector needs `@opentelemetry/*` packages, which need approval.
+  - **New tracker ids:** OPS-08 (trace propagation) and OPS-09 (accessibility pass) were added to
+    `features.json`, because OPS-04…07 did not cover them.
+- Dependencies added: none.
+- Test changes, disclosed:
+  - The OPS-08 compute test's `caplog` fixture is typed instead of using a `noqa` (ruff RUF100).
+  - Prettier formatting only on the OPS-08 tests.
+  - A log-coverage test was added after the review.
+- Evidence:
+  - `pnpm check` ✓ (exit 0; api 212 tests).
+  - `pnpm e2e OPS-09` ✓ and `pnpm e2e EXP-0` ✓ (local).
+  - CI `infra` ✓ (checkov 463 passed, 0 failed).
+  - Screenshots in `artifacts/phase-22/`.
+- Gaps and follow-ups:
+  - **Release:** tag `v2.0.0` after merge (owner to confirm). OPS-07 stays false until then.
+  - **AWS:** an in-region benchmark and a human install and restore rehearsal need a sandbox account.
+  - **Approvals:** the OTel SDK and the MCP SDK 1.32.x upgrade.
+  - **Unrelated flake:** CI e2e RES-02 failed once with "Failed to fetch" on a commit that changed only Terraform;
+    it passes 3/3 locally and passed on the next CI run.
+- Commits: a79a0b0, c34df15, e8866b4, 3c17a98, 74b68d6, 818e83d, 4d3e219, 94be55a, cfa9a92, b38cba0
+
+## 2026-11-02 — Phase 23: Legacy data onboarding — done (relational extraction deferred)
+- Built (ING-06):
+  - **Plan:** `POST /v1/onboarding/plan` is a dry run over a linkable prefix.
+    - Path patterns (`{experiment}`, `{sample}`, other tokens become manifest columns, `{*}` is ignored) give
+      the experiments, inferred sample manifests (`sample_key`, path tokens, and `raw_file`/`instrument_run` for
+      raw files) and file roles.
+    - Unmatched objects are reported. Conflicting values for the same sample give warnings.
+  - **Runs:** `POST /v1/onboarding/runs` and `…/resume` execute the plan through the API's own routes, in
+    process, as the caller. Authorisation, validation, immutability and audit are those of the normal endpoints.
+    - `max_experiments` per call; imports wait for QC; failed items are retried on resume.
+    - Existing experiments, samples, files and releases are reused, never duplicated or overwritten.
+  - **Report:** `GET /v1/onboarding/runs/:id` gives counts per kind and status, failures with reasons, unmatched
+    objects, totals, and each file's sha256, size and ingest status.
+  - **Schema:** migration `0020_onboarding`.
+  - **Docs:** a section in `docs/ADMIN_GUIDE.md`.
+- Decisions (and why):
+  - **No new write paths:** running through the existing routes in process means nothing bypasses the rules
+    already enforced there.
+  - **Nothing guessed:** inference comes only from the caller's patterns, and inferred manifests are drafts with
+    their cell errors stored, for review before publishing.
+- Dependencies added: none.
+- Test changes, disclosed:
+  - DB-01's expected table list gained `onboarding_item` and `onboarding_run`.
+  - The ING-06 retry assertion now follows a third resume. The first import attempt happens at the second
+    resume, once the file has passed QC. `attempts = 2` is still asserted.
+- Evidence:
+  - `pnpm run test:api ING-06` ✓ 6/6, on a synthetic layout: 2 experiments, 14 Thermo RAW files, 2 DIA-NN
+    matrices (one deliberately broken), and an unmatched notes file.
+  - `pnpm check` ✓.
+- Gaps and follow-ups:
+  - **Relational extraction is deferred.** Extracting tables through DuckDB's postgres/mysql scanners into
+    reference datasets is not built: this environment cannot download DuckDB extensions (extensions.duckdb.org
+    returns 403 through the proxy), so it could not be tested.
+    - **Options for the owner:** allow that host, or bundle the extensions in the query image.
+  - **No UI for onboarding yet:** it is API only.
+  - **Linking by key:** a file whose key is a prefix of another object's key is refused, with a reason, rather
+    than linked.
+- Commits: e55e0d0, 0f5ed21, 2014c8d, 2a0718c

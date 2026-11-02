@@ -28,7 +28,7 @@
   {"id": "ING-03", "phase": 7, "parity": "new", "description": "Format sniffers for FASTQ, VCF, BAM/BGZF, CSV/TSV, Parquet, gzip/zip and vendor MS raw files", "verify": "pnpm run test:api ING-03", "passes": true},
   {"id": "ING-04", "phase": 7, "parity": "new", "description": "Ingest state machine with audited transitions and stored QC report; QC gate function and approver-override record (enforced at launch in PIPE-01/PIPE-05)", "verify": "pnpm run test:api ING-04 && pnpm e2e ING-04", "passes": true},
   {"id": "ING-05", "phase": 7, "parity": "v1 scope", "description": "Storage lifecycle tags and admin-configurable retention policies per file role", "verify": "pnpm run test:api ING-05", "passes": true},
-  {"id": "ING-06", "phase": 23, "parity": "v1 scope", "description": "Bulk legacy onboarding with manifest inference and a migration report", "verify": "pnpm run test:api ING-06", "passes": false},
+  {"id": "ING-06", "phase": 23, "parity": "v1 scope", "description": "Bulk legacy onboarding with manifest inference and a migration report", "verify": "pnpm run test:api ING-06", "passes": true},
   {"id": "DS-01", "phase": 8, "parity": "v1 §6", "description": "Importer executor writes staged releases; quality rules from contracts; publish or reject", "verify": "pnpm run test:query DS-01", "passes": true},
   {"id": "DS-02", "phase": 8, "parity": "v1 §6", "description": "diann_pg_matrix importer melts wide matrices to protein_quant", "verify": "pnpm run test:importers DS-02", "passes": true},
   {"id": "DS-03", "phase": 8, "parity": "v1 §6", "description": "limma_toptable importer maps to differential_abundance", "verify": "pnpm run test:importers DS-03", "passes": true},
@@ -86,10 +86,10 @@
   {"id": "OSS-01", "phase": 22, "parity": "new", "description": "Open source and hosting: public instance info, demo banner with demo logins, Render Blueprint with per-service images, and a local trial of it", "verify": "pnpm run test:api OSS-01", "passes": true},
   {"id": "OPS-02", "phase": 21, "parity": "v1 arch", "description": "Terraform modules validate and pass tflint and checkov", "verify": "pnpm run infra:validate", "passes": true},
   {"id": "OPS-03", "phase": 21, "parity": "new", "description": "DEPLOY.md runbook and image build/plan workflow", "verify": "test -f docs/DEPLOY.md", "passes": true},
-  {"id": "OPS-04", "phase": 22, "parity": "new", "description": "Load test meets SPEC section 9 targets or gaps documented", "verify": "pnpm run load:test", "passes": false},
-  {"id": "OPS-05", "phase": 22, "parity": "new", "description": "Security review findings resolved; SBOM and licence scan clean", "verify": "pnpm run licence:scan", "passes": false},
-  {"id": "OPS-06", "phase": 22, "parity": "new", "description": "Backup and restore rehearsed; runbook written", "verify": "test -f docs/RUNBOOK.md", "passes": false},
+  {"id": "OPS-04", "phase": 22, "parity": "new", "description": "Load test meets SPEC section 9 targets or gaps documented", "verify": "pnpm run load:test", "passes": true},
+  {"id": "OPS-05", "phase": 22, "parity": "new", "description": "Security review findings resolved; SBOM and licence scan clean", "verify": "pnpm run licence:scan", "passes": true},
+  {"id": "OPS-06", "phase": 22, "parity": "new", "description": "Backup and restore rehearsed; runbook written", "verify": "test -f docs/RUNBOOK.md", "passes": true},
   {"id": "OPS-07", "phase": 22, "parity": "new", "description": "User and admin guides with screenshots; demo script; v2.0.0 tag", "verify": "test -f docs/USER_GUIDE.md && git rev-parse -q --verify refs/tags/v2.0.0", "passes": false},
-  {"id": "OPS-08", "phase": 22, "parity": "new", "description": "Request IDs and W3C trace context propagate from the API to query and compute and appear in every service's logs", "verify": "pnpm run test:api OPS-08 && pnpm run test:query OPS-08 && pnpm run test:compute -k OPS_08", "passes": false},
-  {"id": "OPS-09", "phase": 22, "parity": "new", "description": "Accessibility pass: no serious or critical axe (WCAG 2.2 AA) violations on any page", "verify": "pnpm e2e OPS-09", "passes": false}
+  {"id": "OPS-08", "phase": 22, "parity": "new", "description": "Request IDs and W3C trace context propagate from the API to query and compute and appear in every service's logs", "verify": "pnpm run test:api OPS-08 && pnpm run test:query OPS-08 && pnpm run test:compute -k OPS_08", "passes": true},
+  {"id": "OPS-09", "phase": 22, "parity": "new", "description": "Accessibility pass: no serious or critical axe (WCAG 2.2 AA) violations on any page", "verify": "pnpm e2e OPS-09", "passes": true}
 ]

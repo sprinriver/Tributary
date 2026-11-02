@@ -4,7 +4,10 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
-- Phase 23: bulk onboarding of legacy data (ING-06).
+- Bulk onboarding of legacy data (ING-06):
+  - Path patterns turn a folder layout into experiments, inferred sample manifests and file roles.
+  - Resumable batch runs, with imports that wait for QC.
+  - A migration report with counts, failures and checksums.
 
 ## [2.0.0] — 2026-11
 The first release of the rebuilt platform ("v2"). It covers the v1 scope (`docs/REFERENCE_V1.md`) and adds
