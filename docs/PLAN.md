@@ -383,3 +383,14 @@ Definition of done:
 - [x] Watch from a protein page and see the alert after a publish (e2e, screenshots in artifacts/phase-26/)
 - [x] `pnpm check` exits 0
 
+## Phase 27 — Cross-experiment QC and batch effects
+Status: in progress
+Goal: See at a glance whether instrument performance drifts and whether runs cluster by batch rather than biology.
+Inspired by: MultiQC, PTXQC and the QC views of proteomics core facilities (ideas only).
+Features: QCD-01 … QCD-03
+In scope: `POST /v1/qc/overview` over the latest published protein_quant release of each readable experiment (newest N); per run IDs (intensity > 0), % missing against the experiment's protein groups, median log2 intensity (apps/compute); runs with IDs < 0.5 × their experiment's median flagged; PCA (apps/compute) of unflagged runs × protein groups quantified in all of them, coloured by experiment, plate, condition or date; every transformation listed; QC page with a table alternative.
+Definition of done:
+- [ ] API tests for metrics, flagging, PCA input and program scoping
+- [ ] QC page shows trend, flagged run and PCA (e2e, screenshots in artifacts/phase-27/)
+- [ ] `pnpm check` exits 0
+
