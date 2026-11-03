@@ -797,6 +797,47 @@ export interface TargetAnnotation {
   value: string | null;
 }
 
+export interface TriageEvent {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  from_value: string | null;
+  id: Generated<string>;
+  item_id: string;
+  tenant_id: string;
+  text: string | null;
+  to_value: string | null;
+  type: string;
+}
+
+export interface TriageEvidence {
+  adj_p_value: number | null;
+  contrast_label: string | null;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  item_id: string;
+  log2_fc: number | null;
+  release_id: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface TriageItem {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  key: string;
+  kind: string;
+  label: string | null;
+  owner_id: string | null;
+  program_id: string;
+  status: Generated<string>;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface WebhookDelivery {
   attempts: Generated<number>;
   created_at: Generated<Timestamp>;
@@ -879,6 +920,9 @@ export interface DB {
   search_document: SearchDocument;
   search_embedding: SearchEmbedding;
   target_annotation: TargetAnnotation;
+  triage_event: TriageEvent;
+  triage_evidence: TriageEvidence;
+  triage_item: TriageItem;
   webhook_delivery: WebhookDelivery;
   webhook_subscription: WebhookSubscription;
 }
