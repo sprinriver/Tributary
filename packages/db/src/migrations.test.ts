@@ -10,6 +10,7 @@ const TABLES = [
   'access_token',
   'ai_conversation',
   'ai_message',
+  'alert',
   'app_group',
   'app_session',
   'app_setting',
@@ -55,6 +56,7 @@ const TABLES = [
   'triage_event',
   'triage_evidence',
   'triage_item',
+  'watch',
   'webhook_delivery',
   'webhook_subscription',
 ];
