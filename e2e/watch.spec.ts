@@ -4,7 +4,9 @@ import { signIn, uniqueName } from './helpers.ts';
 
 const SHOTS = 'artifacts/phase-26';
 
-test('WAT-03: watch a protein, publish a release with a hit for it, see and clear the alert', async ({ page }) => {
+test('WAT-03: watch a protein, publish a release with a hit for it, see and clear the alert', async ({
+  page,
+}) => {
   test.setTimeout(150_000);
   // SYNP0053 is the strongest hit of the demo topTable.
   await signIn(page, 'scientist', '/proteins/SYNP0053');
