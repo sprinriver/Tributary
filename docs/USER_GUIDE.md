@@ -160,6 +160,26 @@ Below the results, the **Chart** panel plots the current query.
 ![Results](../artifacts/phase-16/results-page.png)
 ![Compare](../artifacts/phase-16/compare.png)
 
+## Pathway enrichment
+On an experiment's **Results** page, **Pathway enrichment** asks which gene sets (GO, Reactome or your team's own) are
+over-represented among a contrast's hits.
+1. **Choose:**
+   - the **gene sets**;
+   - the **direction** (up, down or both);
+   - the **hit thresholds** (adjusted p from the source tool, |log2 FC|);
+   - the **set sizes**;
+   - the **universe:** every tested identifier, or only those that are in a gene set.
+2. **Run enrichment.**
+3. **Read the results:**
+   - **The dot plot:** −log10 of the gene set's adjusted p. The dashed line is a term FDR of 0.05. Dot size is the
+     number of hits in the set, and colour is the fold enrichment.
+   - **The table:** hits in each set, fold enrichment, p and adjusted p.
+   - **What was counted, and how:** untested features left out, protein groups with several genes, species.
+
+The test is one-sided hypergeometric over-representation with Benjamini–Hochberg adjustment across the sets tested.
+
+![Pathway enrichment](../artifacts/phase-24/enrichment.png)
+
 ## Lineage and audit
 - **Lineage:** shows where a release or chart came from: raw file → pipeline run (with its revision) → release →
   saved chart.

@@ -4,6 +4,11 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Pathway enrichment (ENR-01…04):
+  - Over-representation analysis of a contrast's hits against GO, Reactome or in-house gene sets (imported from
+    GMT), with a dot plot and table on the results page.
+  - The provenance records the universe, thresholds, protein-group handling and the source release of the gene
+    sets.
 - Bulk onboarding of legacy data (ING-06):
   - Path patterns turn a folder layout into experiments, inferred sample manifests and file roles.
   - Resumable batch runs, with imports that wait for QC.

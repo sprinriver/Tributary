@@ -107,6 +107,22 @@ Search updates as things change. After a bulk load or a restore, rebuild it with
   that user's approval.
 - **Audited:** every tool call is in the audit log.
 
+## Gene sets for pathway enrichment
+- **Import:** a system admin imports gene-set collections with `POST /api/v1/gene-set-collections` and a change
+  reason.
+- **What to send:**
+  - `name`;
+  - `source` and `source_release` (for example `Reactome` and `94`);
+  - `species` (an NCBITaxon CURIE);
+  - `id_type` (`gene_symbol` or `uniprot_accession`);
+  - the GMT text, one set per line: `id<TAB>description<TAB>member…`.
+- **Licences:**
+  - Reactome publishes GMT files (CC0).
+  - GO sets (CC BY 4.0) can be exported to GMT with common tools.
+  - MSigDB's licence restricts use, so check yours before importing it.
+- **Collections never change:** import a newer source release as a new collection. Every import is audited.
+- **Demo:** the demo data includes "Demo modules (synthetic)", 20 invented modules.
+
 ## Onboarding legacy data
 Historical data on a shared drive or another bucket can be registered in bulk (API only for now).
 

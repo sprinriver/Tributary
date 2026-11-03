@@ -1307,3 +1307,50 @@ Entry template:
     data created by other tests.
   - **Fix:** the test now creates its own published experiment and release (56601be). The pages and checks are
     unchanged, and it passes locally (2/2).
+
+## 2026-11-03 — Phase 24: Pathway enrichment — done
+- Built:
+  - **Compute:** `/stats/enrichment`, ORA with a one-sided hypergeometric test from log sf, a p floor and BH across
+    the tested sets (ENR-01).
+  - **Gene-set collections:** migration 0021 and a system-admin GMT import, audited, with line-numbered errors
+    (ENR-02).
+  - **`POST /v1/enrichment`:**
+    - hit selection by source adjusted p and fold change, with a strict sign test;
+    - a tested-only universe, or the annotated option;
+    - species check, isoform normalisation, protein-group counters, and full provenance (ENR-03).
+  - **Results page:** a "Pathway enrichment" panel with a dot plot (term-FDR line) and table.
+  - **Demo data:** `reference/gene_sets.gmt` (20 invented modules, on their own RNG stream, so no other fixture
+    changed), seeded as "Demo modules (synthetic)" (ENR-04).
+- Decisions (and why): ADR 0027.
+  - ORA now, GSEA later.
+  - The default universe is the measured and tested features; the clusterProfiler-style annotated universe is an
+    option.
+  - GO (CC BY) and Reactome (CC0) are allowed; MSigDB is not bundled, because of its licence.
+- Science review (omics-reviewer): 11 findings. Fixed:
+  - untested features were in the universe;
+  - silent truncation of large releases (the contrast is now filtered in the query, and a partial read is a 422);
+  - multi-gene hit groups and conflicting identifiers are now counted;
+  - species mismatch is refused and isoforms are stripped;
+  - the universe choice is offered and recorded;
+  - p underflow;
+  - the term-FDR line had used the hit threshold;
+  - the source adjustment method is now recorded;
+  - strict sign test;
+  - labels;
+  - the error field mapping.
+- Dependencies added: none.
+- Test changes, disclosed in their own commits:
+  - DB-01 table list: the gene-set tables.
+  - The ENR-01 test file runs in pyright basic mode (as `test_stats.py` does, for SciPy).
+  - The ENR-03 untested test counts every gene of a two-gene group.
+  - The ENR-04 e2e expects the reviewed provenance wording.
+  - `publishedDaRelease` (test helper) gained optional bytes and species.
+- Evidence: `pnpm check` ✓ (api 227, compute 86), and `pnpm e2e ENR-04` ✓ and `OPS-09` ✓ locally.
+  - The screenshot is `artifacts/phase-24/enrichment.png`.
+  - With random demo modules, nothing passes the term FDR, which is the honest result.
+- Gaps and follow-ups:
+  - GSEA (rank-based).
+  - Term redundancy reduction.
+  - Network view (needs a graph-renderer dependency, so approval first).
+  - A UI for importing gene sets (API only today).
+- Commits: 6d73c40 … e73f300

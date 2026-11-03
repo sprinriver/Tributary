@@ -350,14 +350,14 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 24 — Pathway enrichment
-Status: in progress
+Status: done (2026-11-03)
 Goal: From a contrast's hits to the biology: over-representation analysis against GO, Reactome or in-house gene sets.
 Inspired by: Perseus, g:Profiler, STRING (ideas only; no code or data copied).
 Features: ENR-01 … ENR-04
 In scope: `/stats/enrichment` in apps/compute (hypergeometric, BH, measured-features background); gene-set collections (GMT import, versioned by source release; GO is CC BY 4.0, Reactome CC0 — MSigDB is not used because of its licence); `POST /v1/enrichment` for a DA release and contrast with provenance; results-page panel (dot plot + table); synthetic demo gene sets.
 Definition of done:
-- [ ] Statistics match SciPy and a hand calculation (pytest)
-- [ ] API selects hits and background as documented and records every transformation
-- [ ] Results page shows enrichment for a demo contrast (e2e, screenshots in artifacts/phase-24/)
-- [ ] `pnpm check` exits 0
+- [x] Statistics match SciPy and a hand calculation (pytest)
+- [x] API selects hits and background as documented and records every transformation
+- [x] Results page shows enrichment for a demo contrast (e2e, screenshots in artifacts/phase-24/)
+- [x] `pnpm check` exits 0
 
