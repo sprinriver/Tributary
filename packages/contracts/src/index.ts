@@ -17,6 +17,7 @@ export * from './api/webhooks.ts';
 export * from './api/onboarding.ts';
 export * from './api/enrichment.ts';
 export * from './api/triage.ts';
+export * from './api/watch.ts';
 export * from './api/instance.ts';
 export * from './api/registry.ts';
 export * from './api/routes.ts';

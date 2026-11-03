@@ -372,3 +372,14 @@ Definition of done:
 - [x] Board page used as a scientist would (e2e, screenshots in artifacts/phase-25/), accessible without drag and drop
 - [x] `pnpm check` exits 0
 
+## Phase 26 — Watchlists and alerts
+Status: in progress
+Goal: Scientists hear about new data on what they care about without searching.
+Inspired by: PubMed saved-search alerts, GitHub "watch" (ideas only).
+Features: WAT-01 … WAT-03
+In scope: personal watches (protein, gene, compound); on every release publish (UI or pipeline), alerts for watchers who can read the release's program when it holds a hit (adjusted p ≤ 0.05 and |log2 FC| ≥ 1; compounds: present in a dose-response release); unique per watch, release and contrast; alerts list, read, read all; Watch button on protein and compound pages; alerts in the bell menu.
+Definition of done:
+- [ ] API tests for watches, alert creation (readers only, hits only, once) and reading
+- [ ] Watch from a protein page and see the alert after a publish (e2e, screenshots in artifacts/phase-26/)
+- [ ] `pnpm check` exits 0
+
