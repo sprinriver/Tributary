@@ -14,6 +14,7 @@ import { AI_ROUTES } from './routes-ai.ts';
 import { WEBHOOK_ROUTES } from './routes-webhooks.ts';
 import { ONBOARDING_ROUTES } from './routes-onboarding.ts';
 import { ENRICHMENT_ROUTES } from './routes-enrichment.ts';
+import { TRIAGE_ROUTES } from './routes-triage.ts';
 import { VIEW_ROUTES } from './routes-views.ts';
 import type { ApiRoute } from './route.ts';
 import {
@@ -293,6 +294,7 @@ export const API_ROUTES = {
   ...WEBHOOK_ROUTES,
   ...ONBOARDING_ROUTES,
   ...ENRICHMENT_ROUTES,
+  ...TRIAGE_ROUTES,
 } as const satisfies Record<string, ApiRoute>;
 
 export type ApiOperation = keyof typeof API_ROUTES;

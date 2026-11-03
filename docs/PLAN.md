@@ -361,3 +361,14 @@ Definition of done:
 - [x] Results page shows enrichment for a demo contrast (e2e, screenshots in artifacts/phase-24/)
 - [x] `pnpm check` exits 0
 
+## Phase 25 — Hit triage board
+Status: in progress
+Goal: Turn results into decisions that keep their reasons: a per-program board of proteins and compounds marked advance, watch or drop.
+Inspired by: CDD Vault, Dotmatics Vortex, kanban boards (ideas only).
+Features: TRI-01 … TRI-04
+In scope: triage items (unique per program, kind and key) with owners, comments and evidence snapshots from releases; status changes need a reason; append-only history; audit rows; board page and Add to triage on results, protein and compound pages.
+Definition of done:
+- [ ] API tests for creation, scoping, decisions with reasons, owners, comments and evidence
+- [ ] Board page used as a scientist would (e2e, screenshots in artifacts/phase-25/), accessible without drag and drop
+- [ ] `pnpm check` exits 0
+
