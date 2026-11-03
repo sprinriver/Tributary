@@ -23,7 +23,9 @@ test('TRI-04: add a protein to the triage board, decide with a reason, comment â
   await expect(item.getByRole('button', { name: 'Save decision' })).toBeDisabled(); // a reason is required
   await item.getByLabel('Reason').fill('Consistent across two experiments');
   await item.getByRole('button', { name: 'Save decision' }).click();
-  const column = page.getByRole('region', { name: new RegExp(`^${next === 'advance' ? 'Advance' : 'Watch'} \\(`) });
+  const column = page.getByRole('region', {
+    name: new RegExp(`^${next === 'advance' ? 'Advance' : 'Watch'} \\(`),
+  });
   await expect(column.getByRole('button', { name: /P31749/ })).toBeVisible();
   const history = item.getByRole('list', { name: 'History' });
   await expect(history).toContainText(`${current} â†’ ${next}`);
