@@ -23,7 +23,7 @@ test('ENR-04: results page — pathway enrichment of a contrast against the demo
   await expect(table).toContainText('Synthetic module');
   await expect(panel.getByRole('figure', { name: /Enrichment dot plot/ })).toBeVisible();
   // Provenance: what was counted and how.
-  await expect(panel).toContainText(/Background: every gene symbol measured/);
+  await expect(panel).toContainText(/Universe \(measured\): every gene symbol the source tool tested/);
   await expect(panel).toContainText(/hypergeometric/);
   await page.screenshot({ path: `${SHOTS}/enrichment.png`, fullPage: true });
 
