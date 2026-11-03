@@ -117,7 +117,9 @@ describe('cross-experiment QC', () => {
   it('QCD-02: a run far below its experiment’s median IDs is flagged and left out of the PCA', async () => {
     const body = (await overview(scientist, { color_by: 'plate' })).json() as Json;
     const lateRuns = body.runs.filter((r: Json) => r.release_id === late);
-    expect(lateRuns.at(-1)).toMatchObject({ ids: 10, flagged: true });
+    // Expected IDs from the modified matrix itself (its first protein row is empty in every run).
+    const poorIds = idsPerRun(withPoorRun6(10).toString('utf8').trim().split('\n')).at(-1);
+    expect(lateRuns.at(-1)).toMatchObject({ ids: poorIds, flagged: true });
     expect(lateRuns.slice(0, -1).every((r: Json) => !r.flagged)).toBe(true);
     expect(body.runs.filter((r: Json) => r.release_id === early).some((r: Json) => r.flagged)).toBe(false);
     expect(body.experiments.find((e: Json) => e.experiment_name === 'QC late').flagged_runs).toBe(1);
