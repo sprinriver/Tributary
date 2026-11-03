@@ -4,6 +4,11 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Hit triage board (TRI-01…04):
+  - Proteins and compounds per program are marked advance, watch or drop. A status change needs a reason.
+  - Owners, comments and evidence snapshots from releases.
+  - An append-only history with audit rows.
+  - "Add to triage" on protein and compound pages.
 - Pathway enrichment (ENR-01…04):
   - Over-representation analysis of a contrast's hits against GO, Reactome or in-house gene sets (imported from
     GMT), with a dot plot and table on the results page.

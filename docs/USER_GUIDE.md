@@ -180,6 +180,23 @@ The test is one-sided hypergeometric over-representation with Benjamini–Hochbe
 
 ![Pathway enrichment](../artifacts/phase-24/enrichment.png)
 
+## Triage board
+**Triage** in the sidebar is each program's list of proteins and compounds it is deciding on.
+1. **Add an item:** on a protein or compound page, choose the program in **Triage** and click **Add to triage**. If
+   it is already on that program's board, you get the existing item.
+2. **Decide:** on the board, click a card. Pick a **Decision** (new, advance, watch, drop), give a **Reason** and click
+   **Save decision**. A decision without a reason is not accepted.
+3. **Collaborate:**
+   - **Assign to me** makes you the owner.
+   - Comments are kept in order.
+   - **Evidence** shows the release rows attached to the item (log2 FC and adjusted p for proteins).
+4. **History:** every change is in the item's history and in the audit log. The board filters by program and kind.
+
+Columns are lists of buttons, so the whole board works with the keyboard and screen readers. There is no drag and
+drop.
+
+![Triage board](../artifacts/phase-25/triage-board.png)
+
 ## Lineage and audit
 - **Lineage:** shows where a release or chart came from: raw file → pipeline run (with its revision) → release →
   saved chart.

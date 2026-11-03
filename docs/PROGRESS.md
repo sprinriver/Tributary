@@ -1354,3 +1354,31 @@ Entry template:
   - Network view (needs a graph-renderer dependency, so approval first).
   - A UI for importing gene sets (API only today).
 - Commits: 6d73c40 … e73f300
+
+## 2026-11-03 — Phase 25: Hit triage board — done
+- Built:
+  - **Schema:** migration 0022 with `triage_item` (unique per program, kind and key), `triage_evidence` (snapshots)
+    and `triage_event` (append-only: the app role has no UPDATE).
+  - **API:** list, create (idempotent), read, change status or owner (a status change needs a reason, which is also
+    the audit reason), comment, add evidence (TRI-01…03).
+    - **Owners:** must be members of the program.
+    - **Evidence:** a release the caller can read that holds the item: the protein's row in a differential-abundance
+      release (log2 FC and adjusted p), or the compound in a dose-response release.
+  - **Web:** a board with one column per decision. Cards are buttons, so it needs no drag and drop. The item panel
+    holds the decision with its reason, "Assign to me", evidence, history and comments. "Add to triage" is on the
+    protein and compound pages (TRI-04).
+- Decisions (and why):
+  - **No drag and drop:** decisions need a reason, and drag and drop is hard to make accessible.
+  - **Evidence is a snapshot:** it stays true because releases are immutable.
+  - **History is append-only:** enforced by grants.
+- Dependencies added: none.
+- Test changes, disclosed:
+  - DB-01 table list: the triage tables.
+  - OPS-09 also checks `/triage`, so the page list grows and nothing is loosened.
+  - TRI-04: Prettier formatting only.
+- Evidence: `pnpm check` ✓ (api 232), and `pnpm e2e TRI-04` ✓ and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-25/triage-board.png`.
+- Gaps and follow-ups:
+  - "Add to triage" is not yet on rows of the results page's top-hits table.
+  - Evidence cannot yet be attached from the UI.
+  - The owner picker supports "Assign to me" only (the API takes any program member).
