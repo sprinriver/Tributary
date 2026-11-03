@@ -1406,3 +1406,42 @@ Entry template:
   - Email or webhook delivery of alerts: the in-app menu only for now (the webhooks from Phase 20 could carry them).
   - Per-watch thresholds.
   - A page listing all watches.
+
+## 2026-11-03 — Phase 27: Cross-experiment QC and batch effects — done
+- Built:
+  - **API:** `POST /v1/qc/overview` reads the latest published protein_quant release of each readable experiment
+    (newest N, then oldest first). A run is one sample × instrument run.
+    - IDs = protein groups quantified (intensity > 0, or a log2 intensity) and not imputed.
+    - % missing is measured against the release's protein groups.
+    - Median log2 intensity per run and median IDs per experiment come from apps/compute.
+    - Runs with IDs < 0.5 × their experiment's median are flagged.
+  - **PCA (apps/compute):** unflagged runs × protein groups quantified in all of them, matched by sorted
+    accessions; centred, not scaled. Colour by experiment, plate, condition or date (plates and conditions named
+    within their experiment).
+  - **Provenance:** every counting rule, counts of imputed cells, derived log2 values and dropped rows, the dataset
+    and importer per experiment, and the source normalisation. It warns when normalisation differs. An oversized
+    release is skipped and listed, never truncated.
+  - **Web:** a `/qc` page with the IDs trend, the PCA, a runs table and the provenance list. It is in the nav and
+    the a11y sweep.
+- The omics-reviewer found 15 issues. All are fixed, with unit tests in `qc/runs.test.ts`:
+  - imputed cells counted as IDs
+  - re-injections merged under one sample
+  - log2-only releases read as empty
+  - mixed normalisation not flagged
+  - group-string order
+  - plate labels repeating across experiments
+  - colours repeating
+  - q-value policy not stated
+  - skip reasons, dropped rows, release choice and PC2 fallback
+  - injection-order suggestion in the trend
+  - pca_note wording
+  - flag edge cases
+- Dependencies added: none.
+- Test changes: the QCD-02 expected IDs for the poor run are derived from the modified matrix. The fixture's first
+  protein row is empty in every run, so the hard-coded 10 was wrong; this is its own commit.
+- Evidence: `pnpm check` ✓ (api 243), and `pnpm e2e QCD-03` ✓ and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-27/qc-overview.png`.
+- Gaps and follow-ups:
+  - Precursor-level QC (mzQC, retention-time drift) is not shown.
+  - The overview is computed on request and not cached.
+  - Acquisition order is not recorded, so the trend uses manifest order.

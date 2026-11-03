@@ -208,6 +208,22 @@ drop.
 
 ![Alerts](../artifacts/phase-26/alerts.png)
 
+## Cross-experiment QC
+**QC** in the sidebar shows the latest published protein quantities of up to 20 experiments you can read.
+- **Identifications per run:** experiments are shown oldest first. A run is one sample × instrument run.
+  - An ID is a protein group with an intensity above 0 (or a log2 intensity) that the source tool did not mark as
+    imputed.
+  - There is no q-value filter: IDs are as the tool reported them.
+- **Flagged runs:** a run whose IDs fall below half its experiment's median is marked with a red cross. It is
+  left out of the PCA.
+- **PCA of runs:** the PCA uses the protein groups quantified in every unflagged run (log2, centred, not scaled).
+  Colour it by experiment, plate, condition or date. If runs group by plate or date rather than condition, look
+  for a batch effect.
+  - If experiments report different normalisations, the page says so: the components may then separate tools,
+    not batches.
+- **Table and list:** the table lists every run. The list below it says exactly what was counted and what was
+  left out.
+
 ## Lineage and audit
 - **Lineage:** shows where a release or chart came from: raw file → pipeline run (with its revision) → release →
   saved chart.

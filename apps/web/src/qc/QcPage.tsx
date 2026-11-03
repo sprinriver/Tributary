@@ -50,7 +50,7 @@ export function QcPage() {
   const flagged = data?.runs.filter((r) => r.flagged) ?? [];
 
   return (
-    <div className="stack">
+    <main className="stack">
       <h1 style={{ margin: 0 }}>Cross-experiment QC</h1>
       <p className="hint" style={{ margin: 0 }}>
         The latest published protein quantities of up to 20 experiments you can read, oldest first.
@@ -145,7 +145,12 @@ export function QcPage() {
                   <td>{r.experiment_date ?? '—'}</td>
                   <td>
                     {r.sample_key}
-                    {r.instrument_run ? <span className="hint"> {r.instrument_run}</span> : null}
+                    {r.instrument_run ? (
+                      <>
+                        <br />
+                        <span className="hint">{r.instrument_run}</span>
+                      </>
+                    ) : null}
                   </td>
                   <td>{r.ids}</td>
                   <td>{fmt(r.missing_pct)}</td>
@@ -176,6 +181,6 @@ export function QcPage() {
           </ul>
         </>
       )}
-    </div>
+    </main>
   );
 }
