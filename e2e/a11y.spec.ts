@@ -42,6 +42,7 @@ test('OPS-09: every scientist page has no serious or critical accessibility viol
     '/compounds/CPD-000005',
     `/lineage/release/${release}`,
     '/triage',
+    '/qc',
   ];
   const found: string[] = [];
   for (const path of paths) found.push(...(await expectNoSeriousViolations(page, path)));
