@@ -16,8 +16,8 @@ class Term(BaseModel):
     overlap: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     expected: float
     fold_enrichment: float
-    p_value: float
-    adj_p_value: float
+    p_value: Annotated[float, Field(gt=0.0, le=1.0)]
+    adj_p_value: Annotated[float, Field(gt=0.0, le=1.0)]
     genes: list[str]
 
 

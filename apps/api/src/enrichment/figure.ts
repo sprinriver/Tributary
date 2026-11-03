@@ -1,13 +1,19 @@
-// Dot plot of enrichment results (Phase 24, ENR-04): top terms by p-value; x = −log10(adjusted p),
+// Dot plot of enrichment results (Phase 24, ENR-04): top terms by p-value; x = −log10(term adjusted p),
 // dot size = hits in the set, colour = fold enrichment. Display transforms only; the statistics come from compute.
 import type { EnrichmentTerm } from '@tributary/contracts';
 
 export const FIGURE_TERMS = 20;
+/** Term-level FDR drawn as the reference line (BH-adjusted p of the gene sets, not the hit threshold). */
+export const TERM_FDR = 0.05;
+/** −log10 of a p floored at the smallest positive double stays finite (≈ 323.3). */
+const neglog10 = (p: number) => -Math.log10(Math.max(p, Number.MIN_VALUE));
 
-export function enrichmentFigure(terms: EnrichmentTerm[], adjPMax: number) {
+/** `hitAdjPMax` is the feature-level hit threshold: shown as a caption, never as the reference line. */
+export function enrichmentFigure(terms: EnrichmentTerm[], hitAdjPMax?: number) {
+  const termFdr = TERM_FDR;
   const top = terms.slice(0, FIGURE_TERMS).reverse(); // best term at the top of the y axis
   const label = (t: EnrichmentTerm) => (t.name.length > 60 ? `${t.name.slice(0, 57)}…` : t.name);
-  const x = top.map((t) => -Math.log10(t.adj_p_value));
+  const x = top.map((t) => neglog10(t.adj_p_value));
   return {
     data: [
       {
@@ -30,7 +36,7 @@ export function enrichmentFigure(terms: EnrichmentTerm[], adjPMax: number) {
       },
     ],
     layout: {
-      xaxis: { title: { text: '−log10(adjusted p)' }, rangemode: 'tozero' },
+      xaxis: { title: { text: '−log10(term adjusted p)' }, rangemode: 'tozero' },
       yaxis: { automargin: true },
       height: Math.max(300, 26 * top.length + 120),
       showlegend: false,
@@ -39,12 +45,40 @@ export function enrichmentFigure(terms: EnrichmentTerm[], adjPMax: number) {
           type: 'line',
           xref: 'x',
           yref: 'paper',
-          x0: -Math.log10(adjPMax),
-          x1: -Math.log10(adjPMax),
+          x0: neglog10(termFdr),
+          x1: neglog10(termFdr),
           y0: 0,
           y1: 1,
           line: { dash: 'dash', width: 1, color: '#7a8794' },
         },
+      ],
+      annotations: [
+        {
+          x: neglog10(termFdr),
+          xref: 'x',
+          y: 1,
+          yref: 'paper',
+          yanchor: 'bottom',
+          text: `term FDR ${termFdr}`,
+          showarrow: false,
+          font: { size: 11, color: '#7a8794' },
+        },
+        ...(hitAdjPMax === undefined
+          ? []
+          : [
+              {
+                x: 1,
+                xref: 'paper',
+                y: 0,
+                yref: 'paper',
+                yanchor: 'top',
+                xanchor: 'right',
+                yshift: -40,
+                text: `hits: feature adjusted p ≤ ${hitAdjPMax}`,
+                showarrow: false,
+                font: { size: 11, color: '#7a8794' },
+              },
+            ]),
       ],
     },
   };

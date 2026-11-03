@@ -33,10 +33,14 @@
                 "type": "number"
               },
               "p_value": {
-                "type": "number"
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1
               },
               "adj_p_value": {
-                "type": "number"
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1
               },
               "genes": {
                 "type": "array",

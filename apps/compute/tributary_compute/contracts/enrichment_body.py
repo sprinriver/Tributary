@@ -29,6 +29,7 @@ class EnrichmentBody(BaseModel):
     abs_log2fc_min: Annotated[float, Field(ge=0.0, le=20.0)]
     min_size: Annotated[int, Field(ge=1, le=10000)]
     max_size: Annotated[int, Field(ge=1, le=100000)]
+    universe: Literal["measured", "annotated"]
 
 
 class Model(RootModel[EnrichmentBody]):

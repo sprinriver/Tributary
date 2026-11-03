@@ -1,5 +1,5 @@
 // Pathway enrichment of a differential-abundance contrast (Phase 24, ENR-03). The API chooses the identifiers
-// (hits and background) and records how; apps/compute does the statistics (hypergeometric + BH).
+// (select.ts) and records how; apps/compute does the statistics (hypergeometric + BH).
 import {
   EnrichmentResultSchema,
   QueryResultSchema,
@@ -14,23 +14,24 @@ import type { ApiConfig } from '../config.ts';
 import { callQueryService } from '../datasets/query-client.ts';
 import { HttpError, notFound } from '../errors.ts';
 import { resolveSource } from '../query/resolve.ts';
-import { enrichmentFigure, FIGURE_TERMS } from './figure.ts';
+import { enrichmentFigure, FIGURE_TERMS, TERM_FDR } from './figure.ts';
+import { normaliseId, type IdType } from './ids.ts';
+import { selectIds, type DaRow } from './select.ts';
 
-/** A contrast with more rows than this is not a hit list but an error in the request. */
+/** More rows than this for one contrast is refused rather than read partly. */
 const MAX_ROWS = 500_000;
 
-type Row = {
-  contrast_label: string | null;
-  gene_names: string[] | null;
-  protein_ids: string[] | null;
-  log2_fc: number | null;
-  adj_p_value: number | null;
-};
-
-const asList = (v: unknown): string[] =>
-  Array.isArray(v)
-    ? v.filter((x): x is string => typeof x === 'string' && x.trim() !== '').map((x) => x.trim())
-    : [];
+async function experimentSpecies(db: Database, releaseId: string): Promise<string | null> {
+  const row = await db
+    .selectFrom('dataset_release as r')
+    .innerJoin('dataset as d', 'd.id', 'r.dataset_id')
+    .leftJoin('experiment_version as v', 'v.id', 'd.experiment_version_id')
+    .select('v.species')
+    .where('r.id', '=', releaseId)
+    .executeTakeFirst();
+  const species = row?.species as { id?: string } | null | undefined;
+  return species?.id ?? null;
+}
 
 export async function runEnrichment(
   deps: { db: Database; config: ApiConfig; fetch: typeof fetch },
@@ -60,12 +61,29 @@ export async function runEnrichment(
     .where('deleted_at', 'is', null)
     .executeTakeFirst();
   if (!collection) throw notFound('Gene-set collection');
-  const idColumn = collection.id_type === 'gene_symbol' ? 'gene_names' : 'protein_ids';
+  const idType = collection.id_type as IdType;
+  const species = await experimentSpecies(db, body.release_id);
+  if (species && species !== collection.species)
+    throw new HttpError(
+      422,
+      'species_mismatch',
+      `The experiment is ${species} but these gene sets are ${collection.species}: choose a collection for the same species.`,
+      'collection_id',
+    );
 
+  // Only the chosen contrast is read (filtered in the query), and a partial read is an error, never a result.
   const internal = {
     spec: {
       source: { releaseIds: [body.release_id] },
-      select: ['contrast_label', 'gene_names', 'protein_ids', 'log2_fc', 'adj_p_value'],
+      select: ['contrast_label', 'gene_names', 'protein_ids', 'log2_fc', 'adj_p_value', 'adj_method'],
+      ...(body.contrast_label !== undefined
+        ? {
+            where: {
+              combinator: 'and',
+              rules: [{ field: 'contrast_label', operator: '=', value: body.contrast_label }],
+            },
+          }
+        : {}),
     },
     source,
     joins: [],
@@ -74,47 +92,46 @@ export async function runEnrichment(
   const result = QueryResultSchema.parse(
     await callQueryService(deps.fetch, config, '/internal/query', internal),
   );
-  const all = result.rows as Row[];
+  if (result.totalRows > result.rows.length || result.nextCursor)
+    throw new HttpError(
+      422,
+      'too_many_rows',
+      `More than ${MAX_ROWS} rows: choose one contrast.`,
+      'contrast_label',
+    );
+  const all = result.rows as DaRow[];
   const labels = [...new Set(all.map((r) => r.contrast_label ?? ''))];
-  let label = body.contrast_label;
-  if (label === undefined) {
-    if (labels.length > 1)
-      throw new HttpError(
-        422,
-        'contrast_required',
-        `This release has ${labels.length} contrasts: choose one.`,
-        'contrast_label',
-      );
-    label = labels[0] ?? '';
-  }
-  const rows = all.filter((r) => (r.contrast_label ?? '') === label);
-  if (rows.length === 0)
+  if (labels.length > 1)
+    throw new HttpError(
+      422,
+      'contrast_required',
+      `This release has ${labels.length} contrasts: choose one.`,
+      'contrast_label',
+    );
+  const label = body.contrast_label ?? labels[0] ?? '';
+  if (all.length === 0)
     throw new HttpError(422, 'unknown_contrast', `No rows for contrast "${label}".`, 'contrast_label');
 
-  // Hits: adjusted p ≤ threshold and a fold change in the chosen direction (log2 fold change = numerator vs denominator).
-  const isHit = (r: Row) => {
-    if (r.adj_p_value === null || r.log2_fc === null || r.adj_p_value > body.adj_p_max) return false;
-    if (body.direction === 'up') return r.log2_fc >= body.abs_log2fc_min;
-    if (body.direction === 'down') return r.log2_fc <= -body.abs_log2fc_min;
-    return Math.abs(r.log2_fc) >= body.abs_log2fc_min;
-  };
-  const background = new Set<string>();
-  const hits = new Set<string>();
-  let withoutIds = 0;
-  let hitFeatures = 0;
-  for (const r of rows) {
-    const ids = asList(r[idColumn]);
-    if (ids.length === 0) {
-      withoutIds += 1;
-      continue;
-    }
-    ids.forEach((id) => background.add(id));
-    if (isHit(r)) {
-      hitFeatures += 1;
-      ids.forEach((id) => hits.add(id));
-    }
-  }
-  if (hits.size === 0)
+  const sel = selectIds(all, idType, body);
+  const sets = (
+    await db
+      .selectFrom('gene_set')
+      .select(['set_key', 'name', 'members'])
+      .where('collection_id', '=', collection.id)
+      .where('deleted_at', 'is', null)
+      .orderBy('set_key')
+      .execute()
+  ).map((s) => ({
+    id: s.set_key,
+    name: s.name,
+    members: [...new Set(s.members.map((m) => normaliseId(m, idType)))],
+  }));
+  const annotated = new Set(sets.flatMap((s) => s.members));
+  const backgroundAnnotated = [...sel.background].filter((id) => annotated.has(id));
+  const background = body.universe === 'annotated' ? backgroundAnnotated : [...sel.background];
+  const hits =
+    body.universe === 'annotated' ? [...sel.hits].filter((id) => annotated.has(id)) : [...sel.hits];
+  if (hits.length === 0)
     throw new HttpError(
       422,
       'no_hits',
@@ -122,27 +139,21 @@ export async function runEnrichment(
       'abs_log2fc_min',
     );
 
-  const sets = await db
-    .selectFrom('gene_set')
-    .select(['set_key', 'name', 'members'])
-    .where('collection_id', '=', collection.id)
-    .where('deleted_at', 'is', null)
-    .orderBy('set_key')
-    .execute();
   const call = computeCall(config, deps.fetch);
   const out = await call('/stats/enrichment', EnrichmentResultSchema, {
-    hits: 'release_id',
+    hits: 'adj_p_max',
     min_size: 'min_size',
     max_size: 'max_size',
-  })({
-    hits: [...hits],
-    background: [...background],
-    gene_sets: sets.map((s) => ({ id: s.set_key, name: s.name, members: s.members })),
-    min_size: body.min_size,
-    max_size: body.max_size,
-  });
+  })({ hits, background, gene_sets: sets, min_size: body.min_size, max_size: body.max_size });
 
-  const unit = collection.id_type === 'gene_symbol' ? 'gene symbol' : 'UniProt accession';
+  const unit = idType === 'gene_symbol' ? 'gene symbol' : 'UniProt accession';
+  const methods = sel.adjMethods.length ? sel.adjMethods.join(', ') : 'not recorded';
+  const rule =
+    body.direction === 'both'
+      ? '|log2 fold change|'
+      : body.direction === 'up'
+        ? 'log2 fold change'
+        : '−log2 fold change';
   return {
     terms: out.terms,
     figure: enrichmentFigure(out.terms, body.adj_p_max),
@@ -154,7 +165,7 @@ export async function runEnrichment(
         name: collection.name,
         source: collection.source,
         source_release: collection.source_release,
-        id_type: collection.id_type as 'gene_symbol' | 'uniprot_accession',
+        id_type: idType,
       },
       thresholds: {
         direction: body.direction,
@@ -162,29 +173,36 @@ export async function runEnrichment(
         abs_log2fc_min: body.abs_log2fc_min,
         min_size: body.min_size,
         max_size: body.max_size,
+        term_fdr: TERM_FDR,
       },
-      features: rows.length,
-      hit_features: hitFeatures,
-      features_without_ids: withoutIds,
-      background: background.size,
-      hits: hits.size,
+      features: sel.features,
+      hit_features: sel.hitFeatures,
+      features_without_ids: sel.withoutIds,
+      untested_features: sel.untested,
+      multi_id_hit_features: sel.multiIdHitFeatures,
+      conflicting_ids: sel.conflictingIds,
+      universe: body.universe,
+      background_annotated: backgroundAnnotated.length,
+      source_adj_methods: sel.adjMethods,
+      background: background.length,
+      hits: hits.length,
       tested: out.tested,
       excluded_small: out.excluded_small,
       excluded_large: out.excluded_large,
       method: out.method,
       adj_method: out.adj_method,
       transformations: [
-        `Protein groups expanded to each ${unit} they contain; an identifier in several groups counts once.`,
-        `Background: every ${unit} measured in this contrast (${background.size}); ${withoutIds} features without one were left out.`,
-        `Hits: adjusted p ≤ ${body.adj_p_max} and ${
-          body.direction === 'both'
-            ? '|log2 fold change|'
-            : body.direction === 'up'
-              ? 'log2 fold change'
-              : '−log2 fold change'
-        } ≥ ${body.abs_log2fc_min}.`,
-        `Dot plot: the top ${FIGURE_TERMS} terms by p-value; x = −log10(adjusted p) (dashed line at ${body.adj_p_max}), size = hits in the set, colour = fold enrichment.`,
-        `Gene-set members not measured here are ignored; sets with fewer than ${body.min_size} or more than ${body.max_size} measured members are not tested.`,
+        `Protein groups expanded to each ${unit} they contain (an identifier in several groups counts once; ${sel.multiIdHitFeatures} hit features held more than one, and ${sel.conflictingIds} identifiers were a hit in one group but not in another and count as hits).`,
+        ...(idType === 'uniprot_accession'
+          ? ['UniProt isoform suffixes removed ("P12345-2" → "P12345") before matching.']
+          : []),
+        `Universe (${body.universe}): every ${unit} the source tool tested in this contrast${
+          body.universe === 'annotated' ? ' that is in at least one gene set' : ''
+        } (${background.length}; ${backgroundAnnotated.length} are in a set). Left out: ${sel.untested} untested features (no adjusted p or fold change) and ${sel.withoutIds} without a ${unit}.`,
+        `Hits: source adjusted p (${methods}) ≤ ${body.adj_p_max}, then a post-hoc ${rule} ≥ ${body.abs_log2fc_min} (a strict sign test for up or down).`,
+        `Gene-set members not tested here are ignored; sets with fewer than ${body.min_size} or more than ${body.max_size} members in the universe are not tested.`,
+        `Species: ${species ?? 'not recorded for the experiment'}; collection ${collection.species}.`,
+        `Dot plot: the top ${FIGURE_TERMS} terms by p-value; x = −log10(term adjusted p), dashed line at term FDR ${TERM_FDR}; size = hits in the set; colour = fold enrichment (k/n)/(K/N).`,
       ],
       compute_version: out.compute_version,
     },

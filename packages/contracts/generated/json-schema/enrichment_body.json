@@ -52,6 +52,14 @@
           "type": "integer",
           "minimum": 1,
           "maximum": 100000
+        },
+        "universe": {
+          "default": "measured",
+          "type": "string",
+          "enum": [
+            "measured",
+            "annotated"
+          ]
         }
       },
       "required": [
@@ -61,7 +69,8 @@
         "adj_p_max",
         "abs_log2fc_min",
         "min_size",
-        "max_size"
+        "max_size",
+        "universe"
       ],
       "additionalProperties": false
     }

@@ -4,13 +4,17 @@ For each set with K members in the background of N identifiers, and k of the n h
 P(X >= k) for X ~ Hypergeometric(N, K, n), one-sided (Rivals et al. 2007, doi:10.1093/bioinformatics/btl633).
 p-values are adjusted across the tested sets with Benjamini-Hochberg (doi:10.1111/j.2517-6161.1995.tb02031.x).
 Set members outside the background are ignored; sets whose size within the background is outside
-[min_size, max_size] are not tested and are counted instead.
+[min_size, max_size] are not tested and are counted instead. p-values come from the log survival
+function and are floored at the smallest positive double, so they stay in (0, 1] where sf underflows.
 """
+
+import math
+import sys
 
 from tributary_compute.contracts.enrichment_request import EnrichmentRequest
 from tributary_compute.contracts.enrichment_result import EnrichmentResult, Term
 from tributary_compute.stats.errors import COMPUTE_VERSION, ComputeError
-from tributary_compute.stats.scipy_api import fdr, hypergeom_sf
+from tributary_compute.stats.scipy_api import fdr, hypergeom_logsf
 
 
 def enrichment(request: EnrichmentRequest) -> EnrichmentResult:
@@ -45,8 +49,12 @@ def enrichment(request: EnrichmentRequest) -> EnrichmentResult:
             f"No gene set has between {request.min_size} and {request.max_size} measured members.",
         )
 
-    p_values = [hypergeom_sf(len(overlap) - 1, big_n, size, n) for _, _, size, overlap in tested]
-    adjusted = fdr(p_values, "bh")
+    tiny = sys.float_info.min * sys.float_info.epsilon  # smallest positive (subnormal) double
+    p_values = [
+        min(1.0, max(tiny, math.exp(hypergeom_logsf(len(overlap) - 1, big_n, size, n))))
+        for _, _, size, overlap in tested
+    ]
+    adjusted = [min(1.0, max(tiny, a)) for a in fdr(p_values, "bh")]
     terms = [
         Term(
             id=set_id,
@@ -55,8 +63,8 @@ def enrichment(request: EnrichmentRequest) -> EnrichmentResult:
             overlap=len(overlap),
             expected=n * size / big_n,
             fold_enrichment=(len(overlap) / n) / (size / big_n),
-            p_value=min(1.0, p),
-            adj_p_value=min(1.0, adj),
+            p_value=p,
+            adj_p_value=adj,
             genes=overlap,
         )
         for (set_id, name, size, overlap), p, adj in zip(tested, p_values, adjusted, strict=True)

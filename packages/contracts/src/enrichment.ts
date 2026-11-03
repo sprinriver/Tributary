@@ -36,9 +36,9 @@ export const EnrichmentTermSchema = z.object({
   expected: z.number(),
   /** (k/n) / (K/N). */
   fold_enrichment: z.number(),
-  /** P(X ≥ k), X ~ Hypergeometric(N, K, n). */
-  p_value: z.number(),
-  adj_p_value: z.number(),
+  /** P(X ≥ k), X ~ Hypergeometric(N, K, n); floored at the smallest positive double. */
+  p_value: z.number().gt(0).lte(1),
+  adj_p_value: z.number().gt(0).lte(1),
   /** The overlapping hits, sorted. */
   genes: z.array(z.string()),
 });

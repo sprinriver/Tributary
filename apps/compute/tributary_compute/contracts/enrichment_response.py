@@ -17,8 +17,8 @@ class Term(BaseModel):
     overlap: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     expected: float
     fold_enrichment: float
-    p_value: float
-    adj_p_value: float
+    p_value: Annotated[float, Field(gt=0.0, le=1.0)]
+    adj_p_value: Annotated[float, Field(gt=0.0, le=1.0)]
     genes: list[str]
 
 
@@ -55,6 +55,7 @@ class Thresholds(BaseModel):
     abs_log2fc_min: float
     min_size: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     max_size: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    term_fdr: float
 
 
 class Provenance(BaseModel):
@@ -73,6 +74,12 @@ class Provenance(BaseModel):
     features: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     hit_features: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     features_without_ids: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    untested_features: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    multi_id_hit_features: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    conflicting_ids: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    universe: Literal["measured", "annotated"]
+    background_annotated: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    source_adj_methods: list[str]
     background: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     hits: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     tested: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]

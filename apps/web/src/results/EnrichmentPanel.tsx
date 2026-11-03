@@ -16,6 +16,7 @@ type Draft = {
   abs_log2fc_min: string;
   min_size: string;
   max_size: string;
+  universe: 'measured' | 'annotated';
 };
 
 /**
@@ -35,6 +36,7 @@ export function EnrichmentPanel({ release, contrasts }: { release: string; contr
     abs_log2fc_min: '1',
     min_size: '10',
     max_size: '500',
+    universe: 'measured',
   });
   const run = useMutation({
     mutationFn: (body: EnrichmentBody) => api('runEnrichment', { body }),
@@ -49,6 +51,7 @@ export function EnrichmentPanel({ release, contrasts }: { release: string; contr
     abs_log2fc_min: Number(draft.abs_log2fc_min),
     min_size: Number(draft.min_size),
     max_size: Number(draft.max_size),
+    universe: draft.universe,
   });
   const errors = parsed.success
     ? {}
@@ -127,6 +130,14 @@ export function EnrichmentPanel({ release, contrasts }: { release: string; contr
         {number('abs_log2fc_min', '|log2 FC| at least', '0.1')}
         {number('min_size', 'Minimum set size', '1')}
         {number('max_size', 'Maximum set size', '1')}
+        {field(
+          'universe',
+          'Universe',
+          <select value={draft.universe} onChange={(e) => set('universe')(e.target.value)}>
+            <option value="measured">every tested identifier</option>
+            <option value="annotated">tested and in a gene set</option>
+          </select>,
+        )}
         <button
           type="button"
           className="primary"
@@ -147,7 +158,7 @@ export function EnrichmentPanel({ release, contrasts }: { release: string; contr
           <table aria-label="Enrichment results" className="data-table">
             <thead>
               <tr>
-                {['gene set', 'hits / size', 'fold', 'p', 'adjusted p', 'hits in set'].map((h) => (
+                {['gene set', 'hits / size', 'fold enrichment', 'p', 'adjusted p', 'hits in set'].map((h) => (
                   <th key={h} scope="col">
                     {h}
                   </th>
@@ -174,7 +185,7 @@ export function EnrichmentPanel({ release, contrasts }: { release: string; contr
             </tbody>
           </table>
           <p className="hint" style={{ margin: 0 }}>
-            {result.provenance.hits} hits of {result.provenance.background} measured (
+            {result.provenance.hits} hits of {result.provenance.background} tested (
             {result.provenance.hit_features} of {result.provenance.features} features) ·{' '}
             {result.provenance.tested} sets tested,{' '}
             {result.provenance.excluded_small + result.provenance.excluded_large} outside the size limits ·{' '}

@@ -54,6 +54,11 @@ export const EnrichmentBodySchema = z
     abs_log2fc_min: z.number().min(0).max(20).default(1),
     min_size: z.int().min(1).max(10_000).default(10),
     max_size: z.int().min(1).max(100_000).default(500),
+    /**
+     * measured: every tested identifier is in the universe. annotated: only tested identifiers that are in at least
+     * one set of the collection (the convention of e.g. clusterProfiler; changes N, n and fold enrichment).
+     */
+    universe: z.enum(['measured', 'annotated']).default('measured'),
   })
   .meta({ id: 'EnrichmentBody' });
 export type EnrichmentBody = z.infer<typeof EnrichmentBodySchema>;
@@ -82,12 +87,25 @@ export const EnrichmentResponseSchema = z
         abs_log2fc_min: z.number(),
         min_size: z.int(),
         max_size: z.int(),
+        /** Term-level FDR drawn as the reference line of the dot plot. */
+        term_fdr: z.number(),
       }),
       /** Rows of the contrast, and how many of them were hits. */
       features: z.int(),
       hit_features: z.int(),
       /** Features without an identifier of the collection's type (left out of the universe). */
       features_without_ids: z.int(),
+      /** Features without an adjusted p or fold change (not tested by the source tool; left out of the universe). */
+      untested_features: z.int(),
+      /** Hit features holding more than one identifier (e.g. a protein group of paralogs). */
+      multi_id_hit_features: z.int(),
+      /** Identifiers that are a hit in one feature and not a hit in another (counted as hits). */
+      conflicting_ids: z.int(),
+      universe: z.enum(['measured', 'annotated']),
+      /** Tested identifiers that are in at least one set of the collection. */
+      background_annotated: z.int(),
+      /** The source tool's adjustment method(s) for the adjusted p used to pick hits. */
+      source_adj_methods: z.array(z.string()),
       /** Distinct identifiers after expanding protein groups (N and n of the test). */
       background: z.int(),
       hits: z.int(),

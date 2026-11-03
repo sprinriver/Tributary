@@ -33,10 +33,14 @@
                 "type": "number"
               },
               "p_value": {
-                "type": "number"
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1
               },
               "adj_p_value": {
-                "type": "number"
+                "type": "number",
+                "exclusiveMinimum": 0,
+                "maximum": 1
               },
               "genes": {
                 "type": "array",
@@ -157,6 +161,9 @@
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
+                },
+                "term_fdr": {
+                  "type": "number"
                 }
               },
               "required": [
@@ -164,7 +171,8 @@
                 "adj_p_max",
                 "abs_log2fc_min",
                 "min_size",
-                "max_size"
+                "max_size",
+                "term_fdr"
               ],
               "additionalProperties": false
             },
@@ -182,6 +190,39 @@
               "type": "integer",
               "minimum": -9007199254740991,
               "maximum": 9007199254740991
+            },
+            "untested_features": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "multi_id_hit_features": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "conflicting_ids": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "universe": {
+              "type": "string",
+              "enum": [
+                "measured",
+                "annotated"
+              ]
+            },
+            "background_annotated": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "source_adj_methods": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
             },
             "background": {
               "type": "integer",
@@ -232,6 +273,12 @@
             "features",
             "hit_features",
             "features_without_ids",
+            "untested_features",
+            "multi_id_hit_features",
+            "conflicting_ids",
+            "universe",
+            "background_annotated",
+            "source_adj_methods",
             "background",
             "hits",
             "tested",
