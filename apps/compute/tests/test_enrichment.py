@@ -1,4 +1,5 @@
-"""ENR-01: over-representation analysis (one-sided hypergeometric, BH) against hand-checked values and SciPy."""
+# pyright: basic
+"""ENR-01: over-representation analysis (one-sided hypergeometric, BH) vs hand-checked values and SciPy."""
 
 import asyncio
 import math
