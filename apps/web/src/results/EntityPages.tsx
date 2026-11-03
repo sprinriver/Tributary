@@ -1,6 +1,7 @@
 import type { ChartSpec } from '@tributary/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { AddToTriage } from '../triage/AddToTriage.tsx';
+import { WatchButton } from '../watch/WatchButton.tsx';
 import { Link, useParams } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { api } from '../api.ts';
@@ -99,6 +100,11 @@ export function ProteinPage() {
         {id}
         {protein.data?.gene_symbol ? ` · ${protein.data.gene_symbol}` : ''}
       </h1>
+      <WatchButton
+        kind="protein"
+        itemKey={id}
+        {...(protein.data?.gene_symbol ? { label: protein.data.gene_symbol } : {})}
+      />
       <ErrorMessage error={protein.error ?? measured.error} />
       <AddToTriage
         kind="protein"
@@ -169,6 +175,7 @@ export function CompoundPage() {
         {id}
         {c?.compound.name ? ` · ${c.compound.name}` : ''}
       </h1>
+      <WatchButton kind="compound" itemKey={id} {...(c?.compound.name ? { label: c.compound.name } : {})} />
       <ErrorMessage error={compound.error} />
       <AddToTriage kind="compound" itemKey={id} {...(c?.compound.name ? { label: c.compound.name } : {})} />
       {c && (
