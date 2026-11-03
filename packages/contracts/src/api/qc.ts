@@ -4,6 +4,7 @@ import { z } from 'zod';
 // protein-quantity releases of the programs the caller can read, outlier runs, and a PCA of runs coloured by a factor.
 
 export const QcColorBySchema = z.enum(['experiment', 'plate', 'condition', 'experiment_date']);
+export type QcColorBy = z.infer<typeof QcColorBySchema>;
 
 /** A run is flagged when its identifications fall below this fraction of its experiment's median. */
 export const QC_LOW_ID_FRACTION = 0.5;
@@ -30,7 +31,9 @@ export const QcRunSchema = z.object({
   program_code: z.string(),
   release_id: z.uuid(),
   sample_key: z.string(),
-  /** Protein groups with an intensity > 0 (tools write 0 or nothing for not quantified). */
+  /** A sample injected more than once has one run per instrument run. */
+  instrument_run: z.string().nullable(),
+  /** Protein groups quantified (intensity > 0, or a log2 intensity), not imputed. */
   ids: z.int(),
   /** % of the experiment's protein groups not quantified in this run. */
   missing_pct: z.number(),
@@ -51,6 +54,14 @@ export const QcOverviewSchema = z
         experiment_name: z.string(),
         experiment_date: z.string().nullable(),
         program_code: z.string(),
+        release_id: z.uuid(),
+        dataset_name: z.string(),
+        importer: z.string().nullable(),
+        /** Normalisation the source tool reports ("not reported" when it says nothing). */
+        normalisation: z.array(z.string()),
+        imputed_cells: z.int(),
+        derived_log2: z.int(),
+        dropped_rows: z.int(),
         runs: z.int(),
         median_ids: z.number().nullable(),
         flagged_runs: z.int(),
@@ -63,8 +74,10 @@ export const QcOverviewSchema = z
       /** Protein groups quantified in every run (the PCA's features); null when no PCA could be made. */
       pca_features: z.int().nullable(),
       pca_explained: z.array(z.number()).nullable(),
-      /** Why there is no PCA, when there is none. */
+      /** Why there is no PCA, or what it leaves out and what to bear in mind. */
       pca_note: z.string().nullable(),
+      /** Experiments not read, and why (e.g. more rows than one overview reads). */
+      skipped: z.array(z.object({ experiment_name: z.string(), reason: z.string() })),
       transformations: z.array(z.string()),
       compute: z.record(z.string(), z.string()),
     }),

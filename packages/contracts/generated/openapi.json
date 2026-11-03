@@ -21588,6 +21588,12 @@
                 "sample_key": {
                   "type": "string"
                 },
+                "instrument_run": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
                 "ids": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -21622,6 +21628,7 @@
                 "program_code",
                 "release_id",
                 "sample_key",
+                "instrument_run",
                 "ids",
                 "missing_pct",
                 "median_log2_intensity",
@@ -21653,6 +21660,41 @@
                 "program_code": {
                   "type": "string"
                 },
+                "release_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "dataset_name": {
+                  "type": "string"
+                },
+                "importer": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "normalisation": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "imputed_cells": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "derived_log2": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "dropped_rows": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
                 "runs": {
                   "type": "integer",
                   "minimum": -9007199254740991,
@@ -21675,6 +21717,13 @@
                 "experiment_name",
                 "experiment_date",
                 "program_code",
+                "release_id",
+                "dataset_name",
+                "importer",
+                "normalisation",
+                "imputed_cells",
+                "derived_log2",
+                "dropped_rows",
                 "runs",
                 "median_ids",
                 "flagged_runs"
@@ -21804,6 +21853,25 @@
                   "null"
                 ]
               },
+              "skipped": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "experiment_name": {
+                      "type": "string"
+                    },
+                    "reason": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "experiment_name",
+                    "reason"
+                  ],
+                  "additionalProperties": false
+                }
+              },
               "transformations": {
                 "type": "array",
                 "items": {
@@ -21826,6 +21894,7 @@
               "pca_features",
               "pca_explained",
               "pca_note",
+              "skipped",
               "transformations",
               "compute"
             ],

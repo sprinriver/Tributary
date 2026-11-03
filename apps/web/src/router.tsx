@@ -22,6 +22,7 @@ import { ListsPage } from './admin/ListsPage.tsx';
 import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
+import { QcPage, type QcSearch } from './qc/QcPage.tsx';
 import { TriagePage, type TriageSearch } from './triage/TriagePage.tsx';
 
 const str = (v: unknown) => (typeof v === 'string' && v !== '' ? v : undefined);
@@ -121,6 +122,20 @@ const searchRoute = createRoute({
     return type === 'experiment' || type === 'sample' ? { ...out, type } : out;
   },
 });
+const qcRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/qc',
+  component: QcPage,
+  validateSearch: (search: Record<string, unknown>): QcSearch => {
+    const color = str(search.color_by);
+    return {
+      ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+      ...(color === 'experiment' || color === 'plate' || color === 'condition' || color === 'experiment_date'
+        ? { color_by: color }
+        : {}),
+    };
+  },
+});
 const triageRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/triage',
@@ -193,6 +208,7 @@ export const router = createRouter({
     compoundRoute,
     compareRoute,
     triageRoute,
+    qcRoute,
     viewsRoute,
     releaseRoute,
     runRoute,

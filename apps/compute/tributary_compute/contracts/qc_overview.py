@@ -27,6 +27,7 @@ class Run(BaseModel):
         ),
     ]
     sample_key: str
+    instrument_run: str | None
     ids: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     missing_pct: float
     median_log2_intensity: float | None
@@ -47,6 +48,18 @@ class Experiment(BaseModel):
     experiment_name: str
     experiment_date: str | None
     program_code: str
+    release_id: Annotated[
+        UUID,
+        Field(
+            pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        ),
+    ]
+    dataset_name: str
+    importer: str | None
+    normalisation: list[str]
+    imputed_cells: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    derived_log2: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    dropped_rows: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     runs: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     median_ids: float | None
     flagged_runs: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
@@ -89,6 +102,14 @@ class PcaFeatures(RootModel[int]):
     root: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
 
 
+class SkippedItem(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    experiment_name: str
+    reason: str
+
+
 class Provenance(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -98,6 +119,7 @@ class Provenance(BaseModel):
     pca_features: PcaFeatures | None
     pca_explained: list[float] | None
     pca_note: str | None
+    skipped: list[SkippedItem]
     transformations: list[str]
     compute: dict[str, str]
 
