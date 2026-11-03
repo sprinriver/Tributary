@@ -12,6 +12,7 @@ import type { Database } from '@tributary/db';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { insertAudit, requestActor } from '../audit.ts';
 import { authorize } from '../auth/plugin.ts';
+import { loadBindings } from '../auth/principal.ts';
 import type { ApiConfig } from '../config.ts';
 import { HttpError, parse } from '../errors.ts';
 import { respond } from '../respond.ts';
@@ -19,16 +20,15 @@ import { addEvent, detail, evidenceSnapshot, listItems, readableItem } from '../
 
 type IdParams = FastifyRequest<{ Params: { id: string } }>;
 
-/** Owners must be able to see the program (a binding to it, or system admin). */
-async function isMember(db: Database, userId: string, programId: string): Promise<boolean> {
-  const row = await db
-    .selectFrom('role_binding')
-    .select('id')
-    .where('user_id', '=', userId)
-    .where('deleted_at', 'is', null)
-    .where((eb) => eb.or([eb('program_id', '=', programId), eb('role', '=', 'system_admin')]))
-    .executeTakeFirst();
-  return row !== undefined;
+/** Owners must be able to see the program: their effective roles (direct, group and mapped) include it. */
+async function isMember(
+  db: Database,
+  config: ApiConfig,
+  userId: string,
+  programId: string,
+): Promise<boolean> {
+  const bindings = await loadBindings(db, config, userId);
+  return bindings.some((b) => b.role === 'system_admin' || b.program_id === programId);
 }
 
 export function registerTriageRoutes(
@@ -116,7 +116,7 @@ export function registerTriageRoutes(
     const body = parse(UpdateTriageBodySchema, request.body);
     const item = await readableItem(db, request, request.params.id);
     authorize(request, 'update', 'TriageItem', item.program_id);
-    if (body.owner_id && !(await isMember(db, body.owner_id, item.program_id)))
+    if (body.owner_id && !(await isMember(db, deps.config, body.owner_id, item.program_id)))
       throw new HttpError(422, 'owner_not_member', 'The owner must be a member of this program.', 'owner_id');
     const actor = requestActor(request);
     await db.transaction().execute(async (trx) => {

@@ -4,6 +4,7 @@ import { ALERT_HIT_RULE, QueryResultSchema } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
 import type { FastifyBaseLogger } from 'fastify';
 import { insertAudit, type AuditActor } from '../audit.ts';
+import { loadBindings } from '../auth/principal.ts';
 import type { ApiConfig } from '../config.ts';
 import { callQueryService } from '../datasets/query-client.ts';
 import { resolveSource } from '../query/resolve.ts';
@@ -55,24 +56,21 @@ async function notify(deps: NotifyDeps, releaseId: string, actor: AuditActor): P
         : [];
   if (kinds.length === 0) return 0;
 
-  // Watches of people who can read the release's program (a binding to it, or system admin).
-  const watches = await db
+  // Watches of people who can read the release's program: their effective roles (direct, group and mapped).
+  const all = await db
     .selectFrom('watch as w')
     .select(['w.id', 'w.user_id', 'w.kind', 'w.key'])
     .where('w.tenant_id', '=', release.tenant_id)
     .where('w.deleted_at', 'is', null)
     .where('w.kind', 'in', kinds)
-    .where((eb) =>
-      eb.exists(
-        eb
-          .selectFrom('role_binding as b')
-          .select('b.id')
-          .whereRef('b.user_id', '=', 'w.user_id')
-          .where('b.deleted_at', 'is', null)
-          .where((x) => x.or([x('b.program_id', '=', release.program_id), x('b.role', '=', 'system_admin')])),
-      ),
-    )
     .execute();
+  const readers = new Set<string>();
+  for (const userId of new Set(all.map((w) => w.user_id))) {
+    const bindings = await loadBindings(db, deps.config, userId);
+    if (bindings.some((b) => b.role === 'system_admin' || b.program_id === release.program_id))
+      readers.add(userId);
+  }
+  const watches = all.filter((w) => readers.has(w.user_id));
   if (watches.length === 0) return 0;
 
   const source = await resolveSource(db, { releaseIds: [releaseId] }, null);
