@@ -78,6 +78,23 @@ export interface AiMessage {
   updated_at: Generated<Timestamp>;
 }
 
+export interface Alert {
+  adj_p_value: number | null;
+  contrast_label: Generated<string>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  log2_fc: number | null;
+  read_at: Timestamp | null;
+  release_id: string;
+  rule: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+  watch_id: string;
+}
+
 export interface AppGroup {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -838,6 +855,19 @@ export interface TriageItem {
   updated_at: Generated<Timestamp>;
 }
 
+export interface Watch {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  key: string;
+  kind: string;
+  label: string | null;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
 export interface WebhookDelivery {
   attempts: Generated<number>;
   created_at: Generated<Timestamp>;
@@ -873,6 +903,7 @@ export interface DB {
   access_token: AccessToken;
   ai_conversation: AiConversation;
   ai_message: AiMessage;
+  alert: Alert;
   app_group: AppGroup;
   app_session: AppSession;
   app_setting: AppSetting;
@@ -923,6 +954,7 @@ export interface DB {
   triage_event: TriageEvent;
   triage_evidence: TriageEvidence;
   triage_item: TriageItem;
+  watch: Watch;
   webhook_delivery: WebhookDelivery;
   webhook_subscription: WebhookSubscription;
 }

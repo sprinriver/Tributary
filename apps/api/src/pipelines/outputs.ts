@@ -6,6 +6,7 @@ import { loadFile } from '../ingest/files.ts';
 import { runIngest } from '../ingest/job.ts';
 import { serviceActor, transitionFile } from '../ingest/state.ts';
 import type { Storage } from '../storage.ts';
+import { notifyWatchers } from '../watch/notify.ts';
 import { linkLineage } from './lineage.ts';
 import { parseS3Uri } from './runner.ts';
 
@@ -96,6 +97,7 @@ export async function processRunOutputs(deps: OutputDeps, runId: string): Promis
         id: releaseId,
       });
       await publishRelease(db, actor, releaseId, `Published from pipeline run ${runId}`);
+      await notifyWatchers(deps, releaseId, actor);
     }
   } catch (error) {
     await db
