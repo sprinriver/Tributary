@@ -24,6 +24,8 @@ const TABLES = [
   'experiment',
   'experiment_version',
   'file_object',
+  'gene_set',
+  'gene_set_collection',
   'group_member',
   'group_role_mapping',
   'import_preset',
