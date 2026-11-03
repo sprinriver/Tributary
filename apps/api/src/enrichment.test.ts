@@ -186,6 +186,87 @@ describe('pathway enrichment', () => {
     expect([...stub.calls[1]!.hits].sort()).toEqual([...strongDown].sort());
   });
 
+  it('ENR-03: untested features (no adjusted p or fold change) are not in the background, and are counted', async () => {
+    // The same topTable with three rows untested (NA), e.g. removed by the tool's independent filtering.
+    const [head, ...body] = readFileSync(`${FIXTURES}/toptable.tsv`, 'utf8').trim().split('\n');
+    const untested = body.slice(-3).map((l) => l.split('\t')[1]!);
+    const edited = [
+      head,
+      ...body.map((l, i) => {
+        if (i < body.length - 3) return l;
+        const v = l.split('\t');
+        v[cols.indexOf('logFC')] = 'NA';
+        v[cols.indexOf('P.Value')] = 'NA';
+        v[cols.indexOf('adj.P.Val')] = 'NA';
+        return v.join('\t');
+      }),
+    ].join('\n');
+    const program = (
+      await t.db.selectFrom('program').select('id').where('code', '=', 'ENR').executeTakeFirstOrThrow()
+    ).id;
+    const na = await publishedDaRelease(t, scientist, program, 'Enrichment DA with NA', {
+      bytes: Buffer.from(edited + '\n'),
+    });
+    stub.calls.length = 0;
+    const res = await enrich(scientist, { release_id: na.release });
+    expect(res.statusCode, res.body).toBe(200);
+    const sent = stub.calls[0]!;
+    for (const g of untested) expect(sent.background).not.toContain(g);
+    expect((res.json() as Json).provenance).toMatchObject({
+      untested_features: 3,
+      background: all.length - 3,
+    });
+  });
+
+  it('ENR-03: with a zero fold-change threshold, direction is a strict sign test', async () => {
+    stub.calls.length = 0;
+    await enrich(scientist, { direction: 'up', abs_log2fc_min: 0 });
+    expect([...stub.calls[0]!.hits].sort()).toEqual(genesOf((r) => r.adjP <= 0.05 && r.logFC > 0).sort());
+  });
+
+  it('ENR-03: a hit protein group with several genes is reported, not hidden', async () => {
+    // Every feature is a hit: the two-gene group (HSP90AA1;HSP90AB1) is one feature but two identifiers.
+    const res = await enrich(scientist, { adj_p_max: 1, abs_log2fc_min: 0 });
+    expect((res.json() as Json).provenance).toMatchObject({ multi_id_hit_features: 1 });
+  });
+
+  it('ENR-03: the annotated universe keeps only identifiers that are in at least one set', async () => {
+    stub.calls.length = 0;
+    const res = await enrich(scientist, { universe: 'annotated' });
+    expect(res.statusCode, res.body).toBe(200);
+    const members = new Set(GMT.split('\n').flatMap((l) => l.split('\t').slice(2)));
+    expect([...stub.calls[0]!.background].sort()).toEqual(all.filter((g) => members.has(g)).sort());
+    expect(stub.calls[0]!.hits.every((g: string) => members.has(g))).toBe(true);
+    expect((res.json() as Json).provenance).toMatchObject({ universe: 'annotated' });
+  });
+
+  it('ENR-03: a collection for another species than the experiment is refused', async () => {
+    const program = (
+      await t.db.selectFrom('program').select('id').where('code', '=', 'ENR').executeTakeFirstOrThrow()
+    ).id;
+    const human = await publishedDaRelease(t, scientist, program, 'Enrichment DA human', {
+      species: { id: 'NCBITaxon:9606', label: 'Homo sapiens' },
+    });
+    const mouse = (
+      await t.call(admin, {
+        method: 'POST',
+        url: '/v1/gene-set-collections',
+        payload: {
+          name: 'Mouse sets',
+          source: 'synthetic',
+          source_release: 'm1',
+          species: 'NCBITaxon:10090',
+          id_type: 'gene_symbol',
+          gmt: GMT,
+        },
+        headers: { 'x-change-reason': 'mouse' },
+      })
+    ).json() as Json;
+    const res = await enrich(scientist, { release_id: human.release, collection_id: mouse.id });
+    expect(res.statusCode).toBe(422);
+    expect(res.json()).toMatchObject({ code: 'species_mismatch', field: 'collection_id' });
+  });
+
   it('ENR-03: other programs cannot see the release; unknown collections are not found; no hits is a field error', async () => {
     expect((await enrich(outsider)).statusCode).toBe(404);
     expect(

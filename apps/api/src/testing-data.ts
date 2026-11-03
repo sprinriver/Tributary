@@ -23,18 +23,25 @@ export async function publishedDaRelease(
   token: string,
   programId: string,
   name: string,
+  /** Another topTable (default: the fixture's) and the experiment's species (default: none recorded). */
+  options: { bytes?: Buffer; species?: { id: string; label: string } } = {},
 ): Promise<{ version: string; release: string }> {
   const call = (method: 'POST' | 'PUT', url: string, payload: Json) =>
     t.call(token, { method, url, payload, headers: { 'x-change-reason': 'test' } });
   const created = (
-    await call('POST', '/v1/experiments', { program_id: programId, assay_type: 'proteomics_dia', name })
+    await call('POST', '/v1/experiments', {
+      program_id: programId,
+      assay_type: 'proteomics_dia',
+      name,
+      ...(options.species ? { species: options.species } : {}),
+    })
   ).json() as Json;
   const version = created.versions[0].id as string;
   await call('PUT', `/v1/versions/${version}/samples`, { rows: manifestRows() });
   const contrasts = (
     await call('PUT', `/v1/versions/${version}/contrasts`, { contrasts: [CONTRAST] })
   ).json() as Json;
-  const bytes = readFileSync(`${ONC_DIA_05}/toptable.tsv`);
+  const bytes = options.bytes ?? readFileSync(`${ONC_DIA_05}/toptable.tsv`);
   const started = (
     await call('POST', '/v1/files/uploads', {
       experiment_version_id: version,

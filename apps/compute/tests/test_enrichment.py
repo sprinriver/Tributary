@@ -91,3 +91,21 @@ def test_ENR_01_no_set_left_to_test_is_an_error_not_an_empty_answer() -> None:
     res = _post(_body(min_size=50))
     assert res.status_code == 422
     assert res.json()["code"] == "no_sets_tested"
+
+
+def test_ENR_01_extreme_overlaps_keep_p_values_positive() -> None:
+    # 300 of 300 set members are the 300 hits among 10,000: P underflows a double without care.
+    background = [f"B{i:05d}" for i in range(10_000)]
+    hits = background[:300]
+    out = _post(
+        {
+            "hits": hits,
+            "background": background,
+            "gene_sets": [{"id": "ALL_HITS", "name": "All hits", "members": hits}],
+            "min_size": 1,
+            "max_size": 1000,
+        }
+    ).json()
+    term = out["terms"][0]
+    assert 0 < term["p_value"] <= 1
+    assert 0 < term["adj_p_value"] <= 1
