@@ -1,0 +1,99 @@
+import { z } from 'zod';
+import { EnrichmentTermSchema } from '../enrichment.ts';
+
+// Gene-set collections and pathway enrichment over a differential-abundance release (Phase 24, ENR-02/03).
+
+export const GeneSetIdTypeSchema = z.enum(['gene_symbol', 'uniprot_accession']);
+
+export const ImportGeneSetsBodySchema = z
+  .strictObject({
+    /** e.g. "Reactome pathways (human)". */
+    name: z.string().trim().min(1).max(200),
+    /** e.g. Reactome, GO:BP, or an internal source. */
+    source: z.string().trim().min(1).max(100),
+    /** The source's version, e.g. "Reactome 94" or a GO release date. */
+    source_release: z.string().trim().min(1).max(100),
+    /** NCBITaxon CURIE, e.g. NCBITaxon:9606. */
+    species: z.string().regex(/^NCBITaxon:\d+$/, 'An NCBITaxon CURIE, e.g. NCBITaxon:9606'),
+    id_type: GeneSetIdTypeSchema,
+    /** GMT text: one set per line, "id<TAB>description<TAB>member<TAB>member…". */
+    gmt: z.string().min(1).max(50_000_000),
+  })
+  .meta({ id: 'ImportGeneSetsBody' });
+export type ImportGeneSetsBody = z.infer<typeof ImportGeneSetsBodySchema>;
+
+export const GeneSetCollectionSchema = z
+  .object({
+    id: z.uuid(),
+    name: z.string(),
+    source: z.string(),
+    source_release: z.string(),
+    species: z.string(),
+    id_type: GeneSetIdTypeSchema,
+    set_count: z.int(),
+    member_count: z.int(),
+    created_at: z.string(),
+  })
+  .meta({ id: 'GeneSetCollection' });
+export type GeneSetCollection = z.infer<typeof GeneSetCollectionSchema>;
+
+export const GeneSetCollectionListSchema = z
+  .object({ items: z.array(GeneSetCollectionSchema) })
+  .meta({ id: 'GeneSetCollectionList' });
+
+export const EnrichmentBodySchema = z
+  .strictObject({
+    /** A differential_abundance release. */
+    release_id: z.uuid(),
+    /** Required when the release holds more than one contrast ("numerator vs denominator"). */
+    contrast_label: z.string().min(1).max(500).optional(),
+    collection_id: z.uuid(),
+    /** up: log2 fold change ≥ threshold; down: ≤ −threshold; both: |log2 fold change| ≥ threshold. */
+    direction: z.enum(['up', 'down', 'both']).default('both'),
+    adj_p_max: z.number().gt(0).lte(1).default(0.05),
+    abs_log2fc_min: z.number().min(0).max(20).default(1),
+    min_size: z.int().min(1).max(10_000).default(10),
+    max_size: z.int().min(1).max(100_000).default(500),
+  })
+  .meta({ id: 'EnrichmentBody' });
+export type EnrichmentBody = z.infer<typeof EnrichmentBodySchema>;
+
+export const EnrichmentResponseSchema = z
+  .object({
+    terms: z.array(EnrichmentTermSchema),
+    provenance: z.object({
+      release_id: z.uuid(),
+      contrast_label: z.string(),
+      collection: z.object({
+        id: z.uuid(),
+        name: z.string(),
+        source: z.string(),
+        source_release: z.string(),
+        id_type: GeneSetIdTypeSchema,
+      }),
+      thresholds: z.object({
+        direction: z.enum(['up', 'down', 'both']),
+        adj_p_max: z.number(),
+        abs_log2fc_min: z.number(),
+        min_size: z.int(),
+        max_size: z.int(),
+      }),
+      /** Rows of the contrast, and how many of them were hits. */
+      features: z.int(),
+      hit_features: z.int(),
+      /** Features without an identifier of the collection's type (left out of the universe). */
+      features_without_ids: z.int(),
+      /** Distinct identifiers after expanding protein groups (N and n of the test). */
+      background: z.int(),
+      hits: z.int(),
+      tested: z.int(),
+      excluded_small: z.int(),
+      excluded_large: z.int(),
+      method: z.string(),
+      adj_method: z.string(),
+      transformations: z.array(z.string()),
+      compute_version: z.string(),
+    }),
+  })
+  .meta({ id: 'EnrichmentResponse' });
+export type EnrichmentResponse = z.infer<typeof EnrichmentResponseSchema>;

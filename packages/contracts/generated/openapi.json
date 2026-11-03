@@ -10590,6 +10590,271 @@
           }
         }
       }
+    },
+    "/v1/gene-set-collections": {
+      "get": {
+        "operationId": "listGeneSetCollections",
+        "summary": "Gene-set collections available for enrichment",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneSetCollectionList"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "importGeneSets",
+        "summary": "Import a gene-set collection from GMT text (system admin)",
+        "parameters": [
+          {
+            "name": "X-Change-Reason",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Recorded in the audit log"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportGeneSetsBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GeneSetCollection"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/enrichment": {
+      "post": {
+        "operationId": "runEnrichment",
+        "summary": "Over-representation analysis of a contrast’s hits against a gene-set collection",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EnrichmentBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnrichmentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -14058,6 +14323,474 @@
         ],
         "additionalProperties": false
       },
+      "EnrichmentBody": {
+        "type": "object",
+        "properties": {
+          "release_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "contrast_label": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "collection_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "direction": {
+            "default": "both",
+            "type": "string",
+            "enum": [
+              "up",
+              "down",
+              "both"
+            ]
+          },
+          "adj_p_max": {
+            "default": 0.05,
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1
+          },
+          "abs_log2fc_min": {
+            "default": 1,
+            "type": "number",
+            "minimum": 0,
+            "maximum": 20
+          },
+          "min_size": {
+            "default": 10,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "max_size": {
+            "default": 500,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "release_id",
+          "collection_id",
+          "direction",
+          "adj_p_max",
+          "abs_log2fc_min",
+          "min_size",
+          "max_size"
+        ],
+        "additionalProperties": false
+      },
+      "EnrichmentRequest": {
+        "type": "object",
+        "properties": {
+          "hits": {
+            "minItems": 1,
+            "maxItems": 100000,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "background": {
+            "minItems": 1,
+            "maxItems": 500000,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            }
+          },
+          "gene_sets": {
+            "minItems": 1,
+            "maxItems": 100000,
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 200
+                },
+                "name": {
+                  "type": "string",
+                  "maxLength": 500
+                },
+                "members": {
+                  "minItems": 1,
+                  "maxItems": 50000,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "members"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "min_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "max_size": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100000
+          }
+        },
+        "required": [
+          "hits",
+          "background",
+          "gene_sets",
+          "min_size",
+          "max_size"
+        ],
+        "additionalProperties": false
+      },
+      "EnrichmentResponse": {
+        "type": "object",
+        "properties": {
+          "terms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "overlap": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "expected": {
+                  "type": "number"
+                },
+                "fold_enrichment": {
+                  "type": "number"
+                },
+                "p_value": {
+                  "type": "number"
+                },
+                "adj_p_value": {
+                  "type": "number"
+                },
+                "genes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "size",
+                "overlap",
+                "expected",
+                "fold_enrichment",
+                "p_value",
+                "adj_p_value",
+                "genes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "release_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "contrast_label": {
+                "type": "string"
+              },
+              "collection": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "source_release": {
+                    "type": "string"
+                  },
+                  "id_type": {
+                    "type": "string",
+                    "enum": [
+                      "gene_symbol",
+                      "uniprot_accession"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "source",
+                  "source_release",
+                  "id_type"
+                ],
+                "additionalProperties": false
+              },
+              "thresholds": {
+                "type": "object",
+                "properties": {
+                  "direction": {
+                    "type": "string",
+                    "enum": [
+                      "up",
+                      "down",
+                      "both"
+                    ]
+                  },
+                  "adj_p_max": {
+                    "type": "number"
+                  },
+                  "abs_log2fc_min": {
+                    "type": "number"
+                  },
+                  "min_size": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  "max_size": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": [
+                  "direction",
+                  "adj_p_max",
+                  "abs_log2fc_min",
+                  "min_size",
+                  "max_size"
+                ],
+                "additionalProperties": false
+              },
+              "features": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "hit_features": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "features_without_ids": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "background": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "hits": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "tested": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "excluded_small": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "excluded_large": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "method": {
+                "type": "string"
+              },
+              "adj_method": {
+                "type": "string"
+              },
+              "transformations": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "compute_version": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "release_id",
+              "contrast_label",
+              "collection",
+              "thresholds",
+              "features",
+              "hit_features",
+              "features_without_ids",
+              "background",
+              "hits",
+              "tested",
+              "excluded_small",
+              "excluded_large",
+              "method",
+              "adj_method",
+              "transformations",
+              "compute_version"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "terms",
+          "provenance"
+        ],
+        "additionalProperties": false
+      },
+      "EnrichmentResult": {
+        "type": "object",
+        "properties": {
+          "terms": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "size": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "overlap": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "expected": {
+                  "type": "number"
+                },
+                "fold_enrichment": {
+                  "type": "number"
+                },
+                "p_value": {
+                  "type": "number"
+                },
+                "adj_p_value": {
+                  "type": "number"
+                },
+                "genes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "size",
+                "overlap",
+                "expected",
+                "fold_enrichment",
+                "p_value",
+                "adj_p_value",
+                "genes"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "n_hits": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "n_background": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "tested": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "excluded_small": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "excluded_large": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "method": {
+            "type": "string"
+          },
+          "adj_method": {
+            "type": "string"
+          },
+          "compute_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "terms",
+          "n_hits",
+          "n_background",
+          "tested",
+          "excluded_small",
+          "excluded_large",
+          "method",
+          "adj_method",
+          "compute_version"
+        ],
+        "additionalProperties": false
+      },
       "Experiment": {
         "type": "object",
         "properties": {
@@ -15026,6 +15759,75 @@
         ],
         "additionalProperties": false
       },
+      "GeneSetCollection": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string"
+          },
+          "source_release": {
+            "type": "string"
+          },
+          "species": {
+            "type": "string"
+          },
+          "id_type": {
+            "type": "string",
+            "enum": [
+              "gene_symbol",
+              "uniprot_accession"
+            ]
+          },
+          "set_count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "member_count": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "created_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "source",
+          "source_release",
+          "species",
+          "id_type",
+          "set_count",
+          "member_count",
+          "created_at"
+        ],
+        "additionalProperties": false
+      },
+      "GeneSetCollectionList": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GeneSetCollection"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "additionalProperties": false
+      },
       "Group": {
         "type": "object",
         "properties": {
@@ -15473,6 +16275,51 @@
           "service",
           "status",
           "version"
+        ],
+        "additionalProperties": false
+      },
+      "ImportGeneSetsBody": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "source": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "source_release": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          "species": {
+            "type": "string",
+            "pattern": "^NCBITaxon:\\d+$"
+          },
+          "id_type": {
+            "type": "string",
+            "enum": [
+              "gene_symbol",
+              "uniprot_accession"
+            ]
+          },
+          "gmt": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 50000000
+          }
+        },
+        "required": [
+          "name",
+          "source",
+          "source_release",
+          "species",
+          "id_type",
+          "gmt"
         ],
         "additionalProperties": false
       },

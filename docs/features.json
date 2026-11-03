@@ -91,5 +91,9 @@
   {"id": "OPS-06", "phase": 22, "parity": "new", "description": "Backup and restore rehearsed; runbook written", "verify": "test -f docs/RUNBOOK.md", "passes": true},
   {"id": "OPS-07", "phase": 22, "parity": "new", "description": "User and admin guides with screenshots; demo script; v2.0.0 tag", "verify": "test -f docs/USER_GUIDE.md && git rev-parse -q --verify refs/tags/v2.0.0", "passes": false},
   {"id": "OPS-08", "phase": 22, "parity": "new", "description": "Request IDs and W3C trace context propagate from the API to query and compute and appear in every service's logs", "verify": "pnpm run test:api OPS-08 && pnpm run test:query OPS-08 && pnpm run test:compute -k OPS_08", "passes": true},
-  {"id": "OPS-09", "phase": 22, "parity": "new", "description": "Accessibility pass: no serious or critical axe (WCAG 2.2 AA) violations on any page", "verify": "pnpm e2e OPS-09", "passes": true}
+  {"id": "OPS-09", "phase": 22, "parity": "new", "description": "Accessibility pass: no serious or critical axe (WCAG 2.2 AA) violations on any page", "verify": "pnpm e2e OPS-09", "passes": true},
+  {"id": "ENR-01", "phase": 24, "parity": "new", "description": "Over-representation analysis: one-sided hypergeometric p-values, BH adjustment, fold enrichment, size limits on the measured background", "verify": "pnpm run test:compute -k ENR_01", "passes": false},
+  {"id": "ENR-02", "phase": 24, "parity": "new", "description": "Gene-set collections imported from GMT (source, release, species, identifier type), audited, with line-numbered errors", "verify": "pnpm run test:api ENR-02", "passes": false},
+  {"id": "ENR-03", "phase": 24, "parity": "new", "description": "Enrichment of a contrast's hits (direction, adjusted p and fold-change thresholds) against a collection, with provenance", "verify": "pnpm run test:api ENR-03", "passes": false},
+  {"id": "ENR-04", "phase": 24, "parity": "new", "description": "Results page enrichment panel: dot plot with a table alternative, demo gene sets in the synthetic corpus", "verify": "pnpm e2e ENR-04", "passes": false}
 ]

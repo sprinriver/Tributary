@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/EnrichmentResult",
+  "$defs": {
+    "EnrichmentResult": {
+      "type": "object",
+      "properties": {
+        "terms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "size": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "overlap": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "expected": {
+                "type": "number"
+              },
+              "fold_enrichment": {
+                "type": "number"
+              },
+              "p_value": {
+                "type": "number"
+              },
+              "adj_p_value": {
+                "type": "number"
+              },
+              "genes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "size",
+              "overlap",
+              "expected",
+              "fold_enrichment",
+              "p_value",
+              "adj_p_value",
+              "genes"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "n_hits": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "n_background": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "tested": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "excluded_small": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "excluded_large": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "method": {
+          "type": "string"
+        },
+        "adj_method": {
+          "type": "string"
+        },
+        "compute_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "terms",
+        "n_hits",
+        "n_background",
+        "tested",
+        "excluded_small",
+        "excluded_large",
+        "method",
+        "adj_method",
+        "compute_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

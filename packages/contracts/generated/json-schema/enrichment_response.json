@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/EnrichmentResponse",
+  "$defs": {
+    "EnrichmentResponse": {
+      "type": "object",
+      "properties": {
+        "terms": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "size": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "overlap": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "expected": {
+                "type": "number"
+              },
+              "fold_enrichment": {
+                "type": "number"
+              },
+              "p_value": {
+                "type": "number"
+              },
+              "adj_p_value": {
+                "type": "number"
+              },
+              "genes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "id",
+              "name",
+              "size",
+              "overlap",
+              "expected",
+              "fold_enrichment",
+              "p_value",
+              "adj_p_value",
+              "genes"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "release_id": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "contrast_label": {
+              "type": "string"
+            },
+            "collection": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "source": {
+                  "type": "string"
+                },
+                "source_release": {
+                  "type": "string"
+                },
+                "id_type": {
+                  "type": "string",
+                  "enum": [
+                    "gene_symbol",
+                    "uniprot_accession"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "source",
+                "source_release",
+                "id_type"
+              ],
+              "additionalProperties": false
+            },
+            "thresholds": {
+              "type": "object",
+              "properties": {
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "up",
+                    "down",
+                    "both"
+                  ]
+                },
+                "adj_p_max": {
+                  "type": "number"
+                },
+                "abs_log2fc_min": {
+                  "type": "number"
+                },
+                "min_size": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "max_size": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "direction",
+                "adj_p_max",
+                "abs_log2fc_min",
+                "min_size",
+                "max_size"
+              ],
+              "additionalProperties": false
+            },
+            "features": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "hit_features": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "features_without_ids": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "background": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "hits": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "tested": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "excluded_small": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "excluded_large": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "method": {
+              "type": "string"
+            },
+            "adj_method": {
+              "type": "string"
+            },
+            "transformations": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "compute_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "release_id",
+            "contrast_label",
+            "collection",
+            "thresholds",
+            "features",
+            "hit_features",
+            "features_without_ids",
+            "background",
+            "hits",
+            "tested",
+            "excluded_small",
+            "excluded_large",
+            "method",
+            "adj_method",
+            "transformations",
+            "compute_version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "terms",
+        "provenance"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
