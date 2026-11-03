@@ -189,7 +189,8 @@ describe('pathway enrichment', () => {
   it('ENR-03: untested features (no adjusted p or fold change) are not in the background, and are counted', async () => {
     // The same topTable with three rows untested (NA), e.g. removed by the tool's independent filtering.
     const [head, ...body] = readFileSync(`${FIXTURES}/toptable.tsv`, 'utf8').trim().split('\n');
-    const untested = body.slice(-3).map((l) => l.split('\t')[1]!);
+    // Genes of the untested rows (a protein group can hold several).
+    const untested = body.slice(-3).flatMap((l) => l.split('\t')[1]!.split(';'));
     const edited = [
       head,
       ...body.map((l, i) => {
@@ -214,7 +215,7 @@ describe('pathway enrichment', () => {
     for (const g of untested) expect(sent.background).not.toContain(g);
     expect((res.json() as Json).provenance).toMatchObject({
       untested_features: 3,
-      background: all.length - 3,
+      background: all.length - untested.length,
     });
   });
 
