@@ -23,10 +23,9 @@ export interface Compute {
   pca(body: Body): Promise<z.infer<typeof PcaResultSchema>>;
 }
 
-/** HTTP client; compute 422s become chart field errors (the control the user changes). */
-export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute {
-  const call =
-    <S extends z.ZodType>(path: string, schema: S, fields: Record<string, string>) =>
+/** One apps/compute endpoint; its 422s become field errors on the control the user changes (`fields`). */
+export function computeCall(config: ApiConfig, fetchImpl: typeof fetch) {
+  return <S extends z.ZodType>(path: string, schema: S, fields: Record<string, string>) =>
     async (body: Body): Promise<z.infer<S>> => {
       let res: Response;
       try {
@@ -54,6 +53,11 @@ export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute
         throw new HttpError(502, 'compute_failed', `The compute service answered HTTP ${res.status}.`);
       return schema.parse(json);
     };
+}
+
+/** HTTP client; compute 422s become chart field errors (the control the user changes). */
+export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute {
+  const call = computeCall(config, fetchImpl);
   return {
     cluster: call('/stats/cluster', ClusterResultSchema, {
       values: 'encodings.values',

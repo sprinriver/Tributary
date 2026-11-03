@@ -305,6 +305,35 @@ export interface FileObject {
   upload_id: string | null;
 }
 
+export interface GeneSet {
+  collection_id: string;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  members: string[];
+  name: string;
+  set_key: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface GeneSetCollection {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  id_type: string;
+  member_count: number;
+  name: string;
+  set_count: number;
+  source: string;
+  source_release: string;
+  species: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface GroupMember {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -817,6 +846,8 @@ export interface DB {
   experiment: Experiment;
   experiment_version: ExperimentVersion;
   file_object: FileObject;
+  gene_set: GeneSet;
+  gene_set_collection: GeneSetCollection;
   group_member: GroupMember;
   group_role_mapping: GroupRoleMapping;
   import_preset: ImportPreset;
