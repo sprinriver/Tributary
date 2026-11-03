@@ -22,6 +22,7 @@ import { ListsPage } from './admin/ListsPage.tsx';
 import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
+import { TriagePage, type TriageSearch } from './triage/TriagePage.tsx';
 
 const str = (v: unknown) => (typeof v === 'string' && v !== '' ? v : undefined);
 
@@ -120,6 +121,19 @@ const searchRoute = createRoute({
     return type === 'experiment' || type === 'sample' ? { ...out, type } : out;
   },
 });
+const triageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/triage',
+  component: TriagePage,
+  validateSearch: (search: Record<string, unknown>): TriageSearch => {
+    const kind = str(search.kind);
+    return {
+      ...(str(search.item) ? { item: str(search.item)! } : {}),
+      ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+      ...(kind === 'protein' || kind === 'compound' ? { kind } : {}),
+    };
+  },
+});
 const lineageRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/lineage/$kind/$id',
@@ -178,6 +192,7 @@ export const router = createRouter({
     proteinRoute,
     compoundRoute,
     compareRoute,
+    triageRoute,
     viewsRoute,
     releaseRoute,
     runRoute,

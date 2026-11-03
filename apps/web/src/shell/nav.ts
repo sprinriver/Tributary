@@ -24,6 +24,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       { to: '/explore', label: 'Explore', icon: 'table' },
       { to: '/views', label: 'Saved views', icon: 'table' },
       { to: '/compare', label: 'Compare', icon: 'compare' },
+      { to: '/triage', label: 'Triage', icon: 'workflow' },
       { to: '/search', label: 'Search', icon: 'search' },
     ],
   },
