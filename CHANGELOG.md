@@ -4,6 +4,10 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Watchlists and alerts (WAT-01…03):
+  - Watch a protein, gene or compound.
+  - When a release you can read is published with a hit for it (adjusted p ≤ 0.05 and |log2 FC| ≥ 1), you get an
+    alert in the Alerts menu.
 - Hit triage board (TRI-01…04):
   - Proteins and compounds per program are marked advance, watch or drop. A status change needs a reason.
   - Owners, comments and evidence snapshots from releases.

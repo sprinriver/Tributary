@@ -197,6 +197,17 @@ drop.
 
 ![Triage board](../artifacts/phase-25/triage-board.png)
 
+## Watchlists and alerts
+- **Watch:** on a protein or compound page, click **Watch**. Click **Watching ✓ — stop** to stop.
+- **Alerts:** when a release is published that you can read and that has a hit for something you watch, the
+  **Alerts** menu in the top bar shows it. This covers releases from pipelines too.
+  - A hit is adjusted p ≤ 0.05 and |log2 FC| ≥ 1; for compounds, presence in a dose-response release.
+  - Each alert gives the experiment, contrast, log2 FC and adjusted p, and links to the results.
+- **Mark read:** open an alert, or use **Mark all read**.
+- **Privacy:** watches and alerts are yours alone. You only hear about programs you can read.
+
+![Alerts](../artifacts/phase-26/alerts.png)
+
 ## Lineage and audit
 - **Lineage:** shows where a release or chart came from: raw file → pipeline run (with its revision) → release →
   saved chart.

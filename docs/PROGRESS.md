@@ -1382,3 +1382,27 @@ Entry template:
   - "Add to triage" is not yet on rows of the results page's top-hits table.
   - Evidence cannot yet be attached from the UI.
   - The owner picker supports "Assign to me" only (the API takes any program member).
+
+## 2026-11-03 — Phase 26: Watchlists and alerts — done
+- Built:
+  - **Schema:** migration 0023 with `watch` (per user, kind and key; soft delete) and `alert` (unique per watch,
+    release and contrast).
+  - **Alerts on publish:** `notifyWatchers` runs after every publish, both the UI path and pipeline outputs.
+    - It reads only the release's hit rows (adjusted p ≤ 0.05 and |log2 FC| ≥ 1, in the query) in one query.
+    - It matches watched proteins (isoform suffixes stripped), genes and compounds.
+    - Only watchers whose effective roles let them read the program get an alert.
+    - Inserts skip duplicates, and an audit row is written. It is best effort: it never fails a publish.
+  - **API:** list, create (idempotent), delete (soft) watches; list, read and read-all alerts. Everything is
+    personal, so other users get "not found", and every mutation is audited.
+  - **Web:** a Watch button on the protein and compound pages, and an Alerts menu in the top bar.
+- Found by e2e and fixed:
+  - Alert readers and triage owners had used `role_binding` rows only, which missed group-derived roles.
+  - Both now use `loadBindings`, as the principal does.
+- Dependencies added: none.
+- Test changes: DB-01 table list (watch, alert); Prettier formatting of the WAT-03 spec.
+- Evidence: `pnpm check` ✓ (api 235), and `pnpm e2e WAT-03` ✓ and `TRI-04` ✓ locally. The screenshot is
+  `artifacts/phase-26/alerts.png`.
+- Gaps and follow-ups:
+  - Email or webhook delivery of alerts: the in-app menu only for now (the webhooks from Phase 20 could carry them).
+  - Per-watch thresholds.
+  - A page listing all watches.
