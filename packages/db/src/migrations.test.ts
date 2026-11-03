@@ -52,6 +52,9 @@ const TABLES = [
   'search_document',
   'search_embedding',
   'target_annotation',
+  'triage_event',
+  'triage_evidence',
+  'triage_item',
   'webhook_delivery',
   'webhook_subscription',
 ];
