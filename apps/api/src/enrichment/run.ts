@@ -14,6 +14,7 @@ import type { ApiConfig } from '../config.ts';
 import { callQueryService } from '../datasets/query-client.ts';
 import { HttpError, notFound } from '../errors.ts';
 import { resolveSource } from '../query/resolve.ts';
+import { enrichmentFigure, FIGURE_TERMS } from './figure.ts';
 
 /** A contrast with more rows than this is not a hit list but an error in the request. */
 const MAX_ROWS = 500_000;
@@ -144,6 +145,7 @@ export async function runEnrichment(
   const unit = collection.id_type === 'gene_symbol' ? 'gene symbol' : 'UniProt accession';
   return {
     terms: out.terms,
+    figure: enrichmentFigure(out.terms, body.adj_p_max),
     provenance: {
       release_id: body.release_id,
       contrast_label: label,
@@ -181,6 +183,7 @@ export async function runEnrichment(
               ? 'log2 fold change'
               : '−log2 fold change'
         } ≥ ${body.abs_log2fc_min}.`,
+        `Dot plot: the top ${FIGURE_TERMS} terms by p-value; x = −log10(adjusted p) (dashed line at ${body.adj_p_max}), size = hits in the set, colour = fold enrichment.`,
         `Gene-set members not measured here are ignored; sets with fewer than ${body.min_size} or more than ${body.max_size} measured members are not tested.`,
       ],
       compute_version: out.compute_version,

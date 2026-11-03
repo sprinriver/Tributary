@@ -59,6 +59,33 @@
             "additionalProperties": false
           }
         },
+        "figure": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "propertyNames": {
+                  "type": "string"
+                },
+                "additionalProperties": {}
+              }
+            },
+            "layout": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            }
+          },
+          "required": [
+            "data",
+            "layout"
+          ],
+          "additionalProperties": false
+        },
         "provenance": {
           "type": "object",
           "properties": {
@@ -220,6 +247,7 @@
       },
       "required": [
         "terms",
+        "figure",
         "provenance"
       ],
       "additionalProperties": false

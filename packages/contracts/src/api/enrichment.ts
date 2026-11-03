@@ -61,6 +61,11 @@ export type EnrichmentBody = z.infer<typeof EnrichmentBodySchema>;
 export const EnrichmentResponseSchema = z
   .object({
     terms: z.array(EnrichmentTermSchema),
+    /** Dot plot of the top terms (Plotly figure JSON; the page renders it, it computes nothing). */
+    figure: z.object({
+      data: z.array(z.record(z.string(), z.unknown())),
+      layout: z.record(z.string(), z.unknown()),
+    }),
     provenance: z.object({
       release_id: z.uuid(),
       contrast_label: z.string(),

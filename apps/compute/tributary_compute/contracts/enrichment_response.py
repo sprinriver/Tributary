@@ -2,7 +2,7 @@
 #   filename:  enrichment_response.json
 
 from __future__ import annotations
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 from uuid import UUID
 
@@ -20,6 +20,14 @@ class Term(BaseModel):
     p_value: float
     adj_p_value: float
     genes: list[str]
+
+
+class Figure(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    data: list[dict[str, Any]]
+    layout: dict[str, Any]
 
 
 class Collection(BaseModel):
@@ -81,6 +89,7 @@ class EnrichmentResponse(BaseModel):
         extra="forbid",
     )
     terms: list[Term]
+    figure: Figure
     provenance: Provenance
 
 

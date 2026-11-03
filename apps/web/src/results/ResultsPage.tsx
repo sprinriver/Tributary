@@ -6,6 +6,7 @@ import { api } from '../api.ts';
 import { ErrorMessage } from '../components/ui.tsx';
 import { ChartView, LAYOUT } from './ChartView.tsx';
 import { DoseResponseViewer } from './DoseResponseViewer.tsx';
+import { EnrichmentPanel } from './EnrichmentPanel.tsx';
 
 const firstAccession = (v: unknown) =>
   Array.isArray(v) ? String(v[0] ?? '') : String(v ?? '').split(';')[0]!;
@@ -121,6 +122,7 @@ function Results({ r }: { r: VersionResults }) {
           </section>
         ))}
       {da[0] && <TopHits release={da[0].id} />}
+      {da[0] && <EnrichmentPanel release={da[0].id} contrasts={r.contrasts.map((c) => c.label)} />}
       {dr.length > 0 && (
         <section role="region" aria-label="Dose-response" className="stack">
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Dose-response</h2>

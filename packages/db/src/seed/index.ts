@@ -2,6 +2,8 @@ export { COUNTED_TABLES, type SeedCounts } from './counts.ts';
 import { reindexAll } from '../search-index.ts';
 import { countRows, type SeedCounts } from './counts.ts';
 import { manifestRowToSample, SEED_PROTEOMICS_TEMPLATE, type ManifestRow } from '@tributary/contracts';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { sql, type Transaction } from 'kysely';
 import type { Database } from '../client.ts';
 import type { DB } from '../generated/db.ts';
@@ -376,6 +378,45 @@ async function seedReference(
       })),
     )
     .execute();
+
+  // Demo gene-set collection for pathway enrichment (synthetic modules; see fixtures/README.md).
+  const gmt = readFileSync(join(dir, 'reference/gene_sets.gmt'), 'utf8')
+    .split(/\r?\n/)
+    .filter((line) => line.trim() !== '')
+    .map((line) => {
+      const [id = '', name = '', ...members] = line.split('\t');
+      return { id, name: name || id, members: [...new Set(members.filter(Boolean))] };
+    });
+  const collection = await trx
+    .insertInto('gene_set_collection')
+    .values({
+      ...base,
+      name: 'Demo modules (synthetic)',
+      source: 'synthetic',
+      source_release: 'demo-1',
+      species: 'NCBITaxon:9606',
+      id_type: 'gene_symbol',
+      set_count: gmt.length,
+      member_count: gmt.reduce((n, g) => n + g.members.length, 0),
+    })
+    .returning('id')
+    .executeTakeFirstOrThrow();
+  await trx
+    .insertInto('gene_set')
+    .values(
+      gmt.map((g) => ({
+        ...base,
+        collection_id: collection.id,
+        set_key: g.id,
+        name: g.name,
+        members: g.members,
+      })),
+    )
+    .execute();
+  await audit('gene_sets.import', 'gene_set_collection', collection.id, {
+    name: 'Demo modules (synthetic)',
+    sets: gmt.length,
+  });
 
   for (const [code, id] of programIds) {
     await audit('reference.import', 'program', id, {
