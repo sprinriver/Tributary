@@ -86,9 +86,10 @@ export function selectIds(
     if (isHit(r, body)) {
       hitFeatures += 1;
       if (ids.length > 1) multiIdHitFeatures += 1;
+      const fc = r.log2_fc; // non-null here: untested rows were skipped above
       ids.forEach((id) => {
         hits.add(id);
-        hitFcs.set(id, [...(hitFcs.get(id) ?? []), r.log2_fc]);
+        hitFcs.set(id, [...(hitFcs.get(id) ?? []), fc]);
       });
     } else ids.forEach((id) => nonHits.add(id));
   }
