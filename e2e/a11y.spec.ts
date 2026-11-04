@@ -59,6 +59,7 @@ test('OPS-09: every admin page has no serious or critical accessibility violatio
   for (const path of [
     '/admin/programs',
     '/admin/lists',
+    '/admin/notifications',
     '/admin/access',
     '/admin/lifecycle',
     '/admin/health',
