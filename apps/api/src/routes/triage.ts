@@ -16,6 +16,7 @@ import { loadBindings } from '../auth/principal.ts';
 import type { ApiConfig } from '../config.ts';
 import { HttpError, parse } from '../errors.ts';
 import { respond } from '../respond.ts';
+import { triageDecision } from '../notifications/emit.ts';
 import { addEvent, detail, evidenceSnapshot, listItems, readableItem } from '../triage/store.ts';
 
 type IdParams = FastifyRequest<{ Params: { id: string } }>;
@@ -149,6 +150,20 @@ export function registerTriageRoutes(
         reason: body.reason ?? actor.reason,
       });
     });
+    if (body.status !== undefined && body.status !== item.status) {
+      const by = await db
+        .selectFrom('app_user')
+        .select('name')
+        .where('id', '=', actor.userId)
+        .executeTakeFirst();
+      await triageDecision(
+        deps,
+        actor,
+        item,
+        { from: item.status, to: body.status, reason: body.reason ?? null, by: by?.name ?? null },
+        request.log,
+      );
+    }
     return respond(TriageDetailSchema, await detail(db, request, item.id));
   });
 

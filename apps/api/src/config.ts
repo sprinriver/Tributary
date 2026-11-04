@@ -32,6 +32,8 @@ export interface ApiConfig {
   olsUrl: string;
   /** Protein 3D models: a directory of <accession>.cif (empty: none) and AlphaFold DB's base URL (empty: off). */
   proteinModels: { dir: string; alphafoldUrl: string };
+  /** Hosts notification routes may post to besides Slack's and Teams' own (NOTIFY_EXTRA_HOSTS, comma-separated). */
+  notifyExtraHosts: string[];
   sessionTtlHours: number;
   groupRoleMap: GroupRoleMapping[];
   s3: S3Config;
@@ -186,6 +188,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
       env.QUERY_URL ?? (env.QUERY_HOSTPORT ? `http://${env.QUERY_HOSTPORT}` : 'http://127.0.0.1:3100'),
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',
+    notifyExtraHosts: (env.NOTIFY_EXTRA_HOSTS ?? '')
+      .split(',')
+      .map((h) => h.trim().toLowerCase())
+      .filter(Boolean),
     proteinModels: {
       dir:
         env.PROTEIN_MODELS_DIR ??

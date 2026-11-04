@@ -38,6 +38,7 @@ import { registerWebhookRoutes } from './routes/webhooks.ts';
 import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { registerEnrichmentRoutes } from './routes/enrichment.ts';
 import { registerChemRoutes } from './routes/chem.ts';
+import { registerNotificationRoutes } from './routes/notifications.ts';
 import { registerProteinModelRoutes } from './routes/protein-model.ts';
 import { registerQcRoutes } from './routes/qc.ts';
 import { registerTriageRoutes } from './routes/triage.ts';
@@ -140,7 +141,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     });
     registerProgramRoutes(scoped, db);
     registerExperimentRoutes(scoped, db, index);
-    registerVersionRoutes(scoped, db, index);
+    registerVersionRoutes(scoped, db, index, config);
     registerSampleRoutes(scoped, db);
     registerPresetRoutes(scoped, db);
     registerOntologyRoutes(scoped, db, config, fetchImpl);
@@ -164,6 +165,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerQcRoutes(scoped, { db, config, fetch: fetchImpl });
     registerChemRoutes(scoped, db);
     registerProteinModelRoutes(scoped, { config, fetch: fetchImpl });
+    registerNotificationRoutes(scoped, { db, config, fetch: fetchImpl });
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

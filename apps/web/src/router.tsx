@@ -19,6 +19,7 @@ import { AccessPage } from './admin/AccessPage.tsx';
 import { HealthPage } from './admin/HealthPage.tsx';
 import { LifecyclePage } from './admin/LifecyclePage.tsx';
 import { ListsPage } from './admin/ListsPage.tsx';
+import { NotificationsPage } from './admin/NotificationsPage.tsx';
 import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
@@ -193,6 +194,7 @@ const adminPage = (path: string, component: () => React.ReactNode) =>
 const adminRoutes = [
   adminPage('/admin/programs', ProgramsPage),
   adminPage('/admin/lists', ListsPage),
+  adminPage('/admin/notifications', NotificationsPage),
   adminPage('/admin/access', AccessPage),
   adminPage('/admin/lifecycle', LifecyclePage),
   adminPage('/admin/health', HealthPage),

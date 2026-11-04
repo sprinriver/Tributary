@@ -8,6 +8,7 @@ import { processRunOutputs } from './outputs.ts';
 import type { Runners } from './runner.ts';
 import { applyRunStatus, type StatusObservation } from './status.ts';
 import { notifyRunStatus } from '../webhooks/dispatch.ts';
+import { runFinished } from '../notifications/emit.ts';
 
 export interface PipelineDeps {
   db: Database;
@@ -49,6 +50,8 @@ async function announce(
         experiment_version_id: row?.experiment_version_id ?? null,
       },
     );
+    if (TERMINAL_RUN_STATUSES.includes(status as never))
+      await runFinished(deps, await serviceActor(deps.db, run.tenant_id, 'pipelines'), run.id, status);
   } catch {
     // Deliveries record their own failures; a lookup failure here must not affect the run.
   }
