@@ -1577,3 +1577,22 @@ Entry template:
   rows. This is in its own commit.
 - Evidence: `pnpm check` ✓, and `pnpm e2e XLS-01`, `MAN-01` and `OPS-09` ✓ locally. The screenshot is
   `artifacts/phase-32/xlsx-preview.png`.
+
+## 2026-11-04 — Phase 33: Experiment reports — done
+- Built:
+  - **Report page:** `/experiments/{id}/report`, linked from the results page. It shows:
+    - methods;
+    - per contrast: hit counts at the display thresholds (counted by the query service), the volcano and the top 10
+      hits;
+    - data and files.
+  - **Print / save as PDF:** print styles hide the app frame.
+  - **Download PowerPoint:** built in the browser with pptxgenjs, from a unit-tested slide plan, using the rendered
+    volcano images.
+  - **Audit:** both exports are recorded by `POST /v1/versions/{id}/report-exports` and audited
+    (`report.export`).
+- Dependencies added: `pptxgenjs` 4.0.1 (approved).
+- Test changes: the REP-01 payload type was tightened (typecheck only, its own commit).
+- Evidence: `pnpm check` ✓ (api 257, web 38), and `pnpm e2e REP-03` and `OPS-09` ✓ locally. The screenshots are
+  `artifacts/phase-33/report.png` and `report-print.png`.
+- Gaps and follow-ups:
+  - The report covers differential-abundance contrasts. QC, dose-response and enrichment sections can follow.

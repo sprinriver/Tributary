@@ -4,6 +4,9 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Experiment reports (REP-01…03):
+  - A report page per version, with methods, hit counts, volcano and top hits per contrast.
+  - Print to PDF or download as PowerPoint. Every export is audited.
 - Excel sample sheets (XLS-01…02):
   - Upload `.xlsx` manifests. Numbers are kept as stored, dates are flagged, and duplicate or unnamed columns are
     reported.

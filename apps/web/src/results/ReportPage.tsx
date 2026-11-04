@@ -262,7 +262,9 @@ export function ReportPage() {
               {r.releases.map((x) => (
                 <li key={x.id}>
                   {x.dataset_name} — {x.kind.replace(/_/g, ' ')}, {x.row_count} rows
-                  {x.tool ? ` (${x.tool}${x.tool_version ? ` ${x.tool_version}` : ''})` : ''}
+                  {x.tool
+                    ? ` (${x.tool}${x.tool_version && x.tool_version !== 'unknown' ? ` ${x.tool_version}` : ', version not recorded'})`
+                    : ''}
                 </li>
               ))}
               {r.files.map((f) => (

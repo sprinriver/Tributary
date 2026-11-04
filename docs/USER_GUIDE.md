@@ -191,6 +191,15 @@ The test is one-sided hypergeometric over-representation with Benjamini–Hochbe
 
 ![Pathway enrichment](../artifacts/phase-24/enrichment.png)
 
+### Reports for meetings
+From a results page, open **Report (PDF or PowerPoint)**. It has three parts:
+- methods;
+- for each contrast, how many proteins pass the display thresholds (up and down), the volcano and the top 10 hits;
+- the data and files used.
+
+**Print / save as PDF** prints the page without the app's menus. **Download PowerPoint** builds slides: a title,
+methods, then each contrast and its top hits. Both are recorded in the audit log.
+
 ### Gene–concept network
 After an enrichment run, the **gene–concept network** links the top 8 gene sets (dark squares) to their hit genes
 (circles).
