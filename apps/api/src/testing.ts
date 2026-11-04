@@ -13,6 +13,7 @@ import { createPersonalAccessToken } from './auth/tokens.ts';
 import { loadConfig, type ApiConfig } from './config.ts';
 import { MemoryIngestQueue } from './ingest/queue.ts';
 import { sweepNotifications } from './notifications/sweep.ts';
+import { MemoryMailer } from './notifications/mailer.ts';
 import { buildApp as buildQueryApp } from '@tributary/query/app';
 import { loadQueryConfig } from '@tributary/query/config';
 import { Storage } from './storage.ts';
@@ -44,6 +45,10 @@ export interface TestApi {
   drainIngest(): Promise<number>;
   /** Sends the notifications due at `now` (default: now); returns how many attempts were made. */
   drainNotifications(now?: Date): Promise<number>;
+  /** Emails sent so far (in-memory mailer). */
+  emails: { to: string; subject: string; text: string }[];
+  /** Makes the in-memory mailer fail (to test retries). */
+  failEmails(fail: boolean): void;
   /** Pipeline status: one poll of every non-terminal run, or one EventBridge event as from SQS. */
   pipelines: { poll(): Promise<number>; event(message: object, runner?: RunnerKind): Promise<boolean> };
   close(): Promise<void>;
@@ -101,6 +106,7 @@ export async function startTestApi(
   const storage = new Storage(config.s3);
   if (testS3) await storage.ensureBucket([config.publicUrl]);
   const queue = new MemoryIngestQueue();
+  const mailer = new MemoryMailer();
   const queryApp = options.query
     ? await buildQueryApp({
         config: loadQueryConfig({
@@ -187,7 +193,9 @@ export async function startTestApi(
     },
     s3: { client: storage.client, bucket: storage.bucket },
     drainIngest: () => queue.drain({ db, storage }),
-    drainNotifications: (now) => sweepNotifications({ db, fetch: fetchImpl, config }, now),
+    drainNotifications: (now) => sweepNotifications({ db, fetch: fetchImpl, config, mailer }, now),
+    emails: mailer.sent,
+    failEmails: (fail) => mailer.fail(fail),
     pipelines: {
       poll: () => pollRuns(pipelineDeps),
       event: (message, runner) => handleRunEvent(pipelineDeps, message, runner),

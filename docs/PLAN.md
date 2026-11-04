@@ -457,3 +457,13 @@ Definition of done:
 - [x] Open the report and download the PowerPoint (e2e, screenshot in artifacts/phase-33/)
 - [x] `pnpm check` exits 0
 
+## Phase 34 — Personal email
+Status: in progress
+Goal: People hear about what concerns them personally (a hit on something they watch, an item assigned to them, their run finishing) even when they are not in the app.
+Features: MAIL-01 … MAIL-03
+In scope: per-person preferences (on by default, audited); an email outbox sent by the notification sweep with retries; transports: Amazon SES (@aws-sdk/client-sesv2 3.1156.0) or SMTP (nodemailer 9.0.4), both approved 2026-11-04, or none (emails are then not queued); names and links only, never data values; a settings page.
+Definition of done:
+- [ ] API tests for preferences, alert, triage and retry emails
+- [ ] Change email settings in the UI (e2e, screenshot in artifacts/phase-34/)
+- [ ] `pnpm check` exits 0
+

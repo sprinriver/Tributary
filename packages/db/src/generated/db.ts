@@ -256,6 +256,24 @@ export interface DatasetRelease {
   validation: Generated<Json>;
 }
 
+export interface EmailDelivery {
+  attempts: Generated<number>;
+  body: string;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  delivered_at: Timestamp | null;
+  error: string | null;
+  event: string;
+  id: Generated<string>;
+  next_attempt_at: Generated<Timestamp>;
+  status: Generated<string>;
+  subject: string;
+  tenant_id: string;
+  to_address: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
 export interface Experiment {
   archived_at: Timestamp | null;
   assay_type: AssayTypeKey;
@@ -497,6 +515,17 @@ export interface NotificationDelivery {
   tenant_id: string;
   title: string;
   updated_at: Generated<Timestamp>;
+}
+
+export interface NotificationPreference {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  email: Generated<boolean>;
+  events: string[];
+  id: Generated<string>;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
 }
 
 export interface NotificationRoute {
@@ -947,6 +976,7 @@ export interface DB {
   contrast: Contrast;
   dataset: Dataset;
   dataset_release: DatasetRelease;
+  email_delivery: EmailDelivery;
   experiment: Experiment;
   experiment_version: ExperimentVersion;
   file_object: FileObject;
@@ -963,6 +993,7 @@ export interface DB {
   metadata_field_def: MetadataFieldDef;
   metadata_template: MetadataTemplate;
   notification_delivery: NotificationDelivery;
+  notification_preference: NotificationPreference;
   notification_route: NotificationRoute;
   onboarding_item: OnboardingItem;
   onboarding_run: OnboardingRun;

@@ -17,6 +17,7 @@ import { ENRICHMENT_ROUTES } from './routes-enrichment.ts';
 import { TRIAGE_ROUTES } from './routes-triage.ts';
 import { WATCH_ROUTES } from './routes-watch.ts';
 import { CHEM_ROUTES } from './routes-chem.ts';
+import { EMAIL_ROUTES } from './routes-email.ts';
 import { NOTIFICATION_ROUTES } from './routes-notifications.ts';
 import { PROTEIN_MODEL_ROUTES } from './routes-protein-model.ts';
 import { QC_ROUTES } from './routes-qc.ts';
@@ -305,6 +306,7 @@ export const API_ROUTES = {
   ...CHEM_ROUTES,
   ...PROTEIN_MODEL_ROUTES,
   ...NOTIFICATION_ROUTES,
+  ...EMAIL_ROUTES,
 } as const satisfies Record<string, ApiRoute>;
 
 export type ApiOperation = keyof typeof API_ROUTES;
