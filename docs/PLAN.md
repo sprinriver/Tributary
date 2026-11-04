@@ -447,3 +447,13 @@ Definition of done:
 - [x] Upload an .xlsx sheet in the manifest editor and apply it (e2e, screenshot in artifacts/phase-32/)
 - [x] `pnpm check` exits 0
 
+## Phase 33 — Experiment reports
+Status: in progress
+Goal: The results of an experiment go into a programme meeting as a clean PDF or slides in one click.
+Features: REP-01 … REP-03
+In scope: a report page per experiment version (methods, samples, releases, per contrast: hit counts at the display thresholds, volcano and top 10 hits, files) with print styles, so the browser saves a clean PDF; a PowerPoint download built in the browser with pptxgenjs 4.0.1 (MIT, approved 2026-11-04), using the rendered volcano images. Every export is recorded by the API and audited. Hit counts come from the query service; the page computes nothing.
+Definition of done:
+- [ ] API test for audited exports; unit test for the slide plan
+- [ ] Open the report and download the PowerPoint (e2e, screenshot in artifacts/phase-33/)
+- [ ] `pnpm check` exits 0
+

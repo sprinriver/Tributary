@@ -120,5 +120,8 @@
   {"id": "NOTIF-03", "phase": 31, "parity": "new", "description": "Deliveries retry with backoff and end delivered or failed, visible per route; a test message reports its outcome", "verify": "pnpm run test:api NOTIF-03", "passes": true},
   {"id": "NOTIF-04", "phase": 31, "parity": "new", "description": "Admin page for notification routes: add, test, pause, delete, recent deliveries", "verify": "pnpm e2e NOTIF-04", "passes": true},
   {"id": "XLS-01", "phase": 32, "parity": "new", "description": "Import an Excel (.xlsx) sample sheet into the manifest editor: parsed in the browser, numbers kept as stored, dates flagged, duplicate and unnamed columns reported, then the usual column mapping", "verify": "pnpm run test:web XLS-01 && pnpm e2e XLS-01", "passes": true},
-  {"id": "XLS-02", "phase": 32, "parity": "new", "description": "Download the manifest (or an empty template) as .xlsx with every cell stored as text", "verify": "pnpm run test:web XLS-02", "passes": true}
+  {"id": "XLS-02", "phase": 32, "parity": "new", "description": "Download the manifest (or an empty template) as .xlsx with every cell stored as text", "verify": "pnpm run test:web XLS-02", "passes": true},
+  {"id": "REP-01", "phase": 33, "parity": "new", "description": "Experiment report exports (PDF by printing, PowerPoint) are recorded and audited by the API; readers only", "verify": "pnpm run test:api REP-01", "passes": false},
+  {"id": "REP-02", "phase": 33, "parity": "new", "description": "PowerPoint report: title, methods, per-contrast hit counts at the display thresholds with the volcano, top hits", "verify": "pnpm run test:web REP-02", "passes": false},
+  {"id": "REP-03", "phase": 33, "parity": "new", "description": "Report page (print-ready: the app frame is hidden when printing) with methods, samples, volcano per contrast, hit counts, top hits and files; Download PowerPoint", "verify": "pnpm e2e REP-03", "passes": false}
 ]
