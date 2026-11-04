@@ -4,6 +4,11 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Compound structures and structure search (CHEM-01…04):
+  - Structures and descriptors (RDKit) on compound pages: Lipinski counts, Crippen logP, TPSA, salts and
+    differing batches flagged.
+  - Substructure search (SMARTS or SMILES) and similarity search (Morgan, Tanimoto) on a new Structures page.
+- Fix: pages that send a request on load no longer fail with a CSRF error on a fresh load.
 - Cross-experiment QC (QCD-01…03):
   - A QC page with identifications per run across experiments and runs flagged for low IDs.
   - A PCA of runs coloured by experiment, plate, condition or date, to spot batch effects.

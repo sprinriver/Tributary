@@ -224,6 +224,20 @@ drop.
 - **Table and list:** the table lists every run. The list below it says exactly what was counted and what was
   left out.
 
+## Compound structures
+- **Compound pages:** a compound page shows its structure, canonical SMILES, a computed InChIKey and descriptors.
+  - **Descriptors:** average and exact MW, Crippen logP, TPSA (N and O), Lipinski donors and acceptors (NH+OH,
+    N+O), RDKit's donor and acceptor counts, rotatable bonds and rings.
+  - **Salts:** a salt or mixture is flagged, and its descriptors cover the whole registered structure.
+  - **Batches:** if batches register different structures, the page says so. You can switch batch.
+- **Structures page:** search by substructure or by similarity.
+  - **Substructure:** type a SMARTS (atoms as written: `C` is aliphatic, `c` aromatic), or choose SMILES to read
+    the query as a molecule (Kekulé rings are aromatised). The first match is highlighted.
+  - **Similarity:** type a SMILES and a Tanimoto threshold. The fingerprint is Morgan (radius 2, 2048 bits).
+  - **Stereochemistry:** both searches ignore it, so enantiomers match and score 1.
+  - **Unreadable structures:** registered SMILES that RDKit cannot read are listed under the results so the registry
+    can be corrected.
+
 ## Lineage and audit
 - **Lineage:** shows where a release or chart came from: raw file → pipeline run (with its revision) → release →
   saved chart.

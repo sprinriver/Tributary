@@ -1445,3 +1445,51 @@ Entry template:
   - Precursor-level QC (mzQC, retention-time drift) is not shown.
   - The overview is computed on request and not cached.
   - Acquisition order is not recorded, so the trend uses manifest order.
+
+## 2026-11-04 — Phase 28: Compound structures and structure search — done
+- Built (ADR 0028):
+  - **RDKit:** `@rdkit/rdkit` 2025.3.4-1.0.0 (BSD-3-Clause, approved 2026-11-04) runs in apps/api.
+  - **Structure endpoint:** `GET /v1/compounds/{id}/structure` returns:
+    - an SVG depiction, canonical SMILES and computed InChIKey;
+    - descriptors: MW, exact MW, Crippen logP, TPSA from N and O, Lipinski and RDKit donor/acceptor counts,
+      rotatable bonds, rings;
+    - the component count (salts);
+    - every batch, with a flag when batches register different structures.
+  - **Search:** `POST /v1/compounds/search` does substructure search (SMARTS, or SMILES read as a molecule) or
+    similarity search (Morgan radius 2, 2048 bits, Tanimoto).
+    - It covers every distinct batch structure in the readable programs.
+    - The first match is highlighted and matches are counted.
+    - Unreadable registered SMILES are listed with program, compound and batch.
+  - **Web:**
+    - The structure and descriptors appear on the compound page, with a batch picker.
+    - A new "Structures" page has a query, a mode, SMARTS or SMILES, a threshold, and hit thumbnails linking to
+      the compound in its program.
+    - SVGs are shown as images, never injected into the page.
+- Found and fixed along the way: mutations sent while `/v1/auth/me` was still loading went out without a CSRF
+  token, so pages that POST on load (QC, structure search) got 403 on a fresh load. React Query's retries had
+  hidden this on the QC page. They now wait for the session (AUTH-01 unit test).
+- Chemistry review: 11 findings, all fixed with tests (`chem-structures.test.ts`):
+  - Lipinski vs RDKit HBD/HBA
+  - SMILES vs SMARTS queries
+  - stereochemistry stated
+  - salt components flagged
+  - batch structures
+  - program-scoped compound IDs
+  - null instead of 0
+  - labels
+  - match counts
+  - text after a space
+  - invalid entries named in full
+- Dependencies added: `@rdkit/rdkit` 2025.3.4-1.0.0 (approved).
+- Test changes, each in its own commit:
+  - The CHEM-02 `invalid_structures` assertion now expects program, compound and batch.
+  - The AUTH-01 test now drives the wait through `fetchMe`.
+  - The CHEM-04 e2e test uses the exact name for the Search button.
+  - The CHEM-02 chloro query uses chlorobenzene: the Cl is meta to the amide N, not para.
+- Evidence: `pnpm check` ✓ (api 249, web 32), and `pnpm e2e CHEM-04` ✓ and `OPS-09` ✓ locally. The screenshots are
+  `artifacts/phase-28/substructure-search.png` and `compound-structure.png`.
+- Gaps and follow-ups:
+  - There is no structure drawing (sketcher): queries are typed.
+  - No parent-structure standardisation.
+  - No stereo-aware search.
+  - Search time grows with the number of compounds (up to 50k batches per search).
