@@ -96,6 +96,8 @@ const compoundRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/compounds/$id',
   component: CompoundPage,
+  validateSearch: (search: Record<string, unknown>): { program_id?: string } =>
+    str(search.program_id) ? { program_id: str(search.program_id)! } : {},
 });
 const compoundSearchRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -103,10 +105,12 @@ const compoundSearchRoute = createRoute({
   component: CompoundSearchPage,
   validateSearch: (search: Record<string, unknown>): CompoundSearchSearch => {
     const mode = str(search.mode);
+    const type = str(search.type);
     const min = Number(search.min);
     return {
       ...(str(search.q) ? { q: str(search.q)! } : {}),
       ...(mode === 'substructure' || mode === 'similarity' ? { mode } : {}),
+      ...(type === 'smarts' || type === 'smiles' ? { type } : {}),
       ...(Number.isFinite(min) && min > 0 && min <= 1 ? { min } : {}),
     };
   },

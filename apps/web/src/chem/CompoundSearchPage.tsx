@@ -9,6 +9,7 @@ import { StructureImage } from './Structure.tsx';
 export interface CompoundSearchSearch {
   q?: string;
   mode?: 'substructure' | 'similarity';
+  type?: 'smarts' | 'smiles';
   min?: number;
 }
 
@@ -22,12 +23,13 @@ export function CompoundSearchPage() {
   const [draft, setDraft] = useState({
     q: search.q ?? '',
     mode: search.mode ?? 'substructure',
+    type: search.type ?? 'smarts',
     min: String(search.min ?? 0.5),
   });
   const parsed = CompoundSearchBodySchema.safeParse({
     query: draft.q,
     mode: draft.mode,
-    ...(draft.mode === 'similarity' ? { min_similarity: Number(draft.min) } : {}),
+    ...(draft.mode === 'similarity' ? { min_similarity: Number(draft.min) } : { query_type: draft.type }),
   });
   const errors = parsed.success
     ? {}
@@ -36,7 +38,11 @@ export function CompoundSearchPage() {
     ? CompoundSearchBodySchema.parse({
         query: search.q,
         mode: search.mode ?? 'substructure',
-        ...(search.mode === 'similarity' && search.min !== undefined ? { min_similarity: search.min } : {}),
+        ...(search.mode === 'similarity'
+          ? search.min !== undefined
+            ? { min_similarity: search.min }
+            : {}
+          : { query_type: search.type ?? 'smarts' }),
       })
     : null;
   const results = useQuery({
@@ -51,7 +57,9 @@ export function CompoundSearchPage() {
       search: {
         q: parsed.data.query,
         mode: parsed.data.mode,
-        ...(parsed.data.mode === 'similarity' ? { min: parsed.data.min_similarity } : {}),
+        ...(parsed.data.mode === 'similarity'
+          ? { min: parsed.data.min_similarity }
+          : { type: parsed.data.query_type }),
       },
     });
   };
@@ -94,6 +102,20 @@ export function CompoundSearchPage() {
             <option value="similarity">similarity</option>
           </select>
         </label>
+        {draft.mode === 'substructure' && (
+          <label className="stack" style={{ gap: 4 }}>
+            <span>Read query as</span>
+            <select
+              value={draft.type}
+              onChange={(e) =>
+                setDraft((d) => ({ ...d, type: e.target.value === 'smiles' ? 'smiles' : 'smarts' }))
+              }
+            >
+              <option value="smarts">SMARTS (atoms as written)</option>
+              <option value="smiles">SMILES (aromatised molecule)</option>
+            </select>
+          </label>
+        )}
         {draft.mode === 'similarity' && (
           <label className="stack" style={{ gap: 4 }}>
             <span>Tanimoto at least</span>
@@ -128,7 +150,7 @@ export function CompoundSearchPage() {
                   'structure',
                   'compound',
                   'program',
-                  r.provenance.mode === 'similarity' ? 'Tanimoto' : 'matched atoms',
+                  r.provenance.mode === 'similarity' ? 'Tanimoto' : 'matches (first highlighted)',
                 ].map((h) => (
                   <th key={h} scope="col">
                     {h}
@@ -138,7 +160,7 @@ export function CompoundSearchPage() {
             </thead>
             <tbody>
               {r.items.map((h) => (
-                <tr key={`${h.program_code}|${h.compound_id}`}>
+                <tr key={`${h.program_code}|${h.compound_id}|${h.smiles}`}>
                   <td>
                     <StructureImage
                       svg={h.svg}
@@ -147,14 +169,24 @@ export function CompoundSearchPage() {
                     />
                   </td>
                   <td>
-                    <Link to="/compounds/$id" params={{ id: h.compound_id }}>
+                    <Link
+                      to="/compounds/$id"
+                      params={{ id: h.compound_id }}
+                      search={{ program_id: h.program_id }}
+                    >
                       {h.compound_id}
                     </Link>
+                    <br />
+                    <span className="hint">
+                      batch {h.batch_ids.map((b) => b ?? '—').join(', ')}
+                      {h.batches_differ ? ' · batches differ' : ''}
+                      {h.components > 1 ? ` · ${h.components} components` : ''}
+                    </span>
                     {h.name ? <br /> : null}
                     {h.name && <span className="hint">{h.name}</span>}
                   </td>
                   <td>{h.program_code}</td>
-                  <td>{h.similarity !== null ? h.similarity.toFixed(3) : h.match_atoms.length}</td>
+                  <td>{h.similarity !== null ? h.similarity.toFixed(3) : h.matches}</td>
                 </tr>
               ))}
             </tbody>
@@ -163,7 +195,9 @@ export function CompoundSearchPage() {
             {r.provenance.method} · RDKit {r.provenance.rdkit_version}
             {r.no_structure > 0 && ` · ${r.no_structure} compounds have no structure`}
             {r.invalid_structures.length > 0 &&
-              ` · registered SMILES RDKit cannot read: ${r.invalid_structures.join(', ')}`}
+              ` · registered SMILES RDKit cannot read: ${r.invalid_structures
+                .map((x) => `${x.program_code} ${x.compound_id} batch ${x.batch_id ?? '—'} (${x.reason})`)
+                .join('; ')}`}
           </p>
         </>
       )}

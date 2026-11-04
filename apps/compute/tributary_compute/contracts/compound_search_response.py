@@ -4,6 +4,7 @@
 from __future__ import annotations
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, RootModel
+from uuid import UUID
 
 
 class MatchAtom(RootModel[int]):
@@ -15,12 +16,32 @@ class Item(BaseModel):
         extra="forbid",
     )
     compound_id: str
+    program_id: Annotated[
+        UUID,
+        Field(
+            pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        ),
+    ]
     name: str | None
     program_code: str
     smiles: str
+    batch_ids: list[str | None]
+    batches_differ: bool
+    components: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     similarity: float | None
     match_atoms: list[MatchAtom]
+    matches: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     svg: str
+
+
+class InvalidStructure(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    program_code: str
+    compound_id: str
+    batch_id: str | None
+    reason: str
 
 
 class Provenance(BaseModel):
@@ -28,6 +49,7 @@ class Provenance(BaseModel):
         extra="forbid",
     )
     mode: Literal["substructure", "similarity"]
+    query_type: Literal["smarts", "smiles"] | None
     query: str
     method: str
     min_similarity: float | None
@@ -42,7 +64,7 @@ class CompoundSearchResponse(BaseModel):
     total_hits: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     searched: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     no_structure: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
-    invalid_structures: list[str]
+    invalid_structures: list[InvalidStructure]
     provenance: Provenance
 
 

@@ -12012,7 +12012,7 @@
     "/v1/compounds/{id}/structure": {
       "get": {
         "operationId": "getCompoundStructure",
-        "summary": "Depiction, canonical SMILES, InChIKey and descriptors of a compound (RDKit)",
+        "summary": "Depiction, canonical SMILES, InChIKey and descriptors of a compound batch (RDKit)",
         "parameters": [
           {
             "name": "id",
@@ -14325,6 +14325,14 @@
               "similarity"
             ]
           },
+          "query_type": {
+            "default": "smarts",
+            "type": "string",
+            "enum": [
+              "smarts",
+              "smiles"
+            ]
+          },
           "min_similarity": {
             "default": 0.5,
             "type": "number",
@@ -14346,6 +14354,7 @@
         "required": [
           "query",
           "mode",
+          "query_type",
           "min_similarity",
           "limit"
         ],
@@ -14362,6 +14371,11 @@
                 "compound_id": {
                   "type": "string"
                 },
+                "program_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
                 "name": {
                   "type": [
                     "string",
@@ -14373,6 +14387,23 @@
                 },
                 "smiles": {
                   "type": "string"
+                },
+                "batch_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  }
+                },
+                "batches_differ": {
+                  "type": "boolean"
+                },
+                "components": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
                 },
                 "similarity": {
                   "type": [
@@ -14388,17 +14419,27 @@
                     "maximum": 9007199254740991
                   }
                 },
+                "matches": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
                 "svg": {
                   "type": "string"
                 }
               },
               "required": [
                 "compound_id",
+                "program_id",
                 "name",
                 "program_code",
                 "smiles",
+                "batch_ids",
+                "batches_differ",
+                "components",
                 "similarity",
                 "match_atoms",
+                "matches",
                 "svg"
               ],
               "additionalProperties": false
@@ -14422,7 +14463,31 @@
           "invalid_structures": {
             "type": "array",
             "items": {
-              "type": "string"
+              "type": "object",
+              "properties": {
+                "program_code": {
+                  "type": "string"
+                },
+                "compound_id": {
+                  "type": "string"
+                },
+                "batch_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "reason": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "program_code",
+                "compound_id",
+                "batch_id",
+                "reason"
+              ],
+              "additionalProperties": false
             }
           },
           "provenance": {
@@ -14433,6 +14498,20 @@
                 "enum": [
                   "substructure",
                   "similarity"
+                ]
+              },
+              "query_type": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "smarts",
+                      "smiles"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
                 ]
               },
               "query": {
@@ -14453,6 +14532,7 @@
             },
             "required": [
               "mode",
+              "query_type",
               "query",
               "method",
               "min_similarity",
@@ -14477,6 +14557,15 @@
           "compound_id": {
             "type": "string"
           },
+          "program_code": {
+            "type": "string"
+          },
+          "batch_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "smiles": {
             "type": "string"
           },
@@ -14489,6 +14578,11 @@
               "null"
             ]
           },
+          "components": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
           "svg": {
             "type": "string"
           },
@@ -14496,45 +14590,143 @@
             "type": "object",
             "properties": {
               "mw": {
-                "type": "number"
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "exact_mw": {
+                "type": [
+                  "number",
+                  "null"
+                ]
               },
               "clogp": {
-                "type": "number"
+                "type": [
+                  "number",
+                  "null"
+                ]
               },
               "tpsa": {
-                "type": "number"
+                "type": [
+                  "number",
+                  "null"
+                ]
               },
               "hbd": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "hba": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lipinski_hbd": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "lipinski_hba": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "rotatable_bonds": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               },
               "rings": {
-                "type": "integer",
-                "minimum": -9007199254740991,
-                "maximum": 9007199254740991
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "required": [
               "mw",
+              "exact_mw",
               "clogp",
               "tpsa",
               "hbd",
               "hba",
+              "lipinski_hbd",
+              "lipinski_hba",
               "rotatable_bonds",
               "rings"
             ],
             "additionalProperties": false
+          },
+          "batches": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "batch_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "smiles": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "batch_id",
+                "smiles"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "batches_differ": {
+            "type": "boolean"
           },
           "rdkit_version": {
             "type": "string"
@@ -14542,13 +14734,34 @@
         },
         "required": [
           "compound_id",
+          "program_code",
+          "batch_id",
           "smiles",
           "canonical_smiles",
           "inchikey",
+          "components",
           "svg",
           "descriptors",
+          "batches",
+          "batches_differ",
           "rdkit_version"
         ],
+        "additionalProperties": false
+      },
+      "CompoundStructureQuery": {
+        "type": "object",
+        "properties": {
+          "program_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "batch_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          }
+        },
         "additionalProperties": false
       },
       "ContractError": {

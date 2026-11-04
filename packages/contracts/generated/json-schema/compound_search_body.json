@@ -17,6 +17,14 @@
             "similarity"
           ]
         },
+        "query_type": {
+          "default": "smarts",
+          "type": "string",
+          "enum": [
+            "smarts",
+            "smiles"
+          ]
+        },
         "min_similarity": {
           "default": 0.5,
           "type": "number",
@@ -38,6 +46,7 @@
       "required": [
         "query",
         "mode",
+        "query_type",
         "min_similarity",
         "limit"
       ],

@@ -13,6 +13,7 @@ class CompoundSearchBody(BaseModel):
     )
     query: Annotated[str, Field(max_length=2000, min_length=1)]
     mode: Literal["substructure", "similarity"]
+    query_type: Literal["smarts", "smiles"]
     min_similarity: Annotated[float, Field(gt=0.0, le=1.0)]
     program_id: Annotated[
         UUID | None,

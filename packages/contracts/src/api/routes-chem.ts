@@ -1,4 +1,9 @@
-import { CompoundSearchBodySchema, CompoundSearchResponseSchema, CompoundStructureSchema } from './chem.ts';
+import {
+  CompoundSearchBodySchema,
+  CompoundStructureQuerySchema,
+  CompoundSearchResponseSchema,
+  CompoundStructureSchema,
+} from './chem.ts';
 import type { ApiRoute } from './route.ts';
 
 /** Compound structures and structure search (Phase 28). Part of API_ROUTES. */
@@ -6,7 +11,8 @@ export const CHEM_ROUTES = {
   getCompoundStructure: {
     method: 'get',
     path: '/v1/compounds/{id}/structure',
-    summary: 'Depiction, canonical SMILES, InChIKey and descriptors of a compound (RDKit)',
+    summary: 'Depiction, canonical SMILES, InChIKey and descriptors of a compound batch (RDKit)',
+    query: CompoundStructureQuerySchema,
     response: CompoundStructureSchema,
   },
   searchCompounds: {

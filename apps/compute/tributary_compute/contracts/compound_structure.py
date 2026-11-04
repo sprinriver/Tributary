@@ -6,17 +6,52 @@ from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 
+class Hbd(RootModel[int]):
+    root: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
+class Hba(RootModel[int]):
+    root: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
+class LipinskiHbd(RootModel[int]):
+    root: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
+class LipinskiHba(RootModel[int]):
+    root: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
+class RotatableBonds(RootModel[int]):
+    root: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
+class Rings(RootModel[int]):
+    root: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+
+
 class Descriptors(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    mw: float
-    clogp: float
-    tpsa: float
-    hbd: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
-    hba: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
-    rotatable_bonds: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
-    rings: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    mw: float | None
+    exact_mw: float | None
+    clogp: float | None
+    tpsa: float | None
+    hbd: Hbd | None
+    hba: Hba | None
+    lipinski_hbd: LipinskiHbd | None
+    lipinski_hba: LipinskiHba | None
+    rotatable_bonds: RotatableBonds | None
+    rings: Rings | None
+
+
+class Batch(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    batch_id: str | None
+    smiles: str | None
 
 
 class CompoundStructure(BaseModel):
@@ -24,11 +59,16 @@ class CompoundStructure(BaseModel):
         extra="forbid",
     )
     compound_id: str
+    program_code: str
+    batch_id: str | None
     smiles: str
     canonical_smiles: str
     inchikey: str | None
+    components: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     svg: str
     descriptors: Descriptors
+    batches: list[Batch]
+    batches_differ: bool
     rdkit_version: str
 
 

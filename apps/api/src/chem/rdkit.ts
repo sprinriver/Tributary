@@ -1,8 +1,11 @@
 // RDKit (WASM) for compound structures (Phase 28, ADR 0028). Loaded once, lazily; every JSMol is deleted after use
 // (WASM memory is not garbage-collected).
-import initRDKitModule, { type JSMol, type RDKitModule } from '@rdkit/rdkit';
+import * as rdkitPackage from '@rdkit/rdkit';
+import type { JSMol, RDKitLoader, RDKitModule } from '@rdkit/rdkit';
 import { CHEM_FINGERPRINT, type CompoundStructure } from '@tributary/contracts';
 
+// The package's typings declare only types; at runtime its CommonJS export (the loader) is the ESM default.
+const initRDKitModule = (rdkitPackage as unknown as { default: RDKitLoader }).default;
 let loading: Promise<RDKitModule> | undefined;
 export const rdkit = (): Promise<RDKitModule> => (loading ??= initRDKitModule());
 
@@ -16,9 +19,14 @@ export function withMol<T>(rd: RDKitModule, smiles: string, fn: (mol: JSMol | nu
   }
 }
 
-/** A query for substructure search: SMARTS (which also reads most SMILES). */
-export function withQuery<T>(rd: RDKitModule, query: string, fn: (q: JSMol | null) => T): T {
-  const q = rd.get_qmol(query);
+/** A substructure query: SMARTS as written, or SMILES read (and aromatised) as a molecule. */
+export function withQuery<T>(
+  rd: RDKitModule,
+  query: string,
+  type: 'smarts' | 'smiles',
+  fn: (q: JSMol | null) => T,
+): T {
+  const q = type === 'smarts' ? rd.get_qmol(query) : rd.get_mol(query);
   try {
     return fn(q);
   } finally {
@@ -34,11 +42,18 @@ export function svg(mol: JSMol, atoms: number[] = [], bonds: number[] = []): str
     : mol.get_svg(SVG.width, SVG.height);
 }
 
+const int = (v: unknown) => (typeof v === 'number' && Number.isInteger(v) ? v : null);
+const real = (v: unknown) => (typeof v === 'number' && Number.isFinite(v) ? v : null);
+
+/** Components of a molecule (a salt or mixture has 2 or more), from its canonical SMILES. */
+export const componentCount = (mol: JSMol) => mol.get_smiles().split('.').length;
+
+/** Descriptors of the whole registered structure; a key RDKit does not report is null, never 0. */
 export function describe(
   rd: RDKitModule,
   mol: JSMol,
-): Omit<CompoundStructure, 'compound_id' | 'smiles' | 'rdkit_version'> {
-  const d = JSON.parse(mol.get_descriptors()) as Record<string, number>;
+): Pick<CompoundStructure, 'canonical_smiles' | 'inchikey' | 'components' | 'svg' | 'descriptors'> {
+  const d = JSON.parse(mol.get_descriptors()) as Record<string, unknown>;
   let inchikey: string | null;
   try {
     const inchi = mol.get_inchi();
@@ -49,17 +64,27 @@ export function describe(
   return {
     canonical_smiles: mol.get_smiles(),
     inchikey,
+    components: componentCount(mol),
     svg: svg(mol),
     descriptors: {
-      mw: d.amw ?? NaN,
-      clogp: d.CrippenClogP ?? NaN,
-      tpsa: d.tpsa ?? NaN,
-      hbd: d.NumHBD ?? 0,
-      hba: d.NumHBA ?? 0,
-      rotatable_bonds: d.NumRotatableBonds ?? 0,
-      rings: d.NumRings ?? 0,
+      mw: real(d.amw),
+      exact_mw: real(d.exactmw),
+      clogp: real(d.CrippenClogP),
+      tpsa: real(d.tpsa),
+      hbd: int(d.NumHBD),
+      hba: int(d.NumHBA),
+      lipinski_hbd: int(d.lipinskiHBD),
+      lipinski_hba: int(d.lipinskiHBA),
+      rotatable_bonds: int(d.NumRotatableBonds),
+      rings: int(d.NumRings),
     },
   };
+}
+
+/** A registered SMILES RDKit reads: no whitespace (RDKit ignores text after a space), and parsable. */
+export function readable(smiles: string): string | null {
+  if (/\s/.test(smiles)) return 'text after a space would be ignored';
+  return null;
 }
 
 /** Morgan fingerprint bits as a string of "0"/"1". */

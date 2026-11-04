@@ -3,7 +3,7 @@ import type { ChartSpec } from '@tributary/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { AddToTriage } from '../triage/AddToTriage.tsx';
 import { WatchButton } from '../watch/WatchButton.tsx';
-import { Link, useParams } from '@tanstack/react-router';
+import { Link, useParams, useSearch } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { api } from '../api.ts';
 import { ErrorMessage } from '../components/ui.tsx';
@@ -146,6 +146,7 @@ export function ProteinPage() {
 /** SPEC M8 compound page: properties/ADME, targets, contrasts it was tested in, volcanoes with its targets highlighted. */
 export function CompoundPage() {
   const { id } = useParams({ from: '/compounds/$id' });
+  const { program_id: programId } = useSearch({ from: '/compounds/$id' });
   const compound = useQuery({
     queryKey: ['compound', id],
     queryFn: () => api('getCompound', { params: { id } }),
@@ -185,7 +186,7 @@ export function CompoundPage() {
             {c.compound.program_code}
             {c.compound.smiles ? ` · SMILES ${c.compound.smiles}` : ''}
           </p>
-          {c.compound.smiles && <CompoundStructurePanel id={id} />}
+          {c.compound.smiles && <CompoundStructurePanel id={id} programId={programId} />}
           <Section title="Properties and ADME">
             <Table
               label="Properties"
