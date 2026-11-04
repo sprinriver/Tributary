@@ -178,16 +178,14 @@ describe('SCIM provisioning', () => {
       .execute();
     expect(member).toHaveLength(1);
     // A second login with the same sub is the same user (no second link).
-    const again = await t.db
-      .transaction()
-      .execute((trx) =>
-        upsertLoginUser(trx, DEV_TENANT_ID, {
-          sub: 'oidc|ada',
-          email: 'ada.lovelace@example.org',
-          name: 'Ada',
-          groups: [],
-        }),
-      );
+    const again = await t.db.transaction().execute((trx) =>
+      upsertLoginUser(trx, DEV_TENANT_ID, {
+        sub: 'oidc|ada',
+        email: 'ada.lovelace@example.org',
+        name: 'Ada',
+        groups: [],
+      }),
+    );
     expect(again).toBe(userId);
   });
 

@@ -358,7 +358,8 @@
                             "type": "string",
                             "enum": [
                               "read",
-                              "write"
+                              "write",
+                              "scim"
                             ]
                           }
                         },
@@ -13207,7 +13208,8 @@
               "type": "string",
               "enum": [
                 "read",
-                "write"
+                "write",
+                "scim"
               ]
             }
           },
@@ -16130,7 +16132,8 @@
               "type": "string",
               "enum": [
                 "read",
-                "write"
+                "write",
+                "scim"
               ]
             }
           },
