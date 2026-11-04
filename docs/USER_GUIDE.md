@@ -74,6 +74,17 @@ The **Samples** tab is a spreadsheet of one row per sample.
 ![Manifest problems](../artifacts/phase-6/problems.png)
 ![Plate layout](../artifacts/phase-6/plate.png)
 
+### Excel sample sheets
+- **Upload:** **Upload file** accepts `.xlsx` as well as CSV and TSV. Tributary reads the sheet named "samples", or
+  else the first sheet, and says which one it read.
+- **Check before applying:** the preview lists anything to check first:
+  - **Dates:** cells Excel stored as dates are converted to ISO dates and flagged. Excel turns names such as SEPT1
+    into dates.
+  - **Columns:** duplicate column names and columns without a header are reported.
+  - **Numbers** are kept exactly as Excel stored them.
+- **Download Excel** saves the manifest as `.xlsx`, with every cell as text so Excel cannot change IDs or gene
+  names when you reopen it.
+
 ## Publish a version
 - **Publishing:** **Publish version** freezes the version: its details, samples and contrasts can never change.
   Every publish asks for a **Reason**. If you signed in a while ago, you are asked to confirm your identity first.

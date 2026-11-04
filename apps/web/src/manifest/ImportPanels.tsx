@@ -51,26 +51,28 @@ export function UploadPreview({
           ))}
         </ul>
       )}
-      <table className="data" aria-label="First rows">
-        <thead>
-          <tr>
-            {table.fields.map((f) => (
-              <th key={f} scope="col">
-                {f}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {table.rows.slice(0, 5).map((row, i) => (
-            <tr key={i}>
+      <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
+        <table className="data" aria-label="First rows">
+          <thead>
+            <tr>
               {table.fields.map((f) => (
-                <td key={f}>{row[f]}</td>
+                <th key={f} scope="col">
+                  {f}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {table.rows.slice(0, 5).map((row, i) => (
+              <tr key={i}>
+                {table.fields.map((f) => (
+                  <td key={f}>{row[f]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <MappingStep
         programId={props.programId}
         headers={table.fields}

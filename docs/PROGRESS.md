@@ -1561,3 +1561,19 @@ Entry template:
   - Personal email (needs SES or SMTP approval).
   - Per-user preferences.
   - A real Slack/Teams check: use **Send test** on a real channel.
+
+## 2026-11-04 — Phase 32: Excel sample sheets — done
+- Built:
+  - **Upload:** the manifest editor's **Upload file** accepts `.xlsx`, parsed in the browser by read-excel-file.
+    - It reads the sheet named "samples", or else the first, and says which sheet it read.
+    - Numbers keep the text Excel stored.
+    - Date cells become ISO dates, with a warning (Excel turns names like SEPT1 into dates).
+    - Duplicate and unnamed columns are reported.
+    - The usual preview and column mapping follow.
+  - **Download Excel:** writes the manifest as `.xlsx` with every cell as text (write-excel-file).
+  - **Also fixed:** wide upload previews now scroll inside their card.
+- Dependencies added: `read-excel-file` 9.3.5 and `write-excel-file` 4.1.1 (approved).
+- Test changes: the XLS-01 e2e checks "1 µM" in the grid after Apply, because the preview shows only the first five
+  rows. This is in its own commit.
+- Evidence: `pnpm check` ✓, and `pnpm e2e XLS-01`, `MAN-01` and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-32/xlsx-preview.png`.
