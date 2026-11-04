@@ -9,6 +9,7 @@ const root = resolve(import.meta.dirname, '..');
 // SPDX ids plus the free-text spellings PyPI metadata uses for the same licences.
 const ALLOWED = new Set([
   'MIT',
+  'MIT-0', // MIT No Attribution: MIT without the notice requirement (nodemailer, approved 2026-11-04)
   'MIT License',
   'ISC',
   'BSD-2-Clause',
