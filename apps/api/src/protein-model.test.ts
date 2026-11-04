@@ -1,8 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { startTestApi, type TestApi } from './testing.ts';
 
-type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
-
 // Phase 29: protein 3D models from a local directory (the synthetic demo models in fixtures/structures) or
 // AlphaFold DB, always served by the API (same origin).
 const AFDB = 'https://afdb.test';
