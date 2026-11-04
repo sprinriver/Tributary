@@ -21,6 +21,7 @@
     "molstar": "5.11.0",
     "papaparse": "5.7.0",
     "plotly.js": "4.1.2",
+    "pptxgenjs": "4.0.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-querybuilder": "8.25.0",
