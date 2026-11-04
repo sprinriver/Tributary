@@ -4,6 +4,10 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- 3D protein models (STRUC-01…03):
+  - A Mol* viewer on protein pages, coloured by pLDDT, with the model's source and licence.
+  - Models come from a local directory or AlphaFold DB, served by the API (`PROTEIN_MODELS_DIR`, `ALPHAFOLD_URL`).
+- Fix: `licence:scan` now checks every workspace package's dependencies.
 - Compound structures and structure search (CHEM-01…04):
   - Structures and descriptors (RDKit) on compound pages: Lipinski counts, Crippen logP, TPSA, salts and
     differing batches flagged.

@@ -224,6 +224,17 @@ drop.
 - **Table and list:** the table lists every run. The list below it says exactly what was counted and what was
   left out.
 
+## 3D protein models
+A protein page has a **3D model** section.
+- **Where the model comes from:** the section says whether a model exists and where it comes from: your
+  organisation's model directory, or AlphaFold DB.
+- **Viewing it:** press **Show 3D model** to open it in Mol*. Rotate with the mouse, zoom with the wheel, and use
+  the expand button for full screen.
+- **Colours:** the model is coloured by **pLDDT**, the model's own per-residue confidence: very high (> 90),
+  confident (70–90), low (50–70) and very low (≤ 50).
+- **Predicted models:** these are predictions, not experimental structures. Read low-confidence regions with care.
+- **AlphaFold DB data** is CC BY 4.0: cite it when you reuse a picture.
+
 ## Compound structures
 - **Compound pages:** a compound page shows its structure, canonical SMILES, a computed InChIKey and descriptors.
   - **Descriptors:** average and exact MW, Crippen logP, TPSA (N and O), Lipinski donors and acceptors (NH+OH,

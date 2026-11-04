@@ -1493,3 +1493,30 @@ Entry template:
   - No parent-structure standardisation.
   - No stereo-aware search.
   - Search time grows with the number of compounds (up to 50k batches per search).
+
+## 2026-11-04 — Phase 29: 3D protein structure viewer — done
+- Built (ADR 0029):
+  - **API:** `GET /v1/proteins/{id}/model` and `/model.cif` serve models from a local directory
+    (`PROTEIN_MODELS_DIR`) or AlphaFold DB (`ALPHAFOLD_URL`), from the same origin.
+    - Only UniProt accessions are sent out.
+    - Other hosts and redirects are refused.
+    - Files are cached in memory.
+    - Each model is labelled predicted, with its confidence metric and licence.
+  - **Synth:** three synthetic ModelCIF models (helix–loop–helix) with per-residue pLDDT. They carry
+    `ma_qa_metric` and B-factors, so the viewer behaves as it does with AlphaFold files.
+  - **Web:** a "3D model" section on protein pages. Mol* loads on demand, coloured by pLDDT with a key, and the
+    source, entry and licence are shown.
+- Also fixed: `licence:scan` checked only the root workspace's dependencies (147 of about 1000 Node packages). It
+  now checks every workspace (`-r`), and all 1026 pass. `stack-trace@0.0.9` (via plotly.js) has no licence field;
+  its LICENSE file is MIT and is recorded by exact version.
+- Dependencies added: `molstar` 5.11.0 (approved).
+- Root script added: `format:compute` (ruff format and fix).
+- Test changes: the STRUC-02 test's mmCIF loop parser was fixed (it dropped the first header line), and an unused
+  type was removed from the STRUC-01 test, each in its own commit.
+- Evidence: `pnpm check` ✓ (api 252, web 32, compute 88), and `pnpm e2e STRUC-03` ✓ locally. The screenshot is
+  `artifacts/phase-29/protein-3d-model.png`.
+- Gaps and follow-ups:
+  - Peptide or site mapping onto the structure.
+  - Experimental PDB structures.
+  - PAE.
+  - The AlphaFold path was tested with a stub, because this environment cannot reach EBI.
