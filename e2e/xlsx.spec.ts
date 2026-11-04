@@ -50,10 +50,11 @@ test('XLS-01: download a manifest as Excel, upload the workbook into another dra
   const preview = page.getByRole('region', { name: 'Upload preview' });
   await expect(preview.getByText('12 rows')).toBeVisible();
   await expect(preview.getByText('Delimiter: Excel workbook')).toBeVisible();
-  await expect(preview).toContainText('1 µM');
+  await expect(preview).toContainText('not applicable'); // the preview shows the first 5 rows (controls)
   await page.screenshot({ path: `${SHOTS}/xlsx-preview.png`, fullPage: true });
   await preview.getByRole('button', { name: 'Apply' }).click();
   await expect(page.getByText('No problems')).toBeVisible();
+  await expect(page.locator('.ag-row', { hasText: 'X12' })).toContainText('1 µM');
   await page.getByRole('button', { name: 'Save samples' }).click();
   await expect(page.getByText('12 samples saved')).toBeVisible();
 });
