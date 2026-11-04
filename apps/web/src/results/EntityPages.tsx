@@ -1,3 +1,4 @@
+import { ProteinModelPanel } from '../structure/ProteinModelPanel.tsx';
 import { CompoundStructurePanel } from '../chem/Structure.tsx';
 import type { ChartSpec } from '@tributary/contracts';
 import { useQuery } from '@tanstack/react-query';
@@ -112,6 +113,9 @@ export function ProteinPage() {
         itemKey={id}
         {...(protein.data?.gene_symbol ? { label: protein.data.gene_symbol } : {})}
       />
+      <Section title="3D model">
+        <ProteinModelPanel accession={id} />
+      </Section>
       <Section title="Annotations">
         <Table
           label="Annotations"
