@@ -20,7 +20,7 @@ describe('experiment report exports', () => {
   }, 300_000);
   afterAll(() => t.close());
 
-  const record = (token: string, payload: unknown) =>
+  const record = (token: string, payload: Record<string, unknown>) =>
     t.call(token, { method: 'POST', url: `/v1/versions/${version}/report-exports`, payload });
 
   it('REP-01: a reader records a PDF or PowerPoint export; it is audited; others cannot', async () => {
