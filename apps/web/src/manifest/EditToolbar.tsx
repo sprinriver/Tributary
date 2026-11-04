@@ -19,7 +19,7 @@ export function EditToolbar(props: {
         <input
           type="file"
           aria-label="Manifest file"
-          accept=".csv,.tsv,.txt,text/csv,text/tab-separated-values"
+          accept=".csv,.tsv,.txt,.xlsx,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
           style={{ display: 'none' }}
           onChange={(e) => {
             const file = e.target.files?.[0];

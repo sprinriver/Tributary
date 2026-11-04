@@ -37,6 +37,13 @@ export function UploadPreview({
       <p>
         {table.rows.length} rows · Delimiter: {delimiterName(table.delimiter)}
       </p>
+      {'warnings' in table && Array.isArray(table.warnings) && table.warnings.length > 0 && (
+        <ul role="note" aria-label="Check before applying">
+          {(table.warnings as string[]).map((w) => (
+            <li key={w}>{w}</li>
+          ))}
+        </ul>
+      )}
       {table.errors.length > 0 && (
         <ul className="cell-error">
           {table.errors.map((e) => (
