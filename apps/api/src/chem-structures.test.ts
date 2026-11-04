@@ -75,7 +75,7 @@ describe('compound structures: batches, programs and definitions', () => {
   });
 
   it('CHEM-02: every distinct batch structure is searched; SMILES queries are read as SMILES; stereo is stated', async () => {
-    const chloro = (await search({ query: 'c1cc(Cl)ccc1N', mode: 'substructure' })).json() as Json;
+    const chloro = (await search({ query: 'Clc1ccccc1', mode: 'substructure' })).json() as Json;
     expect(chloro.items.map((h: Json) => [h.program_code, h.compound_id, h.batch_ids])).toEqual([
       ['CSA', 'CS-1', ['B10']],
     ]);
