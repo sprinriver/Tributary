@@ -37,6 +37,7 @@ import { registerAiRoutes } from './routes/ai.ts';
 import { registerWebhookRoutes } from './routes/webhooks.ts';
 import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { registerEnrichmentRoutes } from './routes/enrichment.ts';
+import { registerChemRoutes } from './routes/chem.ts';
 import { registerQcRoutes } from './routes/qc.ts';
 import { registerTriageRoutes } from './routes/triage.ts';
 import { registerWatchRoutes } from './routes/watch.ts';
@@ -160,6 +161,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerTriageRoutes(scoped, { db, config, fetch: fetchImpl });
     registerWatchRoutes(scoped, db);
     registerQcRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerChemRoutes(scoped, db);
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

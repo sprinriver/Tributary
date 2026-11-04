@@ -22,6 +22,7 @@ import { ListsPage } from './admin/ListsPage.tsx';
 import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
+import { CompoundSearchPage, type CompoundSearchSearch } from './chem/CompoundSearchPage.tsx';
 import { QcPage, type QcSearch } from './qc/QcPage.tsx';
 import { TriagePage, type TriageSearch } from './triage/TriagePage.tsx';
 
@@ -95,6 +96,20 @@ const compoundRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/compounds/$id',
   component: CompoundPage,
+});
+const compoundSearchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/compounds/search',
+  component: CompoundSearchPage,
+  validateSearch: (search: Record<string, unknown>): CompoundSearchSearch => {
+    const mode = str(search.mode);
+    const min = Number(search.min);
+    return {
+      ...(str(search.q) ? { q: str(search.q)! } : {}),
+      ...(mode === 'substructure' || mode === 'similarity' ? { mode } : {}),
+      ...(Number.isFinite(min) && min > 0 && min <= 1 ? { min } : {}),
+    };
+  },
 });
 const viewsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/views', component: ViewsPage });
 const compareRoute = createRoute({
@@ -205,6 +220,7 @@ export const router = createRouter({
     explorerRoute,
     resultsRoute,
     proteinRoute,
+    compoundSearchRoute,
     compoundRoute,
     compareRoute,
     triageRoute,

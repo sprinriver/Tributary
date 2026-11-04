@@ -1,3 +1,4 @@
+import { CompoundStructurePanel } from '../chem/Structure.tsx';
 import type { ChartSpec } from '@tributary/contracts';
 import { useQuery } from '@tanstack/react-query';
 import { AddToTriage } from '../triage/AddToTriage.tsx';
@@ -184,6 +185,7 @@ export function CompoundPage() {
             {c.compound.program_code}
             {c.compound.smiles ? ` · SMILES ${c.compound.smiles}` : ''}
           </p>
+          {c.compound.smiles && <CompoundStructurePanel id={id} />}
           <Section title="Properties and ADME">
             <Table
               label="Properties"
