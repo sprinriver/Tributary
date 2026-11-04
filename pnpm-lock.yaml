@@ -320,6 +320,9 @@ importers:
       ag-grid-react:
         specifier: 36.2.0
         version: 36.2.0(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
+      cytoscape:
+        specifier: 3.34.0
+        version: 3.34.0
       molstar:
         specifier: 5.11.0
         version: 5.11.0(@types/react@19.3.0)(fp-ts@2.16.11)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)(supports-color@7.2.0)
@@ -2121,6 +2124,10 @@ packages:
   culori@4.0.2:
     resolution: {integrity: sha512-1+BhOB8ahCn4O0cep0Sh2l9KCOfOdY+BXJnKMHFFzDEouSr/el18QwXEMRlOj9UY5nCeA8UN3a/82rUWRBeyBw==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
+
+  cytoscape@3.34.0:
+    resolution: {integrity: sha512-62rNSrioXw93uliKFBwjukeQyeWwH2PqDrTac31r2P6464u3AUvTk0xS4LVvT251g7IgkFunrI48ZEZGjywSOg==}
+    engines: {node: '>=0.10'}
 
   d3-array@1.2.4:
     resolution: {integrity: sha512-KHW6M86R+FUPYGb3R5XiYjXPq7VzwxZ22buHhAEVG5ztoEcZZMLov530mmccaqA1GghZArjQV46fuc8kUqhhHw==}
@@ -6490,6 +6497,8 @@ snapshots:
   csstype@3.2.3: {}
 
   culori@4.0.2: {}
+
+  cytoscape@3.34.0: {}
 
   d3-array@1.2.4: {}
 

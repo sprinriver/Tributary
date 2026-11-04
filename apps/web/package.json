@@ -17,6 +17,7 @@
     "@tributary/ui": "workspace:*",
     "ag-grid-community": "36.2.0",
     "ag-grid-react": "36.2.0",
+    "cytoscape": "3.34.0",
     "molstar": "5.11.0",
     "papaparse": "5.7.0",
     "plotly.js": "4.1.2",
