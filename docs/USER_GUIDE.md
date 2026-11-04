@@ -278,6 +278,14 @@ A protein page has a **3D model** section.
   - **Unreadable structures:** registered SMILES that RDKit cannot read are listed under the results so the registry
     can be corrected.
 
+## Email notifications
+Under your name (top right) → **Email notifications**, choose what reaches your inbox:
+- new hits for items you watch;
+- triage items assigned to you;
+- your pipeline runs finishing.
+
+Emails contain names and a link, never data values. If your installation has no email set up, the page says so.
+
 ## Lineage and audit
 - **Lineage:** shows where a release or chart came from: raw file → pipeline run (with its revision) → release →
   saved chart.

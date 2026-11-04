@@ -146,6 +146,8 @@ in production (`NODE_ENV=production`) the required ones must be set, or the API 
 | `S3_RAW_BUCKET`, `S3_WAREHOUSE_BUCKET`, `S3_WORK_BUCKET` | | Buckets for raw files, releases and pipeline work |
 | `OLS_URL` | | Ontology lookup service (default EBI OLS4) |
 | `PROTEIN_MODELS_DIR` | | Directory of `<accession>.cif` 3D models (in-house or mirrored; dev default: the synthetic demo models) |
+| `EMAIL_TRANSPORT` | | Personal email: `ses` (Amazon SES, region `SES_REGION`/`AWS_REGION`) or `smtp` (`SMTP_URL`); unset = no email |
+| `EMAIL_FROM` | | Sender address for personal email |
 | `NOTIFY_EXTRA_HOSTS` | | Extra hosts Slack/Teams notification routes may post to (comma-separated; e.g. a corporate proxy) |
 | `ALPHAFOLD_URL` | | AlphaFold DB base URL the API fetches models from (default `https://www.alphafold.ebi.ac.uk`; empty turns it off) |
 | `SEARCH_EMBEDDINGS` | | `none` (default), `local`, `voyage_4` or `bedrock_titan_v2` (see ADR 0020) |

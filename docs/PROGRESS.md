@@ -1596,3 +1596,27 @@ Entry template:
   `artifacts/phase-33/report.png` and `report-print.png`.
 - Gaps and follow-ups:
   - The report covers differential-abundance contrasts. QC, dose-response and enrichment sections can follow.
+
+## 2026-11-04 — Phase 34: Personal email — done
+- Built:
+  - **Migration 0025:** `notification_preference` and the `email_delivery` outbox.
+  - **API:** `GET` and `PUT /v1/me/notification-preferences` (own only, audited). Emails are on by default for
+    three events:
+    - a new hit for an item you watch (one email per release);
+    - a triage item assigned to you (not by yourself);
+    - your pipeline run finished.
+  - **Sending:** the 15 s notification sweep sends emails with the same claiming, retries and backoff as channel
+    deliveries.
+  - **Transport:** `EMAIL_TRANSPORT` = `ses` (@aws-sdk/client-sesv2) or `smtp` (nodemailer). Unset means emails
+    are not queued.
+  - **Content:** names and a link only.
+  - **Web:** an "Email notifications" page in the user menu.
+- Dependencies added: `@aws-sdk/client-sesv2` 3.1156.0 and `nodemailer` 9.0.4 (approved). MIT-0 was added to the
+  licence allowlist (ARCHITECTURE §9).
+- Test changes: DB-01's table list gains the two new tables.
+- Evidence: `pnpm check` ✓ (api 260), and `pnpm e2e MAIL-01`, `OPS-09`, `TRI-04` and `WAT-03` ✓ locally. The
+  screenshot is `artifacts/phase-34/email-settings.png`.
+- Gaps and follow-ups:
+  - Digests (daily or weekly).
+  - HTML email.
+  - A real SES/SMTP send needs a configured installation.

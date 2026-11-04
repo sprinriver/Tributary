@@ -4,6 +4,10 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Personal email (MAIL-01…03):
+  - Emails for new hits on watched items, triage items assigned to you, and your finished pipeline runs.
+  - Choose them under your name → Email notifications.
+  - Sent through Amazon SES or SMTP.
 - Experiment reports (REP-01…03):
   - A report page per version, with methods, hit counts, volcano and top hits per contrast.
   - Print to PDF or download as PowerPoint. Every export is audited.

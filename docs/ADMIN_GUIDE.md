@@ -141,6 +141,21 @@ published, dataset release published and triage decision.
 Messages carry names, statuses, the person who acted, a triage reason, and a link back to Tributary. They never
 include data values, but they do leave your AWS account, so choose channels your organisation approves.
 
+## Personal email
+People can receive email about their own items:
+- a new hit for something they watch;
+- a triage item assigned to them;
+- their pipeline run finishing.
+
+Each person chooses under their name → **Email notifications**. To turn email on, set:
+- `EMAIL_TRANSPORT=ses`: Amazon SES in `SES_REGION` (default `AWS_REGION`). Give the API's role
+  `ses:SendEmail` and verify the sender domain in SES.
+- `EMAIL_TRANSPORT=smtp` with `SMTP_URL` (for example `smtps://user:pass@smtp.example.org:465`).
+- `EMAIL_FROM`: the sender, for example `Tributary <no-reply@your-domain>`.
+
+Without `EMAIL_TRANSPORT` nothing is queued. Emails contain names and links, never data values. They are retried
+like channel messages.
+
 ## Onboarding legacy data
 Historical data on a shared drive or another bucket can be registered in bulk (API only for now).
 
