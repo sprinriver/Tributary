@@ -4,6 +4,10 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Gene–concept network (NET-01…02):
+  - Enrichment results show the top gene sets and their hit genes as a network coloured by log2 FC, with a table.
+  - Genes that are hits in several features are marked, never given one picked value.
+- Fix: error messages meet AA colour contrast.
 - 3D protein models (STRUC-01…03):
   - A Mol* viewer on protein pages, coloured by pLDDT, with the model's source and licence.
   - Models come from a local directory or AlphaFold DB, served by the API (`PROTEIN_MODELS_DIR`, `ALPHAFOLD_URL`).

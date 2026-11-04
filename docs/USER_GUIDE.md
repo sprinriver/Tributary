@@ -180,6 +180,15 @@ The test is one-sided hypergeometric over-representation with Benjamini–Hochbe
 
 ![Pathway enrichment](../artifacts/phase-24/enrichment.png)
 
+### Gene–concept network
+After an enrichment run, the **gene–concept network** links the top 8 gene sets (dark squares) to their hit genes
+(circles).
+- **Gene colour:** a gene's colour is its log2 fold change: blue is down and red is up, at full colour from ±3.
+- **Grey genes:** a grey gene with a dashed edge is a hit in more than one feature, for example several protein
+  groups. The table gives its count and whether the signs agree. No single value is shown for it.
+- **Shared genes:** genes linked to several sets are the ones those pathways share.
+- **Table:** the table under the network lists the same links.
+
 ## Triage board
 **Triage** in the sidebar is each program's list of proteins and compounds it is deciding on.
 1. **Add an item:** on a protein or compound page, choose the program in **Triage** and click **Add to triage**. If

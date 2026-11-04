@@ -1520,3 +1520,24 @@ Entry template:
   - Experimental PDB structures.
   - PAE.
   - The AlphaFold path was tested with a stub, because this environment cannot reach EBI.
+
+## 2026-11-04 — Phase 30: Gene–concept network — done
+- Built:
+  - **API:** enrichment responses carry `hit_genes`. Each hit identifier in the universe has its log2 FC when it is
+    a hit in one feature. When it is a hit in several, it has the feature count and whether their signs agree, and
+    no value is picked.
+  - **Web:** a gene–concept network (Cytoscape.js `cose` layout) under the enrichment results.
+    - It shows the top 8 sets and their hit genes.
+    - Genes are coloured by log2 FC (diverging, clamped at ±3). Multi-feature genes are grey with a dashed edge.
+    - A table alternative lists every gene with its value and sets.
+    - Cytoscape loads on demand.
+- Also fixed: the error-alert text on its pink background was 4.4:1 contrast, now 5.9:1 (AA). The a11y sweep found
+  it on a protein page whose AlphaFold lookup cannot reach EBI from this environment.
+- Dependencies added: `cytoscape` 3.34.0 (approved).
+- Test changes: none.
+- Evidence: `pnpm check` ✓ (api 253, web 33), and `pnpm e2e NET-02`, `ENR-04` and `OPS-09` ✓ locally. The
+  screenshot is `artifacts/phase-30/gene-concept-network.png`.
+- Gaps and follow-ups:
+  - Protein–protein interaction networks need a STRING-style reference dataset: a new dataset contract and
+    importer.
+  - The network cannot be exported as an image yet.
