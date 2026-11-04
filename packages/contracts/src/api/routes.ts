@@ -16,6 +16,7 @@ import { ONBOARDING_ROUTES } from './routes-onboarding.ts';
 import { ENRICHMENT_ROUTES } from './routes-enrichment.ts';
 import { TRIAGE_ROUTES } from './routes-triage.ts';
 import { WATCH_ROUTES } from './routes-watch.ts';
+import { CHEM_ROUTES } from './routes-chem.ts';
 import { QC_ROUTES } from './routes-qc.ts';
 import { VIEW_ROUTES } from './routes-views.ts';
 import type { ApiRoute } from './route.ts';
@@ -299,6 +300,7 @@ export const API_ROUTES = {
   ...TRIAGE_ROUTES,
   ...WATCH_ROUTES,
   ...QC_ROUTES,
+  ...CHEM_ROUTES,
 } as const satisfies Record<string, ApiRoute>;
 
 export type ApiOperation = keyof typeof API_ROUTES;

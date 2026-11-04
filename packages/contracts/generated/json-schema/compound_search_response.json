@@ -1,0 +1,126 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/CompoundSearchResponse",
+  "$defs": {
+    "CompoundSearchResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "compound_id": {
+                "type": "string"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "program_code": {
+                "type": "string"
+              },
+              "smiles": {
+                "type": "string"
+              },
+              "similarity": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "match_atoms": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "svg": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "compound_id",
+              "name",
+              "program_code",
+              "smiles",
+              "similarity",
+              "match_atoms",
+              "svg"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "total_hits": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "searched": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "no_structure": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "invalid_structures": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "substructure",
+                "similarity"
+              ]
+            },
+            "query": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            },
+            "min_similarity": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "rdkit_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode",
+            "query",
+            "method",
+            "min_similarity",
+            "rdkit_version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "items",
+        "total_hits",
+        "searched",
+        "no_structure",
+        "invalid_structures",
+        "provenance"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

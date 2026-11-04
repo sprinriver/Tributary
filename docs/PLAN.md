@@ -394,3 +394,14 @@ Definition of done:
 - [x] QC page shows trend, flagged run and PCA (e2e, screenshots in artifacts/phase-27/)
 - [x] `pnpm check` exits 0
 
+## Phase 28 — Compound structures and structure search
+Status: in progress
+Goal: Medicinal chemists see structures and find compounds by substructure or similarity next to the biology.
+Inspired by: ChEMBL and PubChem structure search, CDD Vault (ideas only).
+Features: CHEM-01 … CHEM-04
+In scope: RDKit (@rdkit/rdkit 2025.3.4-1.0.0, BSD-3-Clause, approved 2026-11-04) in apps/api only. A structure endpoint (SVG, canonical SMILES, InChIKey, descriptors), substructure search (SMARTS) and similarity search (Morgan radius 2, 2048 bits, Tanimoto) over the compounds of readable programs. The compound page shows the structure; a search page lists hits with highlighted matches. Unparsable registered SMILES are reported, never fixed.
+Definition of done:
+- [ ] API tests for structure, substructure and similarity search and program scoping
+- [ ] Draw-free search from the UI: type a SMARTS, see hits, open a compound (e2e, screenshots in artifacts/phase-28/)
+- [ ] `pnpm check` exits 0
+

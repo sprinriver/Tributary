@@ -12008,6 +12008,184 @@
           }
         }
       }
+    },
+    "/v1/compounds/{id}/structure": {
+      "get": {
+        "operationId": "getCompoundStructure",
+        "summary": "Depiction, canonical SMILES, InChIKey and descriptors of a compound (RDKit)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompoundStructure"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/compounds/search": {
+      "post": {
+        "operationId": "searchCompounds",
+        "summary": "Substructure (SMARTS) or similarity (Morgan fingerprint, Tanimoto) search of readable compounds",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompoundSearchBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompoundSearchResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -14129,6 +14307,247 @@
           "qualifier",
           "assay_category",
           "assay_name"
+        ],
+        "additionalProperties": false
+      },
+      "CompoundSearchBody": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          },
+          "mode": {
+            "type": "string",
+            "enum": [
+              "substructure",
+              "similarity"
+            ]
+          },
+          "min_similarity": {
+            "default": 0.5,
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1
+          },
+          "program_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "limit": {
+            "default": 100,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          }
+        },
+        "required": [
+          "query",
+          "mode",
+          "min_similarity",
+          "limit"
+        ],
+        "additionalProperties": false
+      },
+      "CompoundSearchResponse": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "compound_id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "program_code": {
+                  "type": "string"
+                },
+                "smiles": {
+                  "type": "string"
+                },
+                "similarity": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "match_atoms": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "svg": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "compound_id",
+                "name",
+                "program_code",
+                "smiles",
+                "similarity",
+                "match_atoms",
+                "svg"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "total_hits": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "searched": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "no_structure": {
+            "type": "integer",
+            "minimum": -9007199254740991,
+            "maximum": 9007199254740991
+          },
+          "invalid_structures": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "provenance": {
+            "type": "object",
+            "properties": {
+              "mode": {
+                "type": "string",
+                "enum": [
+                  "substructure",
+                  "similarity"
+                ]
+              },
+              "query": {
+                "type": "string"
+              },
+              "method": {
+                "type": "string"
+              },
+              "min_similarity": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "rdkit_version": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "mode",
+              "query",
+              "method",
+              "min_similarity",
+              "rdkit_version"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "items",
+          "total_hits",
+          "searched",
+          "no_structure",
+          "invalid_structures",
+          "provenance"
+        ],
+        "additionalProperties": false
+      },
+      "CompoundStructure": {
+        "type": "object",
+        "properties": {
+          "compound_id": {
+            "type": "string"
+          },
+          "smiles": {
+            "type": "string"
+          },
+          "canonical_smiles": {
+            "type": "string"
+          },
+          "inchikey": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "svg": {
+            "type": "string"
+          },
+          "descriptors": {
+            "type": "object",
+            "properties": {
+              "mw": {
+                "type": "number"
+              },
+              "clogp": {
+                "type": "number"
+              },
+              "tpsa": {
+                "type": "number"
+              },
+              "hbd": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "hba": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "rotatable_bonds": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "rings": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "mw",
+              "clogp",
+              "tpsa",
+              "hbd",
+              "hba",
+              "rotatable_bonds",
+              "rings"
+            ],
+            "additionalProperties": false
+          },
+          "rdkit_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "compound_id",
+          "smiles",
+          "canonical_smiles",
+          "inchikey",
+          "svg",
+          "descriptors",
+          "rdkit_version"
         ],
         "additionalProperties": false
       },

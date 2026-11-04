@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/CompoundStructure",
+  "$defs": {
+    "CompoundStructure": {
+      "type": "object",
+      "properties": {
+        "compound_id": {
+          "type": "string"
+        },
+        "smiles": {
+          "type": "string"
+        },
+        "canonical_smiles": {
+          "type": "string"
+        },
+        "inchikey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "svg": {
+          "type": "string"
+        },
+        "descriptors": {
+          "type": "object",
+          "properties": {
+            "mw": {
+              "type": "number"
+            },
+            "clogp": {
+              "type": "number"
+            },
+            "tpsa": {
+              "type": "number"
+            },
+            "hbd": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "hba": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "rotatable_bonds": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "rings": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          },
+          "required": [
+            "mw",
+            "clogp",
+            "tpsa",
+            "hbd",
+            "hba",
+            "rotatable_bonds",
+            "rings"
+          ],
+          "additionalProperties": false
+        },
+        "rdkit_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "compound_id",
+        "smiles",
+        "canonical_smiles",
+        "inchikey",
+        "svg",
+        "descriptors",
+        "rdkit_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
