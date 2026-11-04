@@ -1,10 +1,12 @@
 // Sends due notification deliveries (Phase 31, NOTIF-03). Runs on an interval in the API process and is safe with
 // several replicas: rows are claimed with FOR UPDATE SKIP LOCKED. One attempt per due row per sweep; failures back
 // off (30 s, 1 min, 2 min, 4 min) and the fifth failure is final.
-import type { Database } from '@tributary/db';
+import type { Database, DB } from '@tributary/db';
+import type { ExpressionBuilder } from 'kysely';
 import type { ApiConfig } from '../config.ts';
 import { assertPublicDestination } from '../webhooks/address.ts';
 import { payloadFor, type Message } from './format.ts';
+import type { Mailer } from './mailer.ts';
 
 export const MAX_ATTEMPTS = 5;
 const BACKOFF_MS = 30_000;
@@ -17,6 +19,8 @@ export interface SweepDeps {
   db: Database;
   fetch: typeof fetch;
   config: ApiConfig;
+  /** Personal email transport (Phase 34); null or absent: emails wait. */
+  mailer?: Mailer | null;
 }
 
 /** A category for the delivery log, never raw network error text. */
@@ -45,6 +49,66 @@ export async function post(deps: SweepDeps, route: { kind: string; url: string }
 }
 
 export async function sweepNotifications(deps: SweepDeps, now: Date = new Date()): Promise<number> {
+  return (await sweepChannels(deps, now)) + (deps.mailer ? await sweepEmails(deps, deps.mailer, now) : 0);
+}
+
+const nextAttempt = (attempts: number) => new Date(Date.now() + BACKOFF_MS * 2 ** (attempts - 1));
+/** Due emails: pending and due, or stuck in 'sending' (a crashed process). */
+const due = (now: Date) => (eb: ExpressionBuilder<DB, 'email_delivery'>) =>
+  eb.or([
+    eb.and([eb('status', '=', 'pending'), eb('next_attempt_at', '<=', now)]),
+    eb.and([eb('status', '=', 'sending'), eb('updated_at', '<', new Date(now.getTime() - STALE_MS))]),
+  ]);
+
+/** Personal emails (Phase 34): same claiming, retries and backoff as channel deliveries. */
+async function sweepEmails(deps: SweepDeps, mailer: Mailer, now: Date): Promise<number> {
+  const { db } = deps;
+  const claimed = await db.transaction().execute(async (trx) => {
+    const rows = await trx
+      .selectFrom('email_delivery')
+      .select(['id', 'to_address', 'subject', 'body', 'attempts'])
+      .where(due(now))
+      .orderBy('id')
+      .limit(BATCH)
+      .forUpdate()
+      .skipLocked()
+      .execute();
+    if (rows.length)
+      await trx
+        .updateTable('email_delivery')
+        .set({ status: 'sending' })
+        .where(
+          'id',
+          'in',
+          rows.map((r) => r.id),
+        )
+        .execute();
+    return rows;
+  });
+  for (const row of claimed) {
+    const attempts = row.attempts + 1;
+    let error: string | null = null;
+    try {
+      await mailer.send({ to: row.to_address, subject: row.subject, text: row.body });
+    } catch {
+      error = 'send failed';
+    }
+    await db
+      .updateTable('email_delivery')
+      .set({
+        status: error === null ? 'delivered' : attempts >= MAX_ATTEMPTS ? 'failed' : 'pending',
+        attempts,
+        error,
+        delivered_at: error === null ? new Date() : null,
+        next_attempt_at: nextAttempt(attempts),
+      })
+      .where('id', '=', row.id)
+      .execute();
+  }
+  return claimed.length;
+}
+
+async function sweepChannels(deps: SweepDeps, now: Date): Promise<number> {
   const { db } = deps;
   const claimed = await db.transaction().execute(async (trx) => {
     const rows = await trx

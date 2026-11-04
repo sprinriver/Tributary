@@ -34,6 +34,8 @@ export interface ApiConfig {
   proteinModels: { dir: string; alphafoldUrl: string };
   /** Hosts notification routes may post to besides Slack's and Teams' own (NOTIFY_EXTRA_HOSTS, comma-separated). */
   notifyExtraHosts: string[];
+  /** Personal email (Phase 34): EMAIL_TRANSPORT ses | smtp | none (default none: emails are not queued). */
+  email: { transport: 'none' | 'ses' | 'smtp' | 'memory'; from: string; smtpUrl: string; sesRegion: string };
   sessionTtlHours: number;
   groupRoleMap: GroupRoleMapping[];
   s3: S3Config;
@@ -188,6 +190,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
       env.QUERY_URL ?? (env.QUERY_HOSTPORT ? `http://${env.QUERY_HOSTPORT}` : 'http://127.0.0.1:3100'),
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',
+    email: {
+      transport: (['ses', 'smtp'] as const).find((t) => t === env.EMAIL_TRANSPORT) ?? 'none',
+      from: env.EMAIL_FROM ?? 'Tributary <no-reply@localhost>',
+      smtpUrl: env.SMTP_URL ?? '',
+      sesRegion: env.SES_REGION ?? env.AWS_REGION ?? 'us-east-1',
+    },
     notifyExtraHosts: (env.NOTIFY_EXTRA_HOSTS ?? '')
       .split(',')
       .map((h) => h.trim().toLowerCase())

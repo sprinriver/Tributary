@@ -27,7 +27,9 @@ import { join, resolve } from 'node:path';
 
 /** Configuration for API tests: dev defaults, no IdP group mapping. */
 export function testConfig(overrides: Partial<ApiConfig> = {}): ApiConfig {
-  return { ...loadConfig({ NODE_ENV: 'test' }), groupRoleMap: [], ...overrides };
+  const base = loadConfig({ NODE_ENV: 'test' });
+  // Emails go to the in-memory mailer (TestApi.emails).
+  return { ...base, groupRoleMap: [], email: { ...base.email, transport: 'memory' }, ...overrides };
 }
 
 /** A migrated test database, an app on it, and helpers to create programs and users with PATs. */

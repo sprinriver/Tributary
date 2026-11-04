@@ -8,6 +8,7 @@ import { loadBindings } from '../auth/principal.ts';
 import type { ApiConfig } from '../config.ts';
 import { callQueryService } from '../datasets/query-client.ts';
 import { resolveSource } from '../query/resolve.ts';
+import { emailUser } from '../notifications/email.ts';
 
 export interface NotifyDeps {
   db: Database;
@@ -154,7 +155,7 @@ async function notify(deps: NotifyDeps, releaseId: string, actor: AuditActor): P
       )
       // Once per watch, release and contrast (a publish never alerts twice).
       .onConflict((oc) => oc.columns(['watch_id', 'release_id', 'contrast_label']).doNothing())
-      .returning('id')
+      .returning(['id', 'user_id', 'watch_id', 'contrast_label'])
       .execute();
     if (rows.length)
       await insertAudit(trx, actor, {
@@ -163,7 +164,48 @@ async function notify(deps: NotifyDeps, releaseId: string, actor: AuditActor): P
         entityId: releaseId,
         after: { alerts: rows.length, rule: da ? RULE : COMPOUND_RULE },
       });
-    return rows.length;
+    return rows;
   });
-  return inserted;
+  await emailAlerts(deps, release, inserted, watches, actor);
+  return inserted.length;
+}
+
+/** One email per watcher for this release (Phase 34): what they watch and in which contrast; no values. */
+async function emailAlerts(
+  deps: NotifyDeps,
+  release: { id: string; tenant_id: string },
+  inserted: { user_id: string; watch_id: string; contrast_label: string }[],
+  watches: { id: string; kind: string; key: string }[],
+  actor: AuditActor,
+) {
+  if (inserted.length === 0) return;
+  const where = await deps.db
+    .selectFrom('dataset_release as r')
+    .innerJoin('dataset as d', 'd.id', 'r.dataset_id')
+    .innerJoin('program as p', 'p.id', 'd.program_id')
+    .leftJoin('experiment_version as v', 'v.id', 'd.experiment_version_id')
+    .leftJoin('experiment as e', 'e.id', 'v.experiment_id')
+    .select(['p.code', 'd.name', 'e.name as experiment', 'v.version_number'])
+    .where('r.id', '=', release.id)
+    .executeTakeFirst();
+  const place = where
+    ? `${where.code} · ${where.experiment ? `${where.experiment} v${where.version_number}` : where.name}`
+    : 'a new release';
+  const byWatch = new Map(watches.map((w) => [w.id, w]));
+  const byUser = new Map<string, typeof inserted>();
+  for (const a of inserted) byUser.set(a.user_id, [...(byUser.get(a.user_id) ?? []), a]);
+  for (const [userId, alerts] of byUser) {
+    const n = alerts.length;
+    await emailUser(deps, actor, userId, 'alert.created', {
+      subject: `${n} new hit${n === 1 ? '' : 's'} for your watched items in ${place}`,
+      lines: [
+        'A newly published release has hits for items you watch (open it to see the values):',
+        ...alerts.map((a) => {
+          const w = byWatch.get(a.watch_id);
+          return `- ${w ? `${w.kind} ${w.key}` : 'watched item'}${a.contrast_label ? `, contrast ${a.contrast_label}` : ''}`;
+        }),
+      ],
+      path: `/releases/${release.id}`,
+    });
+  }
 }

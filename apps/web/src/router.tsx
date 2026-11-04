@@ -21,6 +21,7 @@ import { HealthPage } from './admin/HealthPage.tsx';
 import { LifecyclePage } from './admin/LifecyclePage.tsx';
 import { ListsPage } from './admin/ListsPage.tsx';
 import { NotificationsPage } from './admin/NotificationsPage.tsx';
+import { NotificationSettingsPage } from './settings/NotificationSettingsPage.tsx';
 import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
@@ -199,6 +200,11 @@ const templatesRoute = createRoute({
   path: '/admin/templates',
   component: TemplatesPage,
 });
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings/notifications',
+  component: NotificationSettingsPage,
+});
 const adminPage = (path: string, component: () => React.ReactNode) =>
   createRoute({ getParentRoute: () => rootRoute, path, component });
 const adminRoutes = [
@@ -251,6 +257,7 @@ export const router = createRouter({
     auditRoute,
     templatesRoute,
     ...adminRoutes,
+    settingsRoute,
     forbiddenRoute,
   ]),
 });

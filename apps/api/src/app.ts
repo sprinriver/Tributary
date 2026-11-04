@@ -39,6 +39,7 @@ import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { registerEnrichmentRoutes } from './routes/enrichment.ts';
 import { registerChemRoutes } from './routes/chem.ts';
 import { registerNotificationRoutes } from './routes/notifications.ts';
+import { registerEmailRoutes } from './routes/email.ts';
 import { registerProteinModelRoutes } from './routes/protein-model.ts';
 import { registerQcRoutes } from './routes/qc.ts';
 import { registerTriageRoutes } from './routes/triage.ts';
@@ -166,6 +167,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerChemRoutes(scoped, db);
     registerProteinModelRoutes(scoped, { config, fetch: fetchImpl });
     registerNotificationRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerEmailRoutes(scoped, { db, config });
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

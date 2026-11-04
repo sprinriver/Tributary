@@ -17,6 +17,7 @@ import type { ApiConfig } from '../config.ts';
 import { HttpError, parse } from '../errors.ts';
 import { respond } from '../respond.ts';
 import { triageDecision } from '../notifications/emit.ts';
+import { emailUser } from '../notifications/email.ts';
 import { addEvent, detail, evidenceSnapshot, listItems, readableItem } from '../triage/store.ts';
 
 type IdParams = FastifyRequest<{ Params: { id: string } }>;
@@ -150,12 +151,31 @@ export function registerTriageRoutes(
         reason: body.reason ?? actor.reason,
       });
     });
+    const by = await db
+      .selectFrom('app_user')
+      .select('name')
+      .where('id', '=', actor.userId)
+      .executeTakeFirst();
+    // The new owner hears about it by email (not when people assign themselves).
+    if (body.owner_id && body.owner_id !== item.owner_id && body.owner_id !== actor.userId) {
+      const what = item.label ? `${item.label} (${item.key})` : item.key;
+      await emailUser(
+        deps,
+        actor,
+        body.owner_id,
+        'triage.assigned',
+        {
+          subject: `${what} was assigned to you by ${by?.name ?? 'a colleague'}`,
+          lines: [
+            `${by?.name ?? 'A colleague'} made you the owner of ${what} on the ${item.program_code} triage board.`,
+            ...(body.reason ? [`Reason: “${body.reason}”`] : []),
+          ],
+          path: `/triage?item=${item.id}`,
+        },
+        request.log,
+      );
+    }
     if (body.status !== undefined && body.status !== item.status) {
-      const by = await db
-        .selectFrom('app_user')
-        .select('name')
-        .where('id', '=', actor.userId)
-        .executeTakeFirst();
       await triageDecision(
         deps,
         actor,
