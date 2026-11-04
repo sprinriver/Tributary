@@ -86,9 +86,11 @@ describe('compound structures and search', () => {
     expect(body).toMatchObject({
       searched: 3,
       no_structure: 1,
-      invalid_structures: ['CHM-5'],
       total_hits: 2,
     });
+    expect(body.invalid_structures).toEqual([
+      expect.objectContaining({ program_code: 'CHM', compound_id: 'CHM-5', batch_id: 'B01' }),
+    ]);
     // Another program's compound with the same substructure is not visible.
     const theirs = (await search(outsider, { query: 'c1ccccc1NC(=O)', mode: 'substructure' })).json() as Json;
     expect(theirs.items.map((h: Json) => h.compound_id)).toEqual(['CHX-1']);
