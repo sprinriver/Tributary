@@ -100,11 +100,9 @@ async function alphafold(config: ApiConfig, fetchImpl: typeof fetch, id: string)
       const file = await fetchImpl(new URL(cifUrl, base), {
         signal: AbortSignal.timeout(60_000),
         redirect: 'error', // a redirect could leave the checked host
-      }).catch(
-        () => {
-          throw new HttpError(503, 'model_source_unavailable', 'AlphaFold DB is not reachable.');
-        },
-      );
+      }).catch(() => {
+        throw new HttpError(503, 'model_source_unavailable', 'AlphaFold DB is not reachable.');
+      });
       if (!file.ok)
         throw new HttpError(502, 'model_source_failed', `AlphaFold DB answered HTTP ${file.status}.`);
       const text = await file.text();

@@ -65,7 +65,7 @@ export function ProteinModelPanel({ accession }: { accession: string }) {
       </p>
     );
   return (
-    <section role="region" aria-label="3D model" className="stack">
+    <div className="stack">
       <ErrorMessage error={model.error} />
       {m && (
         <>
@@ -128,6 +128,6 @@ export function ProteinModelPanel({ accession }: { accession: string }) {
           )}
         </>
       )}
-    </section>
+    </div>
   );
 }
