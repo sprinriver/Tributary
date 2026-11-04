@@ -427,3 +427,13 @@ Definition of done:
 - [x] Run enrichment and see the network (e2e, screenshot in artifacts/phase-30/)
 - [x] `pnpm check` exits 0
 
+## Phase 31 — Team notifications (Slack and Teams)
+Status: in progress
+Goal: Teams hear about finished runs, new results and triage decisions where they already talk, without opening the app.
+Features: NOTIF-01 … NOTIF-04
+In scope: system-admin routes to Slack or Microsoft Teams incoming webhooks (all programs or one; chosen events: run.finished, version.published, release.published, triage.decision); URLs checked against the services' hosts and kept secret; an outbox written in the request and sent by a background sweep with retries and backoff; delivery history and a test message; names, statuses and links only, never data values. Personal email is a follow-up (needs a mail transport dependency).
+Definition of done:
+- [ ] API tests for routes, host checks, event routing, retries and audit
+- [ ] Admin page: add a route, send a test, see deliveries (e2e, screenshot in artifacts/phase-31/)
+- [ ] `pnpm check` exits 0
+

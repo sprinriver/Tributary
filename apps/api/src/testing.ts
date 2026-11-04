@@ -12,6 +12,7 @@ import type { ModelProvider } from './ai/provider.ts';
 import { createPersonalAccessToken } from './auth/tokens.ts';
 import { loadConfig, type ApiConfig } from './config.ts';
 import { MemoryIngestQueue } from './ingest/queue.ts';
+import { sweepNotifications } from './notifications/sweep.ts';
 import { buildApp as buildQueryApp } from '@tributary/query/app';
 import { loadQueryConfig } from '@tributary/query/config';
 import { Storage } from './storage.ts';
@@ -41,6 +42,8 @@ export interface TestApi {
   s3: { client: Storage['client']; bucket: string };
   /** Runs the ingest jobs queued so far; returns how many ran. */
   drainIngest(): Promise<number>;
+  /** Sends the notifications due at `now` (default: now); returns how many attempts were made. */
+  drainNotifications(now?: Date): Promise<number>;
   /** Pipeline status: one poll of every non-terminal run, or one EventBridge event as from SQS. */
   pipelines: { poll(): Promise<number>; event(message: object, runner?: RunnerKind): Promise<boolean> };
   close(): Promise<void>;
@@ -184,6 +187,7 @@ export async function startTestApi(
     },
     s3: { client: storage.client, bucket: storage.bucket },
     drainIngest: () => queue.drain({ db, storage }),
+    drainNotifications: (now) => sweepNotifications({ db, fetch: fetchImpl, config }, now),
     pipelines: {
       poll: () => pollRuns(pipelineDeps),
       event: (message, runner) => handleRunEvent(pipelineDeps, message, runner),

@@ -482,6 +482,38 @@ export interface MetadataTemplate {
   version: string;
 }
 
+export interface NotificationDelivery {
+  attempts: Generated<number>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  delivered_at: Timestamp | null;
+  error: string | null;
+  event: string;
+  id: Generated<string>;
+  message: Json;
+  next_attempt_at: Generated<Timestamp>;
+  route_id: string;
+  status: Generated<string>;
+  tenant_id: string;
+  title: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface NotificationRoute {
+  active: Generated<boolean>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  events: string[];
+  id: Generated<string>;
+  kind: string;
+  name: string;
+  program_id: string | null;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  url: string;
+}
+
 export interface OnboardingItem {
   attempts: Generated<number>;
   created_at: Generated<Timestamp>;
@@ -930,6 +962,8 @@ export interface DB {
   mapping_preset: MappingPreset;
   metadata_field_def: MetadataFieldDef;
   metadata_template: MetadataTemplate;
+  notification_delivery: NotificationDelivery;
+  notification_route: NotificationRoute;
   onboarding_item: OnboardingItem;
   onboarding_run: OnboardingRun;
   ontology_query_cache: OntologyQueryCache;
