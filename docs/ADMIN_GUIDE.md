@@ -123,6 +123,24 @@ Search updates as things change. After a bulk load or a restore, rebuild it with
 - **Collections never change:** import a newer source release as a new collection. Every import is audited.
 - **Demo:** the demo data includes "Demo modules (synthetic)", 20 invented modules.
 
+## Team notifications (Slack and Teams)
+**Admin → Notifications** posts events to chat channels. The events are pipeline run finished, experiment version
+published, dataset release published and triage decision.
+1. **Get a webhook URL from the chat service.**
+   - **Slack:** add an *Incoming Webhook* to the channel.
+   - **Teams:** add a channel webhook, or a *Workflows* flow that posts to a channel when a webhook request is
+     received.
+2. **Add a channel.** Enter the name, service and URL, choose all programs or one, and pick the events.
+   - The URL is a secret. It is never shown again, and audit records keep only its host.
+   - URLs must use https and point at Slack's or Teams' own hosts. To allow another host (for example a proxy), set
+     `NOTIFY_EXTRA_HOSTS`.
+3. **Send a test** to check the channel. Each channel lists its last deliveries.
+   - **Retries:** a failed delivery is retried four times over about 8 minutes, then marked failed.
+   - **Pause:** pausing a channel stops new messages without losing its settings.
+
+Messages carry names, statuses, the person who acted, a triage reason, and a link back to Tributary. They never
+include data values, but they do leave your AWS account, so choose channels your organisation approves.
+
 ## Onboarding legacy data
 Historical data on a shared drive or another bucket can be registered in bulk (API only for now).
 

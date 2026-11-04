@@ -4,6 +4,8 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Team notifications (NOTIF-01…04): post finished runs, published versions and releases, and triage decisions to
+  Slack or Microsoft Teams channels, with retries and a delivery history (Admin → Notifications).
 - Gene–concept network (NET-01…02):
   - Enrichment results show the top gene sets and their hit genes as a network coloured by log2 FC, with a table.
   - Genes that are hits in several features are marked, never given one picked value.

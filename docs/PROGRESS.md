@@ -1541,3 +1541,23 @@ Entry template:
   - Protein–protein interaction networks need a STRING-style reference dataset: a new dataset contract and
     importer.
   - The network cannot be exported as an image yet.
+
+## 2026-11-04 — Phase 31: Team notifications (Slack and Teams) — done
+- Built (ADR 0030):
+  - **Migration 0024:** `notification_route` and the `notification_delivery` outbox.
+  - **API:** system-admin routes, kept secret and checked against Slack's and Teams' own hosts, with audit. They
+    support list, create, update, delete, test and deliveries.
+  - **Events** from publish (UI and pipeline outputs), version publish, triage decisions and finished runs.
+  - **Sweep:** a 15 s sweep in the API process. It claims rows with `SKIP LOCKED` and makes 5 attempts with
+    backoff.
+  - **Web:** an Admin → Notifications page to add a channel, send a test, pause, remove, and see the last
+    deliveries.
+- Dependencies added: none.
+- Test changes: DB-01's table list gains the two new tables.
+- Evidence: `pnpm check` ✓ (api 256, web 33, db 17), and `pnpm e2e NOTIF-04` ✓ and `OPS-09` ✓ locally. The
+  screenshot is `artifacts/phase-31/notifications.png`. The test message fails locally because this sandbox
+  cannot reach Slack, and the page reports that.
+- Gaps and follow-ups:
+  - Personal email (needs SES or SMTP approval).
+  - Per-user preferences.
+  - A real Slack/Teams check: use **Send test** on a real channel.
