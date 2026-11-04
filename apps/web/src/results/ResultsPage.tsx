@@ -78,7 +78,7 @@ function TopHits({ release }: { release: string }) {
   );
 }
 
-const volcano = (release: string, contrastId: string): ChartSpec =>
+export const volcano = (release: string, contrastId: string): ChartSpec =>
   ({
     type: 'volcano',
     data: {
@@ -172,6 +172,13 @@ export function ResultsPage() {
         Results — {experiment.data?.name ?? '…'}
         {results.data ? ` v${results.data.version_number}` : ''}
       </h1>
+      {version && (
+        <p style={{ margin: 0 }}>
+          <Link to="/experiments/$id/report" params={{ id }} search={{ version }}>
+            Report (PDF or PowerPoint) →
+          </Link>
+        </p>
+      )}
       <ErrorMessage error={experiment.error ?? results.error} />
       {results.data && <Results r={results.data} />}
     </main>

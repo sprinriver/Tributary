@@ -5,6 +5,7 @@ import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
 import { ExplorerPage, type ExplorerSearch } from './explorer/ExplorerPage.tsx';
 import { ComparePage } from './results/ComparePage.tsx';
 import { CompoundPage, ProteinPage } from './results/EntityPages.tsx';
+import { ReportPage } from './results/ReportPage.tsx';
 import { ResultsPage } from './results/ResultsPage.tsx';
 import { ReleasePage } from './datasets/ReleasePage.tsx';
 import { AdminPipelinesPage } from './pipelines/AdminPipelinesPage.tsx';
@@ -78,6 +79,15 @@ const explorerRoute = createRoute({
     Object.fromEntries(
       ['q', 'view'].map((k) => [k, str(search[k])]).filter(([, v]) => v !== undefined),
     ) as ExplorerSearch,
+});
+const reportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/experiments/$id/report',
+  component: ReportPage,
+  validateSearch: (search: Record<string, unknown>): { version?: string } => {
+    const version = str(search.version);
+    return version ? { version } : {};
+  },
 });
 const resultsRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -225,6 +235,7 @@ export const router = createRouter({
     datasetsRoute,
     explorerRoute,
     resultsRoute,
+    reportRoute,
     proteinRoute,
     compoundSearchRoute,
     compoundRoute,
