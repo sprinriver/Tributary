@@ -112,5 +112,7 @@
   {"id": "CHEM-04", "phase": 28, "parity": "new", "description": "Structure on the compound page and a structure search page (substructure or similarity) linking to compounds", "verify": "pnpm e2e CHEM-04", "passes": true},
   {"id": "STRUC-01", "phase": 29, "parity": "new", "description": "Protein 3D model from a local model directory or AlphaFold DB, served same-origin by the API (cached; other hosts refused; only UniProt accessions sent out), labelled predicted with its confidence metric and licence", "verify": "pnpm run test:api STRUC-01", "passes": true},
   {"id": "STRUC-02", "phase": 29, "parity": "new", "description": "Synthetic ModelCIF demo models with per-residue pLDDT from pnpm synth", "verify": "pnpm run test:compute -k STRUC_02", "passes": true},
-  {"id": "STRUC-03", "phase": 29, "parity": "new", "description": "3D viewer (Mol*) on the protein page, loaded on demand, coloured by pLDDT with a legend and the model's source", "verify": "pnpm e2e STRUC-03", "passes": true}
+  {"id": "STRUC-03", "phase": 29, "parity": "new", "description": "3D viewer (Mol*) on the protein page, loaded on demand, coloured by pLDDT with a legend and the model's source", "verify": "pnpm e2e STRUC-03", "passes": true},
+  {"id": "NET-01", "phase": 30, "parity": "new", "description": "Enrichment results list each hit identifier with its log2 FC (one feature) or its feature count and sign agreement (several), never a silent pick", "verify": "pnpm run test:api NET-01", "passes": false},
+  {"id": "NET-02", "phase": 30, "parity": "new", "description": "Gene–concept network (Cytoscape) of the top enriched sets and their hit genes, coloured by log2 FC, with a table alternative", "verify": "pnpm run test:web NET-02 && pnpm e2e NET-02", "passes": false}
 ]

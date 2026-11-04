@@ -416,3 +416,14 @@ Definition of done:
 - [x] Open the 3D model on a protein page (e2e, screenshot in artifacts/phase-29/)
 - [x] `pnpm check` exits 0
 
+## Phase 30 — Gene–concept network
+Goal: See which hit genes drive which enriched pathways, and which genes several pathways share.
+Status: in progress
+Inspired by: clusterProfiler's cnetplot and STRING's network views (ideas only).
+Features: NET-01 … NET-02
+In scope: Cytoscape.js (cytoscape 3.34.0, MIT, approved 2026-11-04) in apps/web, on the enrichment panel. Nodes are the top enriched sets and their hit genes; gene nodes are coloured by log2 FC when the gene is a hit in one feature, and marked when it is a hit in several (count and sign agreement, never a pick). A table lists the same edges. Protein–protein interaction data (STRING import) is a follow-up: it needs a new reference dataset contract.
+Definition of done:
+- [ ] Unit tests for hit-gene values and network elements
+- [ ] Run enrichment and see the network (e2e, screenshot in artifacts/phase-30/)
+- [ ] `pnpm check` exits 0
+
