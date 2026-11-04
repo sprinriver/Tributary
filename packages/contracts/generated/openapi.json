@@ -16727,6 +16727,43 @@
               "additionalProperties": false
             }
           },
+          "hit_genes": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "log2_fc": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "features": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "direction": {
+                  "type": "string",
+                  "enum": [
+                    "up",
+                    "down",
+                    "mixed"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "log2_fc",
+                "features",
+                "direction"
+              ],
+              "additionalProperties": false
+            }
+          },
           "figure": {
             "type": "object",
             "properties": {
@@ -16958,6 +16995,7 @@
         },
         "required": [
           "terms",
+          "hit_genes",
           "figure",
           "provenance"
         ],

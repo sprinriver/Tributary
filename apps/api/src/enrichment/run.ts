@@ -156,6 +156,7 @@ export async function runEnrichment(
         : '−log2 fold change';
   return {
     terms: out.terms,
+    hit_genes: hits.sort().map((id) => ({ id, ...sel.hitGenes.get(id)! })),
     figure: enrichmentFigure(out.terms, body.adj_p_max),
     provenance: {
       release_id: body.release_id,

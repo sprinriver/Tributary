@@ -22,6 +22,16 @@ class Term(BaseModel):
     genes: list[str]
 
 
+class HitGene(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    id: str
+    log2_fc: float | None
+    features: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    direction: Literal["up", "down", "mixed"]
+
+
 class Figure(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -96,6 +106,7 @@ class EnrichmentResponse(BaseModel):
         extra="forbid",
     )
     terms: list[Term]
+    hit_genes: list[HitGene]
     figure: Figure
     provenance: Provenance
 

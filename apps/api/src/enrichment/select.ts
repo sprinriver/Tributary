@@ -22,6 +22,14 @@ export interface Selection {
   multiIdHitFeatures: number;
   conflictingIds: number;
   adjMethods: string[];
+  /** Per hit identifier: its log2 FC when it is a hit in one feature; otherwise the count and sign agreement. */
+  hitGenes: Map<string, HitGene>;
+}
+
+export interface HitGene {
+  log2_fc: number | null;
+  features: number;
+  direction: 'up' | 'down' | 'mixed';
 }
 
 const idsOf = (v: unknown, type: IdType): string[] =>
@@ -61,6 +69,7 @@ export function selectIds(
   let untested = 0;
   let hitFeatures = 0;
   let multiIdHitFeatures = 0;
+  const hitFcs = new Map<string, number[]>();
   for (const r of rows) {
     const ids = idsOf(r[column], type);
     if (ids.length === 0) {
@@ -77,7 +86,10 @@ export function selectIds(
     if (isHit(r, body)) {
       hitFeatures += 1;
       if (ids.length > 1) multiIdHitFeatures += 1;
-      ids.forEach((id) => hits.add(id));
+      ids.forEach((id) => {
+        hits.add(id);
+        hitFcs.set(id, [...(hitFcs.get(id) ?? []), r.log2_fc]);
+      });
     } else ids.forEach((id) => nonHits.add(id));
   }
   return {
@@ -90,5 +102,19 @@ export function selectIds(
     multiIdHitFeatures,
     conflictingIds: [...hits].filter((id) => nonHits.has(id)).length,
     adjMethods: [...adjMethods].sort(),
+    hitGenes: new Map(
+      [...hitFcs].map(([id, fcs]) => {
+        const up = fcs.every((f) => f > 0);
+        const down = fcs.every((f) => f < 0);
+        return [
+          id,
+          {
+            log2_fc: fcs.length === 1 ? fcs[0]! : null,
+            features: fcs.length,
+            direction: up ? 'up' : down ? 'down' : 'mixed',
+          },
+        ];
+      }),
+    ),
   };
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { api } from '../api.ts';
 import { ErrorMessage } from '../components/ui.tsx';
 import { FigureView } from './ChartView.tsx';
+import { GeneConceptNetwork } from './GeneConceptNetwork.tsx';
 
 /** Rows shown in the table (the API returns every tested term). */
 const TABLE_ROWS = 50;
@@ -194,6 +195,11 @@ export function EnrichmentPanel({ release, contrasts }: { release: string; contr
             {result.terms.length > TABLE_ROWS &&
               ` · first ${TABLE_ROWS} of ${result.terms.length} terms shown`}
           </p>
+          <GeneConceptNetwork
+            terms={result.terms}
+            hitGenes={result.hit_genes}
+            contrast={result.provenance.contrast_label}
+          />
           <ul className="hint" style={{ margin: 0 }}>
             {result.provenance.transformations.map((t) => (
               <li key={t}>{t}</li>

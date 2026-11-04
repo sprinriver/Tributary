@@ -63,9 +63,22 @@ export const EnrichmentBodySchema = z
   .meta({ id: 'EnrichmentBody' });
 export type EnrichmentBody = z.infer<typeof EnrichmentBodySchema>;
 
+export const EnrichmentHitGeneSchema = z.object({
+  id: z.string(),
+  /** log2(numerator / denominator) when the identifier is a hit in one feature; null when in several. */
+  log2_fc: z.number().nullable(),
+  /** Hit features (rows) holding this identifier. */
+  features: z.int(),
+  /** Sign of its fold changes: all up, all down, or mixed. */
+  direction: z.enum(['up', 'down', 'mixed']),
+});
+export type EnrichmentHitGene = z.infer<typeof EnrichmentHitGeneSchema>;
+
 export const EnrichmentResponseSchema = z
   .object({
     terms: z.array(EnrichmentTermSchema),
+    /** Every hit identifier tested (in the universe), for the gene–concept network. */
+    hit_genes: z.array(EnrichmentHitGeneSchema),
     /** Dot plot of the top terms (Plotly figure JSON; the page renders it, it computes nothing). */
     figure: z.object({
       data: z.array(z.record(z.string(), z.unknown())),
