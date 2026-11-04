@@ -43,6 +43,7 @@ test('OPS-09: every scientist page has no serious or critical accessibility viol
     `/lineage/release/${release}`,
     '/triage',
     '/qc',
+    '/settings/notifications',
     '/compounds/search?q=c1ccccc1&mode=substructure',
   ];
   const found: string[] = [];
