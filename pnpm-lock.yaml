@@ -235,6 +235,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.32.1
         version: 1.32.1(supports-color@7.2.0)(zod@4.6.7)
+      '@rdkit/rdkit':
+        specifier: 2025.3.4-1.0.0
+        version: 2025.3.4-1.0.0
       '@tributary/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -1014,6 +1017,9 @@ packages:
 
   '@protobufjs/utf8@1.1.2':
     resolution: {integrity: sha512-b1UQwcEZ4yCnMCD8DAL1VlbvBJE9/IX4FTIp7BG1xYpf29SLazLSrqUkj4w7Y5y7cCVP6E5tcqqcI0xemPkHug==}
+
+  '@rdkit/rdkit@2025.3.4-1.0.0':
+    resolution: {integrity: sha512-MJzNoeW2SWt2KCdIibfY213uLWyHZjFfS2ntJ/HuYNHdu6dEiim7jb6ZMU9wnt9Oovkc85BHMuupxkufIMvftQ==}
 
   '@react-querybuilder/core@8.26.0':
     resolution: {integrity: sha512-gdCzYLT7tUVYLQICf5g1Qg92MnPRPlGvltbwubTrLPdwgVVNVPf/XXvPc9iACHzhVRQyUK+0/KGfaPFtVmpQTg==}
@@ -4918,6 +4924,8 @@ snapshots:
   '@protobufjs/pool@1.1.0': {}
 
   '@protobufjs/utf8@1.1.2': {}
+
+  '@rdkit/rdkit@2025.3.4-1.0.0': {}
 
   '@react-querybuilder/core@8.26.0':
     dependencies:
