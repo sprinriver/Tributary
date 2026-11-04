@@ -9,15 +9,19 @@ from tributary_compute.synth.structures import MODEL_ACCESSIONS
 
 def _loop(text: str, category: str) -> list[list[str]]:
     """Rows of one mmCIF loop (whitespace-separated values; the generator writes no quoted values)."""
-    block = text.split(f"loop_\n_{category}.", 1)[1]
-    lines = block.split("\n")
-    rows = [line.split() for line in lines if line and not line.startswith("_")]
-    out: list[list[str]] = []
-    for row in rows:
-        if row[0] == "#" or row[0] == "loop_":
-            break
-        out.append(row)
-    return out
+    for block in text.split("loop_\n")[1:]:
+        lines = [line for line in block.split("\n") if line]
+        if not lines[0].startswith(f"_{category}."):
+            continue
+        rows: list[list[str]] = []
+        for line in lines:
+            if line.startswith("_"):
+                continue
+            if line.startswith("#"):
+                break
+            rows.append(line.split())
+        return rows
+    raise AssertionError(f"no loop _{category}")
 
 
 def test_STRUC_02_models_are_written_for_the_demo_accessions(tmp_path: Path) -> None:
