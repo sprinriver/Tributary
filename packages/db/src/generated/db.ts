@@ -101,6 +101,7 @@ export interface AppGroup {
   deleted_at: Timestamp | null;
   id: Generated<string>;
   name: string;
+  scim_external_id: string | null;
   tenant_id: string;
   updated_at: Generated<Timestamp>;
 }
@@ -132,12 +133,15 @@ export interface AppSetting {
 export interface AppUser {
   created_at: Generated<Timestamp>;
   created_by: string;
+  deactivated_at: Timestamp | null;
   deleted_at: Timestamp | null;
   email: string;
   id: Generated<string>;
   kind: Generated<string>;
   last_login_at: Timestamp | null;
   name: Generated<string>;
+  scim_external_id: string | null;
+  scim_user_name: string | null;
   sub: string;
   tenant_id: string;
   updated_at: Generated<Timestamp>;
@@ -375,6 +379,7 @@ export interface GroupMember {
   deleted_at: Timestamp | null;
   group_id: string;
   id: Generated<string>;
+  source: Generated<string>;
   tenant_id: string;
   updated_at: Generated<Timestamp>;
   user_id: string;

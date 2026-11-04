@@ -1,7 +1,8 @@
 import type { Database } from '@tributary/db';
 import { randomToken, sha256 } from './crypto.ts';
 
-export type TokenScope = 'read' | 'write';
+/** read/write: the /v1 API; scim: only /scim/v2 (system admins' provisioning tokens, Phase 35). */
+export type TokenScope = 'read' | 'write' | 'scim';
 export const TOKEN_PREFIX = 'trb_';
 
 export interface CreatedToken {
