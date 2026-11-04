@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { AI_PROVIDERS, type AiProvider } from '@tributary/contracts';
 import { databaseUrlFromEnv, DEFAULT_DATABASE_URL, DEV_TENANT_ID } from '@tributary/db';
 import type { AiConfig } from './ai/provider.ts';
@@ -29,6 +30,8 @@ export interface ApiConfig {
   queryInternalToken: string;
   /** EBI OLS4 or a self-hosted mirror (SPEC M2: configurable base URL). */
   olsUrl: string;
+  /** Protein 3D models: a directory of <accession>.cif (empty: none) and AlphaFold DB's base URL (empty: off). */
+  proteinModels: { dir: string; alphafoldUrl: string };
   sessionTtlHours: number;
   groupRoleMap: GroupRoleMapping[];
   s3: S3Config;
@@ -183,6 +186,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
       env.QUERY_URL ?? (env.QUERY_HOSTPORT ? `http://${env.QUERY_HOSTPORT}` : 'http://127.0.0.1:3100'),
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',
+    proteinModels: {
+      dir:
+        env.PROTEIN_MODELS_DIR ??
+        (production ? '' : resolve(import.meta.dirname, '../../../fixtures/structures')),
+      alphafoldUrl: env.ALPHAFOLD_URL ?? 'https://www.alphafold.ebi.ac.uk',
+    },
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 12),
     reauthMaxAgeSeconds: Number(env.REAUTH_MAX_AGE_SECONDS ?? 900),
     s3: {

@@ -12186,6 +12186,177 @@
           }
         }
       }
+    },
+    "/v1/proteins/{id}/model": {
+      "get": {
+        "operationId": "getProteinModel",
+        "summary": "Where the 3D model of a protein comes from (local directory or AlphaFold DB), and its confidence metric",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProteinModel"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/proteins/{id}/model.cif": {
+      "get": {
+        "operationId": "getProteinModelFile",
+        "summary": "The 3D model as mmCIF (served from the same origin; AlphaFold DB files are fetched by the API)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No content"
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -21883,6 +22054,66 @@
           "name",
           "description",
           "requires_approval"
+        ],
+        "additionalProperties": false
+      },
+      "ProteinModel": {
+        "type": "object",
+        "properties": {
+          "accession": {
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "enum": [
+              "local",
+              "alphafold_db"
+            ]
+          },
+          "source_label": {
+            "type": "string"
+          },
+          "entry_id": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "model_path": {
+            "type": "string"
+          },
+          "predicted": {
+            "type": "boolean"
+          },
+          "confidence_metric": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "licence": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "accession",
+          "source",
+          "source_label",
+          "entry_id",
+          "model_path",
+          "predicted",
+          "confidence_metric",
+          "licence",
+          "notes"
         ],
         "additionalProperties": false
       },

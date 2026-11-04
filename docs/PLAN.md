@@ -405,3 +405,14 @@ Definition of done:
 - [x] Draw-free search from the UI: type a SMARTS, see hits, open a compound (e2e, screenshots in artifacts/phase-28/)
 - [x] `pnpm check` exits 0
 
+## Phase 29 — 3D protein structure viewer
+Status: in progress
+Goal: See where a hit sits in the protein's 3D model, and how confident that model is, without leaving the platform.
+Inspired by: the AlphaFold DB and UniProt entry pages, PDBe Mol* views (ideas only).
+Features: STRUC-01 … STRUC-03
+In scope: Mol* (molstar 5.11.0, MIT, approved 2026-11-04) in apps/web, loaded on demand. The API serves models from a local directory (in-house models, mirrors, the synthetic demo) or AlphaFold DB (configurable, can be disabled; file URLs on other hosts refused; only UniProt accessions sent out), cached in memory. Models are labelled predicted, coloured by pLDDT with a legend, with source and licence shown.
+Definition of done:
+- [ ] API tests for local and AlphaFold DB models, caching, the host check and input validation
+- [ ] Open the 3D model on a protein page (e2e, screenshot in artifacts/phase-29/)
+- [ ] `pnpm check` exits 0
+
