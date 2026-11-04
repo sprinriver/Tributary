@@ -437,3 +437,13 @@ Definition of done:
 - [x] Admin page: add a route, send a test, see deliveries (e2e, screenshot in artifacts/phase-31/)
 - [x] `pnpm check` exits 0
 
+## Phase 32 — Excel sample sheets
+Status: in progress
+Goal: Scientists bring their sample sheets as they keep them, in Excel, and take them back out the same way.
+Features: XLS-01 … XLS-02
+In scope: read-excel-file 9.3.5 and write-excel-file 4.1.1 (MIT, approved 2026-11-04), in the browser only (the server never unzips uploads). Import: the sheet named "samples", else the first; first row = headers; numbers kept as stored text; dates converted to ISO and flagged; duplicate and unnamed columns reported; then the existing preview and column mapping. Export: the manifest or an empty template as .xlsx, every cell as text so Excel cannot reinterpret gene names or IDs.
+Definition of done:
+- [ ] Unit tests for cell conversion, warnings and export
+- [ ] Upload an .xlsx sheet in the manifest editor and apply it (e2e, screenshot in artifacts/phase-32/)
+- [ ] `pnpm check` exits 0
+

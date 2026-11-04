@@ -118,5 +118,7 @@
   {"id": "NOTIF-01", "phase": 31, "parity": "new", "description": "System admins add Slack and Teams channel routes (all programs or one, chosen events); URLs are host-checked, never shown again, and every change is audited", "verify": "pnpm run test:api NOTIF-01", "passes": true},
   {"id": "NOTIF-02", "phase": 31, "parity": "new", "description": "Run, version, release and triage events go to matching routes through an outbox, with names and links only (no data values)", "verify": "pnpm run test:api NOTIF-02", "passes": true},
   {"id": "NOTIF-03", "phase": 31, "parity": "new", "description": "Deliveries retry with backoff and end delivered or failed, visible per route; a test message reports its outcome", "verify": "pnpm run test:api NOTIF-03", "passes": true},
-  {"id": "NOTIF-04", "phase": 31, "parity": "new", "description": "Admin page for notification routes: add, test, pause, delete, recent deliveries", "verify": "pnpm e2e NOTIF-04", "passes": true}
+  {"id": "NOTIF-04", "phase": 31, "parity": "new", "description": "Admin page for notification routes: add, test, pause, delete, recent deliveries", "verify": "pnpm e2e NOTIF-04", "passes": true},
+  {"id": "XLS-01", "phase": 32, "parity": "new", "description": "Import an Excel (.xlsx) sample sheet into the manifest editor: parsed in the browser, numbers kept as stored, dates flagged, duplicate and unnamed columns reported, then the usual column mapping", "verify": "pnpm run test:web XLS-01 && pnpm e2e XLS-01", "passes": false},
+  {"id": "XLS-02", "phase": 32, "parity": "new", "description": "Download the manifest (or an empty template) as .xlsx with every cell stored as text", "verify": "pnpm run test:web XLS-02", "passes": false}
 ]
