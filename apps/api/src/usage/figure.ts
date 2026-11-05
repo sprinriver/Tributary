@@ -14,6 +14,8 @@ const SERIES: { key: keyof UsageWeek; name: string; color: string }[] = [
 
 export function usageFigure(weekly: UsageWeek[]) {
   const x = weekly.map((w) => w.week_start);
+  // People are whole numbers: whole-number ticks on their axis.
+  const peopleStep = Math.max(1, Math.ceil(Math.max(0, ...weekly.map((w) => w.active_users)) / 5));
   return {
     data: [
       ...SERIES.map((s) => ({
@@ -44,6 +46,11 @@ export function usageFigure(weekly: UsageWeek[]) {
         side: 'right',
         rangemode: 'tozero',
         showgrid: false,
+        // People are whole numbers: linear whole-number ticks, not synced to the actions axis.
+        tickmode: 'linear',
+        tick0: 0,
+        dtick: peopleStep,
+        tickformat: 'd',
       },
       legend: { orientation: 'h', y: -0.25 },
     },

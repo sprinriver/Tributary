@@ -182,6 +182,7 @@ async function seedActor(trx: Transaction<DB>, tenant: string): Promise<string> 
       sub: SEED_SUB,
       email: 'db-seed@tributary.invalid',
       name: 'Seed service',
+      kind: 'service',
     })
     .execute();
   return id;
