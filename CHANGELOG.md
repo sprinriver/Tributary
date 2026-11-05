@@ -4,6 +4,10 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- SCIM 2.0 provisioning (SCIM-01…04):
+  - Okta, Entra ID and other IdPs create, update and deactivate users and groups.
+  - Deactivation ends access at once.
+  - Admin → Access shows the endpoint and token.
 - Personal email (MAIL-01…03):
   - Emails for new hits on watched items, triage items assigned to you, and your finished pipeline runs.
   - Choose them under your name → Email notifications.

@@ -1620,3 +1620,22 @@ Entry template:
   - Digests (daily or weekly).
   - HTML email.
   - A real SES/SMTP send needs a configured installation.
+
+## 2026-11-05 — Phase 35: SCIM user provisioning — done
+- Built (ADR 0031):
+  - **Migration 0026:** SCIM identity columns, `deactivated_at`, group-membership `source`, and the `scim` token
+    scope.
+  - **Endpoints:** `/scim/v2` discovery, Users and Groups.
+  - **Deactivation:** blocks access at once and is reversible.
+  - **Linking:** the first sign-in links to the provisioned account.
+  - **Memberships:** sign-in group claims never undo SCIM memberships.
+  - **UI:** Admin → Access shows the SCIM endpoint and creates or revokes the token.
+- **Found and fixed during the phase:**
+  - A token without `read` or `write` could still perform reads through the general auth hook and the MCP
+    endpoint. Now `/v1` and MCP require one of those scopes (tests in SCIM-01).
+- Dependencies added: none.
+- Evidence: `pnpm check` ✓ (api 264), and `pnpm e2e SCIM-04`, `AUTH-01` and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-35/scim-token.png`.
+- Gaps and follow-ups:
+  - Not supported: bulk, sort, ETags, complex filters, enterprise extension attributes.
+  - Not yet tested against a live Okta or Entra tenant.

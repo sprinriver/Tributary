@@ -123,6 +123,19 @@ Search updates as things change. After a bulk load or a restore, rebuild it with
 - **Collections never change:** import a newer source release as a new collection. Every import is audited.
 - **Demo:** the demo data includes "Demo modules (synthetic)", 20 invented modules.
 
+## SCIM provisioning (Okta, Entra ID)
+1. In **Admin → Access → SCIM provisioning**, note the SCIM endpoint (`…/api/scim/v2`) and press **Create SCIM
+   token**. Copy the token: it is shown once. It acts as you, for SCIM only.
+2. In your IdP's provisioning settings, set the tenant URL to the endpoint, set the secret token to the token, and
+   test the connection.
+3. Assign users and groups to the app.
+   - **Roles:** groups get roles through the group mappings above, exactly like groups from sign-in.
+   - **Deactivating** a user in the IdP removes their access at once (all sessions and tokens).
+   - **Reactivating** restores it.
+4. **First sign-in:** a provisioned user's first sign-in links to the provisioned account by email.
+
+Revoke the token from the same panel if it leaks. Every SCIM change is in the audit log.
+
 ## Team notifications (Slack and Teams)
 **Admin → Notifications** posts events to chat channels. The events are pipeline run finished, experiment version
 published, dataset release published and triage decision.

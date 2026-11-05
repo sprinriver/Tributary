@@ -468,12 +468,12 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 35 — SCIM user provisioning
-Status: in progress
+Status: done (2026-11-05)
 Goal: IT manages Tributary accounts from the identity provider (Okta, Entra ID): joiners get access, leavers lose it at once.
 Features: SCIM-01 … SCIM-04
 In scope: SCIM 2.0 (RFC 7643/7644) at /scim/v2: ServiceProviderConfig, ResourceTypes, Schemas, Users and Groups (list with eq filters and paging, get, create, replace, patch, delete as soft delete); a system admin's token with the new `scim` scope (no /v1 access with it); group memberships record their source so sign-in claims never undo SCIM ones; first sign-in links to the provisioned user by email; deactivation blocks sessions and tokens at once; every change audited; an admin page to create the SCIM token. No dependency.
 Definition of done:
-- [ ] API tests for users, groups and roles, sign-in linking and deactivation
-- [ ] Create a SCIM token in the admin UI (e2e, screenshot in artifacts/phase-35/)
-- [ ] `pnpm check` exits 0
+- [x] API tests for users, groups and roles, sign-in linking and deactivation
+- [x] Create a SCIM token in the admin UI (e2e, screenshot in artifacts/phase-35/)
+- [x] `pnpm check` exits 0
 
