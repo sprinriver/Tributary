@@ -36,6 +36,16 @@ import { registerAdminSettingsRoutes } from './routes/admin-settings.ts';
 import { registerAiRoutes } from './routes/ai.ts';
 import { registerWebhookRoutes } from './routes/webhooks.ts';
 import { registerOnboardingRoutes } from './routes/onboarding.ts';
+import { registerEnrichmentRoutes } from './routes/enrichment.ts';
+import { registerChemRoutes } from './routes/chem.ts';
+import { registerNotificationRoutes } from './routes/notifications.ts';
+import { registerEmailRoutes } from './routes/email.ts';
+import { registerScimRoutes } from './routes/scim.ts';
+import { registerUsageRoutes } from './routes/usage.ts';
+import { registerProteinModelRoutes } from './routes/protein-model.ts';
+import { registerQcRoutes } from './routes/qc.ts';
+import { registerTriageRoutes } from './routes/triage.ts';
+import { registerWatchRoutes } from './routes/watch.ts';
 import { providerFor, type ModelProvider } from './ai/provider.ts';
 import { systemHealth } from './admin/health.ts';
 import { HealthReportSchema, InstanceInfoSchema } from '@tributary/contracts';
@@ -134,7 +144,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     });
     registerProgramRoutes(scoped, db);
     registerExperimentRoutes(scoped, db, index);
-    registerVersionRoutes(scoped, db, index);
+    registerVersionRoutes(scoped, db, index, config);
     registerSampleRoutes(scoped, db);
     registerPresetRoutes(scoped, db);
     registerOntologyRoutes(scoped, db, config, fetchImpl);
@@ -152,6 +162,16 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerAiRoutes(scoped, { root: app, db, config, provider: aiProvider });
     registerWebhookRoutes(scoped, { db, config, fetch: fetchImpl });
     registerOnboardingRoutes(scoped, db, storage);
+    registerEnrichmentRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerTriageRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerWatchRoutes(scoped, db);
+    registerQcRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerChemRoutes(scoped, db);
+    registerProteinModelRoutes(scoped, { config, fetch: fetchImpl });
+    registerNotificationRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerEmailRoutes(scoped, { db, config });
+    registerScimRoutes(scoped, { db, config });
+    registerUsageRoutes(scoped, db);
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

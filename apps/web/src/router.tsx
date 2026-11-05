@@ -5,6 +5,7 @@ import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
 import { ExplorerPage, type ExplorerSearch } from './explorer/ExplorerPage.tsx';
 import { ComparePage } from './results/ComparePage.tsx';
 import { CompoundPage, ProteinPage } from './results/EntityPages.tsx';
+import { ReportPage } from './results/ReportPage.tsx';
 import { ResultsPage } from './results/ResultsPage.tsx';
 import { ReleasePage } from './datasets/ReleasePage.tsx';
 import { AdminPipelinesPage } from './pipelines/AdminPipelinesPage.tsx';
@@ -19,9 +20,15 @@ import { AccessPage } from './admin/AccessPage.tsx';
 import { HealthPage } from './admin/HealthPage.tsx';
 import { LifecyclePage } from './admin/LifecyclePage.tsx';
 import { ListsPage } from './admin/ListsPage.tsx';
+import { NotificationsPage } from './admin/NotificationsPage.tsx';
+import { UsagePage } from './admin/UsagePage.tsx';
+import { NotificationSettingsPage } from './settings/NotificationSettingsPage.tsx';
 import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
+import { CompoundSearchPage, type CompoundSearchSearch } from './chem/CompoundSearchPage.tsx';
+import { QcPage, type QcSearch } from './qc/QcPage.tsx';
+import { TriagePage, type TriageSearch } from './triage/TriagePage.tsx';
 
 const str = (v: unknown) => (typeof v === 'string' && v !== '' ? v : undefined);
 
@@ -75,6 +82,15 @@ const explorerRoute = createRoute({
       ['q', 'view'].map((k) => [k, str(search[k])]).filter(([, v]) => v !== undefined),
     ) as ExplorerSearch,
 });
+const reportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/experiments/$id/report',
+  component: ReportPage,
+  validateSearch: (search: Record<string, unknown>): { version?: string } => {
+    const version = str(search.version);
+    return version ? { version } : {};
+  },
+});
 const resultsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/experiments/$id/results',
@@ -93,6 +109,24 @@ const compoundRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/compounds/$id',
   component: CompoundPage,
+  validateSearch: (search: Record<string, unknown>): { program_id?: string } =>
+    str(search.program_id) ? { program_id: str(search.program_id)! } : {},
+});
+const compoundSearchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/compounds/search',
+  component: CompoundSearchPage,
+  validateSearch: (search: Record<string, unknown>): CompoundSearchSearch => {
+    const mode = str(search.mode);
+    const type = str(search.type);
+    const min = Number(search.min);
+    return {
+      ...(str(search.q) ? { q: str(search.q)! } : {}),
+      ...(mode === 'substructure' || mode === 'similarity' ? { mode } : {}),
+      ...(type === 'smarts' || type === 'smiles' ? { type } : {}),
+      ...(Number.isFinite(min) && min > 0 && min <= 1 ? { min } : {}),
+    };
+  },
 });
 const viewsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/views', component: ViewsPage });
 const compareRoute = createRoute({
@@ -120,6 +154,33 @@ const searchRoute = createRoute({
     return type === 'experiment' || type === 'sample' ? { ...out, type } : out;
   },
 });
+const qcRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/qc',
+  component: QcPage,
+  validateSearch: (search: Record<string, unknown>): QcSearch => {
+    const color = str(search.color_by);
+    return {
+      ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+      ...(color === 'experiment' || color === 'plate' || color === 'condition' || color === 'experiment_date'
+        ? { color_by: color }
+        : {}),
+    };
+  },
+});
+const triageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/triage',
+  component: TriagePage,
+  validateSearch: (search: Record<string, unknown>): TriageSearch => {
+    const kind = str(search.kind);
+    return {
+      ...(str(search.item) ? { item: str(search.item)! } : {}),
+      ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+      ...(kind === 'protein' || kind === 'compound' ? { kind } : {}),
+    };
+  },
+});
 const lineageRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/lineage/$kind/$id',
@@ -140,11 +201,18 @@ const templatesRoute = createRoute({
   path: '/admin/templates',
   component: TemplatesPage,
 });
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings/notifications',
+  component: NotificationSettingsPage,
+});
 const adminPage = (path: string, component: () => React.ReactNode) =>
   createRoute({ getParentRoute: () => rootRoute, path, component });
 const adminRoutes = [
   adminPage('/admin/programs', ProgramsPage),
   adminPage('/admin/lists', ListsPage),
+  adminPage('/admin/notifications', NotificationsPage),
+  adminPage('/admin/usage', UsagePage),
   adminPage('/admin/access', AccessPage),
   adminPage('/admin/lifecycle', LifecyclePage),
   adminPage('/admin/health', HealthPage),
@@ -175,9 +243,13 @@ export const router = createRouter({
     datasetsRoute,
     explorerRoute,
     resultsRoute,
+    reportRoute,
     proteinRoute,
+    compoundSearchRoute,
     compoundRoute,
     compareRoute,
+    triageRoute,
+    qcRoute,
     viewsRoute,
     releaseRoute,
     runRoute,
@@ -187,6 +259,7 @@ export const router = createRouter({
     auditRoute,
     templatesRoute,
     ...adminRoutes,
+    settingsRoute,
     forbiddenRoute,
   ]),
 });

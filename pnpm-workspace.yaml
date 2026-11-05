@@ -7,3 +7,5 @@ allowBuilds:
   ssh2: false
   # Install script only prints a message (plotly.js → d3 dependency chain); not needed.
   es5-ext: false
+  # Install script sends usage telemetry (molstar → swagger-ui-dist); never run it.
+  '@scarf/scarf': false

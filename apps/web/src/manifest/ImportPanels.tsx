@@ -37,6 +37,13 @@ export function UploadPreview({
       <p>
         {table.rows.length} rows · Delimiter: {delimiterName(table.delimiter)}
       </p>
+      {'warnings' in table && Array.isArray(table.warnings) && table.warnings.length > 0 && (
+        <ul role="note" aria-label="Check before applying">
+          {(table.warnings as string[]).map((w) => (
+            <li key={w}>{w}</li>
+          ))}
+        </ul>
+      )}
       {table.errors.length > 0 && (
         <ul className="cell-error">
           {table.errors.map((e) => (
@@ -44,26 +51,28 @@ export function UploadPreview({
           ))}
         </ul>
       )}
-      <table className="data" aria-label="First rows">
-        <thead>
-          <tr>
-            {table.fields.map((f) => (
-              <th key={f} scope="col">
-                {f}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {table.rows.slice(0, 5).map((row, i) => (
-            <tr key={i}>
+      <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
+        <table className="data" aria-label="First rows">
+          <thead>
+            <tr>
               {table.fields.map((f) => (
-                <td key={f}>{row[f]}</td>
+                <th key={f} scope="col">
+                  {f}
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {table.rows.slice(0, 5).map((row, i) => (
+              <tr key={i}>
+                {table.fields.map((f) => (
+                  <td key={f}>{row[f]}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <MappingStep
         programId={props.programId}
         headers={table.fields}

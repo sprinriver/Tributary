@@ -78,12 +78,30 @@ export interface AiMessage {
   updated_at: Generated<Timestamp>;
 }
 
+export interface Alert {
+  adj_p_value: number | null;
+  contrast_label: Generated<string>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  log2_fc: number | null;
+  read_at: Timestamp | null;
+  release_id: string;
+  rule: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+  watch_id: string;
+}
+
 export interface AppGroup {
   created_at: Generated<Timestamp>;
   created_by: string;
   deleted_at: Timestamp | null;
   id: Generated<string>;
   name: string;
+  scim_external_id: string | null;
   tenant_id: string;
   updated_at: Generated<Timestamp>;
 }
@@ -115,12 +133,15 @@ export interface AppSetting {
 export interface AppUser {
   created_at: Generated<Timestamp>;
   created_by: string;
+  deactivated_at: Timestamp | null;
   deleted_at: Timestamp | null;
   email: string;
   id: Generated<string>;
   kind: Generated<string>;
   last_login_at: Timestamp | null;
   name: Generated<string>;
+  scim_external_id: string | null;
+  scim_user_name: string | null;
   sub: string;
   tenant_id: string;
   updated_at: Generated<Timestamp>;
@@ -239,6 +260,24 @@ export interface DatasetRelease {
   validation: Generated<Json>;
 }
 
+export interface EmailDelivery {
+  attempts: Generated<number>;
+  body: string;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  delivered_at: Timestamp | null;
+  error: string | null;
+  event: string;
+  id: Generated<string>;
+  next_attempt_at: Generated<Timestamp>;
+  status: Generated<string>;
+  subject: string;
+  tenant_id: string;
+  to_address: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
 export interface Experiment {
   archived_at: Timestamp | null;
   assay_type: AssayTypeKey;
@@ -305,12 +344,42 @@ export interface FileObject {
   upload_id: string | null;
 }
 
+export interface GeneSet {
+  collection_id: string;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  members: string[];
+  name: string;
+  set_key: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface GeneSetCollection {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  id_type: string;
+  member_count: number;
+  name: string;
+  set_count: number;
+  source: string;
+  source_release: string;
+  species: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface GroupMember {
   created_at: Generated<Timestamp>;
   created_by: string;
   deleted_at: Timestamp | null;
   group_id: string;
   id: Generated<string>;
+  source: Generated<string>;
   tenant_id: string;
   updated_at: Generated<Timestamp>;
   user_id: string;
@@ -434,6 +503,49 @@ export interface MetadataTemplate {
   tenant_id: string;
   updated_at: Generated<Timestamp>;
   version: string;
+}
+
+export interface NotificationDelivery {
+  attempts: Generated<number>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  delivered_at: Timestamp | null;
+  error: string | null;
+  event: string;
+  id: Generated<string>;
+  message: Json;
+  next_attempt_at: Generated<Timestamp>;
+  route_id: string;
+  status: Generated<string>;
+  tenant_id: string;
+  title: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface NotificationPreference {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  email: Generated<boolean>;
+  events: string[];
+  id: Generated<string>;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
+export interface NotificationRoute {
+  active: Generated<boolean>;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  events: string[];
+  id: Generated<string>;
+  kind: string;
+  name: string;
+  program_id: string | null;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  url: string;
 }
 
 export interface OnboardingItem {
@@ -768,6 +880,60 @@ export interface TargetAnnotation {
   value: string | null;
 }
 
+export interface TriageEvent {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  from_value: string | null;
+  id: Generated<string>;
+  item_id: string;
+  tenant_id: string;
+  text: string | null;
+  to_value: string | null;
+  type: string;
+}
+
+export interface TriageEvidence {
+  adj_p_value: number | null;
+  contrast_label: string | null;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  item_id: string;
+  log2_fc: number | null;
+  release_id: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface TriageItem {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  key: string;
+  kind: string;
+  label: string | null;
+  owner_id: string | null;
+  program_id: string;
+  status: Generated<string>;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface Watch {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  key: string;
+  kind: string;
+  label: string | null;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+  user_id: string;
+}
+
 export interface WebhookDelivery {
   attempts: Generated<number>;
   created_at: Generated<Timestamp>;
@@ -803,6 +969,7 @@ export interface DB {
   access_token: AccessToken;
   ai_conversation: AiConversation;
   ai_message: AiMessage;
+  alert: Alert;
   app_group: AppGroup;
   app_session: AppSession;
   app_setting: AppSetting;
@@ -814,9 +981,12 @@ export interface DB {
   contrast: Contrast;
   dataset: Dataset;
   dataset_release: DatasetRelease;
+  email_delivery: EmailDelivery;
   experiment: Experiment;
   experiment_version: ExperimentVersion;
   file_object: FileObject;
+  gene_set: GeneSet;
+  gene_set_collection: GeneSetCollection;
   group_member: GroupMember;
   group_role_mapping: GroupRoleMapping;
   import_preset: ImportPreset;
@@ -827,6 +997,9 @@ export interface DB {
   mapping_preset: MappingPreset;
   metadata_field_def: MetadataFieldDef;
   metadata_template: MetadataTemplate;
+  notification_delivery: NotificationDelivery;
+  notification_preference: NotificationPreference;
+  notification_route: NotificationRoute;
   onboarding_item: OnboardingItem;
   onboarding_run: OnboardingRun;
   ontology_query_cache: OntologyQueryCache;
@@ -848,6 +1021,10 @@ export interface DB {
   search_document: SearchDocument;
   search_embedding: SearchEmbedding;
   target_annotation: TargetAnnotation;
+  triage_event: TriageEvent;
+  triage_evidence: TriageEvidence;
+  triage_item: TriageItem;
+  watch: Watch;
   webhook_delivery: WebhookDelivery;
   webhook_subscription: WebhookSubscription;
 }

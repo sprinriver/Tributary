@@ -32,10 +32,35 @@ export class ApiError extends Error {
 }
 
 let csrfToken: string | undefined;
-/** Set from `/v1/auth/me`; sent as `X-CSRF-Token` on mutations. */
+/** True while `/v1/auth/me` is being fetched: mutations wait for its token rather than race it. */
+let sessionPending = false;
+const waiting: (() => void)[] = [];
+/** How long a mutation waits for `/v1/auth/me` before it is sent anyway (and refused, if it needs a token). */
+const SESSION_WAIT_MS = 10_000;
+/**
+ * Set from `/v1/auth/me` (undefined when signed out); sent as `X-CSRF-Token` on mutations. Mutations started while
+ * the session is loading (a page that POSTs on load) wait for it instead of racing it.
+ */
 export function setCsrfToken(token: string | undefined): void {
   csrfToken = token;
+  sessionPending = false;
+  for (const resolve of waiting.splice(0)) resolve();
 }
+/** Marks `/v1/auth/me` as in flight (fetchMe); cleared by setCsrfToken or sessionFailed. */
+export function sessionLoading(): void {
+  sessionPending = true;
+}
+export function sessionFailed(): void {
+  sessionPending = false;
+  for (const resolve of waiting.splice(0)) resolve();
+}
+const sessionResolved = () =>
+  !sessionPending
+    ? Promise.resolve()
+    : new Promise<void>((resolve) => {
+        waiting.push(resolve);
+        setTimeout(resolve, SESSION_WAIT_MS);
+      });
 
 /** Builds the request URL for an operation (path params encoded, query params dropped when empty). */
 export function buildUrl(
@@ -66,7 +91,10 @@ export async function api<O extends ApiOperation>(
   };
   const headers: Record<string, string> = {};
   if (options.body !== undefined) headers['content-type'] = 'application/json';
-  if (route.method !== 'get') headers['x-csrf-token'] = csrfToken ?? '';
+  if (route.method !== 'get') {
+    await sessionResolved();
+    headers['x-csrf-token'] = csrfToken ?? '';
+  }
   if (options.reason) headers['x-change-reason'] = options.reason;
   const res = await fetchImpl(
     buildUrl(route.path, options.params as Record<string, string>, options.query as Record<string, unknown>),

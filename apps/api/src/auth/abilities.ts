@@ -11,7 +11,8 @@ export type SubjectType =
   | 'File'
   | 'PipelineRun'
   | 'SavedView'
-  | 'AuditLog';
+  | 'AuditLog'
+  | 'TriageItem';
 
 export interface RoleBinding {
   role: Role;

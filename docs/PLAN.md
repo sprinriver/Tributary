@@ -348,3 +348,142 @@ In scope: bulk link-prefix with manifest inference from folder/file naming; batc
 Definition of done:
 - [x] Integration test on a synthetic legacy layout; migration report generated
 - [x] `pnpm check` exits 0
+
+## Phase 24 — Pathway enrichment
+Status: done (2026-11-03)
+Goal: From a contrast's hits to the biology: over-representation analysis against GO, Reactome or in-house gene sets.
+Inspired by: Perseus, g:Profiler, STRING (ideas only; no code or data copied).
+Features: ENR-01 … ENR-04
+In scope: `/stats/enrichment` in apps/compute (hypergeometric, BH, measured-features background); gene-set collections (GMT import, versioned by source release; GO is CC BY 4.0, Reactome CC0 — MSigDB is not used because of its licence); `POST /v1/enrichment` for a DA release and contrast with provenance; results-page panel (dot plot + table); synthetic demo gene sets.
+Definition of done:
+- [x] Statistics match SciPy and a hand calculation (pytest)
+- [x] API selects hits and background as documented and records every transformation
+- [x] Results page shows enrichment for a demo contrast (e2e, screenshots in artifacts/phase-24/)
+- [x] `pnpm check` exits 0
+
+## Phase 25 — Hit triage board
+Status: done (2026-11-03)
+Goal: Turn results into decisions that keep their reasons: a per-program board of proteins and compounds marked advance, watch or drop.
+Inspired by: CDD Vault, Dotmatics Vortex, kanban boards (ideas only).
+Features: TRI-01 … TRI-04
+In scope: triage items (unique per program, kind and key) with owners, comments and evidence snapshots from releases; status changes need a reason; append-only history; audit rows; board page and Add to triage on results, protein and compound pages.
+Definition of done:
+- [x] API tests for creation, scoping, decisions with reasons, owners, comments and evidence
+- [x] Board page used as a scientist would (e2e, screenshots in artifacts/phase-25/), accessible without drag and drop
+- [x] `pnpm check` exits 0
+
+## Phase 26 — Watchlists and alerts
+Status: done (2026-11-03)
+Goal: Scientists hear about new data on what they care about without searching.
+Inspired by: PubMed saved-search alerts, GitHub "watch" (ideas only).
+Features: WAT-01 … WAT-03
+In scope: personal watches (protein, gene, compound); on every release publish (UI or pipeline), alerts for watchers who can read the release's program when it holds a hit (adjusted p ≤ 0.05 and |log2 FC| ≥ 1; compounds: present in a dose-response release); unique per watch, release and contrast; alerts list, read, read all; Watch button on protein and compound pages; alerts in the bell menu.
+Definition of done:
+- [x] API tests for watches, alert creation (readers only, hits only, once) and reading
+- [x] Watch from a protein page and see the alert after a publish (e2e, screenshots in artifacts/phase-26/)
+- [x] `pnpm check` exits 0
+
+## Phase 27 — Cross-experiment QC and batch effects
+Status: done (2026-11-03)
+Goal: See at a glance whether instrument performance drifts and whether runs cluster by batch rather than biology.
+Inspired by: MultiQC, PTXQC and the QC views of proteomics core facilities (ideas only).
+Features: QCD-01 … QCD-03
+In scope: `POST /v1/qc/overview` over the latest published protein_quant release of each readable experiment (newest N); per run IDs (intensity > 0), % missing against the experiment's protein groups, median log2 intensity (apps/compute); runs with IDs < 0.5 × their experiment's median flagged; PCA (apps/compute) of unflagged runs × protein groups quantified in all of them, coloured by experiment, plate, condition or date; every transformation listed; QC page with a table alternative.
+Definition of done:
+- [x] API tests for metrics, flagging, PCA input and program scoping
+- [x] QC page shows trend, flagged run and PCA (e2e, screenshots in artifacts/phase-27/)
+- [x] `pnpm check` exits 0
+
+## Phase 28 — Compound structures and structure search
+Status: done (2026-11-04)
+Goal: Medicinal chemists see structures and find compounds by substructure or similarity next to the biology.
+Inspired by: ChEMBL and PubChem structure search, CDD Vault (ideas only).
+Features: CHEM-01 … CHEM-04
+In scope: RDKit (@rdkit/rdkit 2025.3.4-1.0.0, BSD-3-Clause, approved 2026-11-04) in apps/api only. A structure endpoint (SVG, canonical SMILES, InChIKey, descriptors), substructure search (SMARTS) and similarity search (Morgan radius 2, 2048 bits, Tanimoto) over the compounds of readable programs. The compound page shows the structure; a search page lists hits with highlighted matches. Unparsable registered SMILES are reported, never fixed.
+Definition of done:
+- [x] API tests for structure, substructure and similarity search and program scoping
+- [x] Draw-free search from the UI: type a SMARTS, see hits, open a compound (e2e, screenshots in artifacts/phase-28/)
+- [x] `pnpm check` exits 0
+
+## Phase 29 — 3D protein structure viewer
+Status: done (2026-11-04)
+Goal: See where a hit sits in the protein's 3D model, and how confident that model is, without leaving the platform.
+Inspired by: the AlphaFold DB and UniProt entry pages, PDBe Mol* views (ideas only).
+Features: STRUC-01 … STRUC-03
+In scope: Mol* (molstar 5.11.0, MIT, approved 2026-11-04) in apps/web, loaded on demand. The API serves models from a local directory (in-house models, mirrors, the synthetic demo) or AlphaFold DB (configurable, can be disabled; file URLs on other hosts refused; only UniProt accessions sent out), cached in memory. Models are labelled predicted, coloured by pLDDT with a legend, with source and licence shown.
+Definition of done:
+- [x] API tests for local and AlphaFold DB models, caching, the host check and input validation
+- [x] Open the 3D model on a protein page (e2e, screenshot in artifacts/phase-29/)
+- [x] `pnpm check` exits 0
+
+## Phase 30 — Gene–concept network
+Goal: See which hit genes drive which enriched pathways, and which genes several pathways share.
+Status: done (2026-11-04)
+Inspired by: clusterProfiler's cnetplot and STRING's network views (ideas only).
+Features: NET-01 … NET-02
+In scope: Cytoscape.js (cytoscape 3.34.0, MIT, approved 2026-11-04) in apps/web, on the enrichment panel. Nodes are the top enriched sets and their hit genes; gene nodes are coloured by log2 FC when the gene is a hit in one feature, and marked when it is a hit in several (count and sign agreement, never a pick). A table lists the same edges. Protein–protein interaction data (STRING import) is a follow-up: it needs a new reference dataset contract.
+Definition of done:
+- [x] Unit tests for hit-gene values and network elements
+- [x] Run enrichment and see the network (e2e, screenshot in artifacts/phase-30/)
+- [x] `pnpm check` exits 0
+
+## Phase 31 — Team notifications (Slack and Teams)
+Status: done (2026-11-04)
+Goal: Teams hear about finished runs, new results and triage decisions where they already talk, without opening the app.
+Features: NOTIF-01 … NOTIF-04
+In scope: system-admin routes to Slack or Microsoft Teams incoming webhooks (all programs or one; chosen events: run.finished, version.published, release.published, triage.decision); URLs checked against the services' hosts and kept secret; an outbox written in the request and sent by a background sweep with retries and backoff; delivery history and a test message; names, statuses and links only, never data values. Personal email is a follow-up (needs a mail transport dependency).
+Definition of done:
+- [x] API tests for routes, host checks, event routing, retries and audit
+- [x] Admin page: add a route, send a test, see deliveries (e2e, screenshot in artifacts/phase-31/)
+- [x] `pnpm check` exits 0
+
+## Phase 32 — Excel sample sheets
+Status: done (2026-11-04)
+Goal: Scientists bring their sample sheets as they keep them, in Excel, and take them back out the same way.
+Features: XLS-01 … XLS-02
+In scope: read-excel-file 9.3.5 and write-excel-file 4.1.1 (MIT, approved 2026-11-04), in the browser only (the server never unzips uploads). Import: the sheet named "samples", else the first; first row = headers; numbers kept as stored text; dates converted to ISO and flagged; duplicate and unnamed columns reported; then the existing preview and column mapping. Export: the manifest or an empty template as .xlsx, every cell as text so Excel cannot reinterpret gene names or IDs.
+Definition of done:
+- [x] Unit tests for cell conversion, warnings and export
+- [x] Upload an .xlsx sheet in the manifest editor and apply it (e2e, screenshot in artifacts/phase-32/)
+- [x] `pnpm check` exits 0
+
+## Phase 33 — Experiment reports
+Status: done (2026-11-04)
+Goal: The results of an experiment go into a programme meeting as a clean PDF or slides in one click.
+Features: REP-01 … REP-03
+In scope: a report page per experiment version (methods, samples, releases, per contrast: hit counts at the display thresholds, volcano and top 10 hits, files) with print styles, so the browser saves a clean PDF; a PowerPoint download built in the browser with pptxgenjs 4.0.1 (MIT, approved 2026-11-04), using the rendered volcano images. Every export is recorded by the API and audited. Hit counts come from the query service; the page computes nothing.
+Definition of done:
+- [x] API test for audited exports; unit test for the slide plan
+- [x] Open the report and download the PowerPoint (e2e, screenshot in artifacts/phase-33/)
+- [x] `pnpm check` exits 0
+
+## Phase 34 — Personal email
+Status: done (2026-11-04)
+Goal: People hear about what concerns them personally (a hit on something they watch, an item assigned to them, their run finishing) even when they are not in the app.
+Features: MAIL-01 … MAIL-03
+In scope: per-person preferences (on by default, audited); an email outbox sent by the notification sweep with retries; transports: Amazon SES (@aws-sdk/client-sesv2 3.1156.0) or SMTP (nodemailer 9.0.4), both approved 2026-11-04, or none (emails are then not queued); names and links only, never data values; a settings page.
+Definition of done:
+- [x] API tests for preferences, alert, triage and retry emails
+- [x] Change email settings in the UI (e2e, screenshot in artifacts/phase-34/)
+- [x] `pnpm check` exits 0
+
+## Phase 35 — SCIM user provisioning
+Status: done (2026-11-05)
+Goal: IT manages Tributary accounts from the identity provider (Okta, Entra ID): joiners get access, leavers lose it at once.
+Features: SCIM-01 … SCIM-04
+In scope: SCIM 2.0 (RFC 7643/7644) at /scim/v2: ServiceProviderConfig, ResourceTypes, Schemas, Users and Groups (list with eq filters and paging, get, create, replace, patch, delete as soft delete); a system admin's token with the new `scim` scope (no /v1 access with it); group memberships record their source so sign-in claims never undo SCIM ones; first sign-in links to the provisioned user by email; deactivation blocks sessions and tokens at once; every change audited; an admin page to create the SCIM token. No dependency.
+Definition of done:
+- [x] API tests for users, groups and roles, sign-in linking and deactivation
+- [x] Create a SCIM token in the admin UI (e2e, screenshot in artifacts/phase-35/)
+- [x] `pnpm check` exits 0
+
+## Phase 36 — Usage analytics for admins
+Status: done (2026-11-05)
+Goal: Champions and admins can show who uses the platform and for what, to defend the renewal and spot programs that need help.
+Features: USE-01 … USE-03
+In scope: GET /v1/admin/usage (system admins) derived from the audit log and the registry: weekly activity (active people, experiments created, versions published, imports, releases published, pipeline runs, exports, assistant tool calls, triage actions) for up to 52 weeks, totals, per program and per person; every measure defined in the response; Admin → Usage with a chart, a table alternative and a CSV download (audited as an export). No new tracking, nothing leaves the account.
+Definition of done:
+- [x] API tests for weekly buckets, totals, programs, people and access
+- [x] Admin opens Usage and downloads the CSV (e2e, screenshot in artifacts/phase-36/)
+- [x] `pnpm check` exits 0
+

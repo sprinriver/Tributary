@@ -242,6 +242,7 @@ cBioPortal (Apache-2.0 only for releases from Oct 2026), SEEK (BSD-3), LabKey (A
 CELLxGENE (MIT), Phantasus/Morpheus (MIT/BSD-3), SODAR (MIT), Dash Bio (MIT — port its volcano/clustergram
 parameter designs), Plotly.js, react-querybuilder, AG Grid Community, TanStack, igv.js, Mol*, RDKit.js, Ketcher,
 EBI OLS4 (Apache-2.0, self-hostable), LinkML, Iceberg, DuckDB, OpenLineage, ODCS, datacontract-cli.
+MIT-0 (MIT No Attribution, e.g. nodemailer) counts as permissive: it is MIT without the notice requirement.
 
 **Run only as separate pipeline containers / processes, never copied into product code:**
 limma (GPL), inmoose (GPL-3.0-or-later; Python port of limma/edgeR/DESeq2), DEqMS (LGPL), MultiQC (GPL-3),

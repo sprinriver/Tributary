@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/UsageQuery",
+  "$defs": {
+    "UsageQuery": {
+      "type": "object",
+      "properties": {
+        "weeks": {
+          "default": 12,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 52
+        }
+      },
+      "required": [
+        "weeks"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

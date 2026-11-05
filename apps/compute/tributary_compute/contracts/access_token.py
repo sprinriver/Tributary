@@ -37,7 +37,7 @@ class AccessToken(BaseModel):
     ]
     name: str
     token_prefix: str
-    scopes: list[Literal["read", "write"]]
+    scopes: list[Literal["read", "write", "scim"]]
     expires_at: Annotated[
         AwareDatetime,
         Field(

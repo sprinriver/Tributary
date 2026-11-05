@@ -1,0 +1,197 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/CompoundSearchResponse",
+  "$defs": {
+    "CompoundSearchResponse": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "compound_id": {
+                "type": "string"
+              },
+              "program_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "name": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "program_code": {
+                "type": "string"
+              },
+              "smiles": {
+                "type": "string"
+              },
+              "batch_ids": {
+                "type": "array",
+                "items": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "batches_differ": {
+                "type": "boolean"
+              },
+              "components": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "similarity": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "match_atoms": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "matches": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "svg": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "compound_id",
+              "program_id",
+              "name",
+              "program_code",
+              "smiles",
+              "batch_ids",
+              "batches_differ",
+              "components",
+              "similarity",
+              "match_atoms",
+              "matches",
+              "svg"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "total_hits": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "searched": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "no_structure": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "invalid_structures": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "program_code": {
+                "type": "string"
+              },
+              "compound_id": {
+                "type": "string"
+              },
+              "batch_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "program_code",
+              "compound_id",
+              "batch_id",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "substructure",
+                "similarity"
+              ]
+            },
+            "query_type": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "smarts",
+                    "smiles"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "query": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            },
+            "min_similarity": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "rdkit_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "mode",
+            "query_type",
+            "query",
+            "method",
+            "min_similarity",
+            "rdkit_version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "items",
+        "total_hits",
+        "searched",
+        "no_structure",
+        "invalid_structures",
+        "provenance"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

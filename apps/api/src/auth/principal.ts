@@ -88,6 +88,8 @@ export async function loadPrincipal(
     .select(['id', 'tenant_id', 'kind', 'name', 'email'])
     .where('id', '=', userId)
     .where('deleted_at', 'is', null)
+    // Deactivated (SCIM, Phase 35): no access with any session or token until reactivated.
+    .where('deactivated_at', 'is', null)
     .executeTakeFirst();
   if (!user) return undefined;
   const bindings = await loadBindings(db, config, userId);

@@ -6,6 +6,7 @@ import { api } from '../api.ts';
 import { ErrorMessage } from '../components/ui.tsx';
 import { ChartView, LAYOUT } from './ChartView.tsx';
 import { DoseResponseViewer } from './DoseResponseViewer.tsx';
+import { EnrichmentPanel } from './EnrichmentPanel.tsx';
 
 const firstAccession = (v: unknown) =>
   Array.isArray(v) ? String(v[0] ?? '') : String(v ?? '').split(';')[0]!;
@@ -77,7 +78,7 @@ function TopHits({ release }: { release: string }) {
   );
 }
 
-const volcano = (release: string, contrastId: string): ChartSpec =>
+export const volcano = (release: string, contrastId: string): ChartSpec =>
   ({
     type: 'volcano',
     data: {
@@ -121,6 +122,7 @@ function Results({ r }: { r: VersionResults }) {
           </section>
         ))}
       {da[0] && <TopHits release={da[0].id} />}
+      {da[0] && <EnrichmentPanel release={da[0].id} contrasts={r.contrasts.map((c) => c.label)} />}
       {dr.length > 0 && (
         <section role="region" aria-label="Dose-response" className="stack">
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Dose-response</h2>
@@ -170,6 +172,13 @@ export function ResultsPage() {
         Results — {experiment.data?.name ?? '…'}
         {results.data ? ` v${results.data.version_number}` : ''}
       </h1>
+      {version && (
+        <p style={{ margin: 0 }}>
+          <Link to="/experiments/$id/report" params={{ id }} search={{ version }}>
+            Report (PDF or PowerPoint) →
+          </Link>
+        </p>
+      )}
       <ErrorMessage error={experiment.error ?? results.error} />
       {results.data && <Results r={results.data} />}
     </main>

@@ -27,6 +27,7 @@
     "test:ui": "node scripts/vitest-pattern.mjs packages/ui",
     "test:compute": "cd apps/compute && uv run --locked pytest",
     "lint:compute": "cd apps/compute && uv run --locked ruff check . && uv run --locked ruff format --check . && uv run --locked pyright",
+    "format:compute": "cd apps/compute && uv run --locked ruff format . && uv run --locked ruff check --fix .",
     "e2e": "node scripts/e2e-pattern.mjs",
     "db:migrate": "node packages/db/scripts/migrate.ts",
     "db:seed": "node packages/db/scripts/seed.ts",
