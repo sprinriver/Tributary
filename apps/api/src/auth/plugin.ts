@@ -51,6 +51,8 @@ export function registerAuth(app: FastifyInstance, db: Database, config: ApiConf
           (await loadPrincipal(db, config, claim.u, { type: 'token', tokenId: 'mcp', scopes: claim.s })) ??
           null;
       if (!request.principal) throw unauthenticated();
+      if (!claim!.s.includes('read') && !claim!.s.includes('write'))
+        throw new HttpError(403, 'insufficient_scope', 'This access token is for SCIM provisioning only.');
       if (!isRead(request) && !claim!.s.includes('write'))
         throw new HttpError(403, 'insufficient_scope', 'This access token is read-only.');
     } else if (header?.startsWith('Bearer ')) {
