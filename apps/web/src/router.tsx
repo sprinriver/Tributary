@@ -21,6 +21,7 @@ import { HealthPage } from './admin/HealthPage.tsx';
 import { LifecyclePage } from './admin/LifecyclePage.tsx';
 import { ListsPage } from './admin/ListsPage.tsx';
 import { NotificationsPage } from './admin/NotificationsPage.tsx';
+import { UsagePage } from './admin/UsagePage.tsx';
 import { NotificationSettingsPage } from './settings/NotificationSettingsPage.tsx';
 import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
@@ -211,6 +212,7 @@ const adminRoutes = [
   adminPage('/admin/programs', ProgramsPage),
   adminPage('/admin/lists', ListsPage),
   adminPage('/admin/notifications', NotificationsPage),
+  adminPage('/admin/usage', UsagePage),
   adminPage('/admin/access', AccessPage),
   adminPage('/admin/lifecycle', LifecyclePage),
   adminPage('/admin/health', HealthPage),
