@@ -74,6 +74,19 @@ describe('SCIM provisioning', () => {
     expect(config.statusCode).toBe(200);
     expect(config.json()).toMatchObject({ patch: { supported: true }, filter: { supported: true } });
     expect((await call('GET', '/scim/v2/Users', undefined, plainAdminToken)).statusCode).toBe(403);
+    // A provisioning token reads nothing elsewhere: not the API, not the MCP endpoint.
+    expect((await t.call(scim, { method: 'GET', url: '/v1/programs' })).statusCode).toBe(403);
+    const mcp = await t.app.inject({
+      method: 'POST',
+      url: '/mcp',
+      headers: {
+        authorization: `Bearer ${scim}`,
+        'content-type': 'application/json',
+        accept: 'application/json, text/event-stream',
+      },
+      payload: { jsonrpc: '2.0', id: 1, method: 'tools/list' },
+    });
+    expect(mcp.statusCode).toBe(401);
     const created = await call('POST', '/scim/v2/Users', {
       schemas: [USER],
       userName: 'Ada.Lovelace@example.org',
