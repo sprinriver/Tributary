@@ -1639,3 +1639,22 @@ Entry template:
 - Gaps and follow-ups:
   - Not supported: bulk, sort, ETags, complex filters, enterprise extension attributes.
   - Not yet tested against a live Okta or Entra tenant.
+
+## 2026-11-05 — Phase 36: Usage analytics for admins — done
+- Built:
+  - **API:** `GET /v1/admin/usage?weeks=` (system admins), counted from the audit log and the registry, with no
+    new tracking. It returns:
+    - weekly measures (active people, experiments, publishes, imports, runs, exports, assistant, triage);
+    - totals;
+    - per program and per person;
+    - a definition for every measure, and a figure.
+  - **CSV:** `/v1/admin/usage/export` is audited (`usage.export`).
+  - **Web:** an Admin → Usage page with headline numbers, a weekly chart plus a table, programs and people, a CSV
+    download, and the definitions.
+- Also fixed:
+  - Weeks are computed as UTC text, so a server in another time zone cannot shift them.
+  - The demo seed created its own account as a person. It is now a service (seed fix, plus migration 0027 for
+    databases seeded before).
+- Dependencies added: none.
+- Evidence: `pnpm check` ✓ (api 266), and `pnpm e2e USE-03` and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-36/usage.png`.

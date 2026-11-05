@@ -123,6 +123,21 @@ Search updates as things change. After a bulk load or a restore, rebuild it with
 - **Collections never change:** import a newer source release as a new collection. Every import is audited.
 - **Demo:** the demo data includes "Demo modules (synthetic)", 20 invented modules.
 
+## Usage
+**Admin → Usage** counts what happened, from the audit log and the registry, for the last 4 to 52 weeks:
+- active people;
+- experiments created;
+- versions and releases published;
+- imports;
+- pipeline runs;
+- exports;
+- assistant tool calls;
+- triage actions.
+
+It also shows each program's totals and last activity, and each person's last activity and actions in the last
+30 days. "What each number counts" gives the exact definitions. **Download CSV** saves the weekly table; the
+download is audited. Nothing is tracked for this page and nothing leaves your account.
+
 ## SCIM provisioning (Okta, Entra ID)
 1. In **Admin → Access → SCIM provisioning**, note the SCIM endpoint (`…/api/scim/v2`) and press **Create SCIM
    token**. Copy the token: it is shown once. It acts as you, for SCIM only.
