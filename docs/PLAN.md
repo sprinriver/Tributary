@@ -477,3 +477,13 @@ Definition of done:
 - [x] Create a SCIM token in the admin UI (e2e, screenshot in artifacts/phase-35/)
 - [x] `pnpm check` exits 0
 
+## Phase 36 — Usage analytics for admins
+Status: in progress
+Goal: Champions and admins can show who uses the platform and for what, to defend the renewal and spot programs that need help.
+Features: USE-01 … USE-03
+In scope: GET /v1/admin/usage (system admins) derived from the audit log and the registry: weekly activity (active people, experiments created, versions published, imports, releases published, pipeline runs, exports, assistant tool calls, triage actions) for up to 52 weeks, totals, per program and per person; every measure defined in the response; Admin → Usage with a chart, a table alternative and a CSV download (audited as an export). No new tracking, nothing leaves the account.
+Definition of done:
+- [ ] API tests for weekly buckets, totals, programs, people and access
+- [ ] Admin opens Usage and downloads the CSV (e2e, screenshot in artifacts/phase-36/)
+- [ ] `pnpm check` exits 0
+
