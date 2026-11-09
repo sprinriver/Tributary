@@ -18,13 +18,18 @@ test('REP-07: the report adds QC, pathway enrichment and dose-response sections,
   await page.goto(`/experiments/${made.experiment}/report`);
 
   const qc = page.getByRole('region', { name: 'QC' });
-  await expect(qc).toContainText(/IDs per run, data completeness, CV and log2 intensity distributions/, {
-    timeout: 30_000,
-  });
+  await expect(qc).toContainText(
+    /IDs and missing values per sample, CV across all runs \(conditions pooled\)/,
+    {
+      timeout: 30_000,
+    },
+  );
   await expect(qc.locator('.js-plotly-plot')).toBeVisible({ timeout: 60_000 });
 
   const dose = page.getByRole('region', { name: 'Dose-response' });
-  await expect(dose).toContainText(/\d+ up, \d+ down, \d+ not regulated, \d+ unclear/, { timeout: 30_000 });
+  await expect(dose).toContainText(/\d+ up, \d+ down, (> )?\d+ not regulated, \d+ unclassified/, {
+    timeout: 30_000,
+  });
   await expect(dose).toContainText('pEC50 = −log10(EC50 in M)');
   await expect(
     dose.getByRole('table', { name: 'Top dose-response curves' }).getByRole('row'),
