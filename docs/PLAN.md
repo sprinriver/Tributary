@@ -509,7 +509,7 @@ Definition of done:
 
 
 ## Phase 39 — Fuller experiment reports
-Status: in progress
+Status: done
 Goal: The report a scientist sends to the team covers the whole experiment: QC, pathway enrichment and dose-response,
 not only the volcano and top hits.
 Features: REP-04 … REP-07
@@ -520,6 +520,6 @@ In scope: web only, built from existing endpoints (chart registry, query service
 - a dose-response section (counts per regulation class, the curves figure, top curves by FDR).
 Each section is added to the PowerPoint plan. Controls are not printed.
 Definition of done:
-- [ ] Slide-plan unit tests (REP-04…06) and the e2e test (REP-07) fail first
-- [ ] Sections on the page and in the PowerPoint
-- [ ] `pnpm check` exits 0; `pnpm e2e REP-0` passes; screenshot in artifacts/phase-39/
+- [x] Slide-plan unit tests (REP-04…06) and the e2e test (REP-07) fail first
+- [x] Sections on the page and in the PowerPoint
+- [x] `pnpm check` exits 0; `pnpm e2e REP-0` passes; screenshot in artifacts/phase-39/

@@ -4,6 +4,11 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Fuller experiment reports (REP-04…07): the report and its PowerPoint now include:
+  - QC;
+  - pathway enrichment for every contrast, added on demand with the report's display thresholds and full
+    provenance;
+  - dose-response counts per class, the curves figure and the top curves.
 - Validation pack (VAL-01…02): `docs/validation/` gives a traceability matrix from every requirement to its tests
   and status, regenerated and checked by `pnpm check`. It also has IQ and OQ protocol templates and a 21 CFR Part 11
   controls map that customers adapt for their own validation.

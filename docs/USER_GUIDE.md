@@ -192,13 +192,24 @@ The test is one-sided hypergeometric over-representation with Benjamini–Hochbe
 ![Pathway enrichment](../artifacts/phase-24/enrichment.png)
 
 ### Reports for meetings
-From a results page, open **Report (PDF or PowerPoint)**. It has three parts:
-- methods;
-- for each contrast, how many proteins pass the display thresholds (up and down), the volcano and the top 10 hits;
-- the data and files used.
+From a results page, open **Report (PDF or PowerPoint)**. It has these parts:
+- **Methods.**
+- **QC** (when the version has protein quantities): IDs per run, completeness, CV and log2 intensity distributions.
+- **Contrasts:** for each contrast, how many proteins pass the display thresholds (up and down), the volcano and the
+  top 10 hits.
+- **Pathway enrichment** (optional):
+  - Pick the gene sets and press **Add to report**.
+  - Enrichment runs for every contrast with the report's display thresholds as the hit definition.
+  - The report states the collection, the hit definition and the method, and lists the top 10 sets by p-value.
+  - Until you add it, this part is not printed.
+- **Dose-response** (when the version has curves):
+  - curves per regulation class, as the source tool classed them;
+  - the curves figure;
+  - the top regulated curves by FDR, then pEC50.
+- **Data and files** used.
 
-**Print / save as PDF** prints the page without the app's menus. **Download PowerPoint** builds slides: a title,
-methods, then each contrast and its top hits. Both are recorded in the audit log.
+**Print / save as PDF** prints the page without the app's menus or the controls. **Download PowerPoint** builds a
+slide for each of these parts. Both are recorded in the audit log.
 
 ### Gene–concept network
 After an enrichment run, the **gene–concept network** links the top 8 gene sets (dark squares) to their hit genes

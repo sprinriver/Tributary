@@ -1693,3 +1693,35 @@ Entry template:
 - Test amendment (disclosed): MAIL-01 in `apps/api/src/email.test.ts` failed in CI by chance. Its "no data values"
   pattern `e-\d` matched a random release UUID (`…8dfe-58…`). The test now replaces UUIDs with `<id>` before applying
   the same pattern. The assertion is otherwise unchanged.
+
+## 2026-11-09 — Phase 39: Fuller experiment reports — done
+- Built (web only, from existing endpoints):
+  - **QC section:** the QC panel of the version's protein-quantity release.
+  - **Pathway enrichment:**
+    - Pick gene sets, then **Add to report**. Enrichment runs for every contrast with the report's display thresholds.
+    - It states the collection, hit definition and method, plus per contrast: hits, background, sets tested and how
+      many pass the term FDR.
+    - It shows the top 10 sets and the API's recorded transformations.
+    - A contrast without hits says so; the others still run.
+  - **Dose-response section:**
+    - curves per class, as the source tool classed them (a capped count is shown as "> n");
+    - the curves figure;
+    - the top regulated curves by FDR, then pEC50 (it says when ranking is by pEC50 only).
+  - **Output:** every section is in the PowerPoint plan. Controls are not printed, nor is the enrichment section until
+    it has a result.
+- Science review (omics-reviewer):
+  - **P1, fixed:** a contrast without hits made the whole enrichment fail.
+  - **P2s, fixed:**
+    - an "unclassified" label for curves the tool did not class;
+    - capped counts;
+    - "measured set members" for K;
+    - significance and provenance shown with the enrichment;
+    - QC caption (per sample, pooled CV, missing or ≤ 0 = not quantified);
+    - FDR (q-value) label, and the pEC50-only ranking note.
+- Not changed:
+  - The QC panel still pools conditions for the CV and plots per sample. This is the existing chart (Phase 9); the
+    caption says so.
+  - Colouring by condition would need a sample-metadata join in the chart. That is a follow-up.
+- Test amendments (disclosed): this phase's own REP-04…07 tests were tightened after the review, before the
+  implementation was committed, in commits `5f319c6` and the REP-07 caption commit.
+- Dependencies added: none.

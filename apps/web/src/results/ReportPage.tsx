@@ -1,7 +1,7 @@
 import type { VersionResults } from '@tributary/contracts';
 import { useQueries, useQuery } from '@tanstack/react-query';
 import { Link, useParams, useSearch } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { api } from '../api.ts';
 import { figureToPng } from '../charts/PlotlyFigure.tsx';
 import { ErrorMessage } from '../components/ui.tsx';
@@ -9,6 +9,7 @@ import { useSamples } from '../registry/queries.ts';
 import { ChartView } from './ChartView.tsx';
 import { writePptx } from './pptx.ts';
 import { reportSlides, type ReportInput } from './report-slides.ts';
+import { DoseSection, EnrichmentSection, QcSection, toolOf, type SectionData } from './ReportSections.tsx';
 import { volcano } from './ResultsPage.tsx';
 
 const TOP = 10;
@@ -144,10 +145,14 @@ export function ReportPage() {
   const [contrastData] = useState(
     () => new Map<string, Omit<ReportInput['contrasts'][number], 'image' | 'label'>>(),
   );
+  // Section data for the PowerPoint, filled in as the sections render (not state: nothing re-renders on it).
+  const sections = useRef<SectionData>({});
   const [busy, setBusy] = useState<'pdf' | 'pptx' | null>(null);
   const [error, setError] = useState<unknown>(null);
   const r = results.data;
   const da = r?.releases.find((x) => x.kind === 'differential_abundance');
+  const pq = r?.releases.find((x) => x.kind === 'protein_quant');
+  const dr = r?.releases.find((x) => x.kind === 'dose_response');
   const generatedAt = new Date().toISOString().slice(0, 10);
 
   const record = (format: 'pdf' | 'pptx') =>
@@ -182,6 +187,10 @@ export function ReportPage() {
           image: plot ? await figureToPng(plot).catch(() => null) : null,
         });
       }
+      const imageOf = async (section: string) => {
+        const plot = document.querySelector<HTMLElement>(`[data-section="${section}"] .js-plotly-plot`);
+        return plot ? await figureToPng(plot).catch(() => null) : null;
+      };
       const slides = reportSlides({
         experiment: experiment.data.name,
         program: experiment.data.program_code,
@@ -192,6 +201,11 @@ export function ReportPage() {
         methods: r.methods,
         thresholds: r.thresholds,
         contrasts,
+        ...(pq && sections.current.qc ? { qc: { ...sections.current.qc, image: await imageOf('qc') } } : {}),
+        ...(da && sections.current.enrichment ? { enrichment: sections.current.enrichment } : {}),
+        ...(dr && sections.current.dose
+          ? { dose: { ...sections.current.dose, image: await imageOf('dose') } }
+          : {}),
       });
       await writePptx(
         slides,
@@ -243,6 +257,7 @@ export function ReportPage() {
             <h2 style={{ margin: 0, fontSize: '1.15rem' }}>Methods</h2>
             <p style={{ margin: 0 }}>{r.methods}</p>
           </section>
+          {pq && <QcSection release={pq} onData={(d) => (sections.current.qc = d)} />}
           {da ? (
             r.contrasts.map((c) => (
               <ContrastSection
@@ -256,15 +271,15 @@ export function ReportPage() {
           ) : (
             <p className="hint">This version has no published differential-abundance results.</p>
           )}
+          {da && <EnrichmentSection release={da} r={r} onData={(d) => (sections.current.enrichment = d)} />}
+          {dr && <DoseSection release={dr} onData={(d) => (sections.current.dose = d)} />}
           <section role="region" aria-label="Data and files" className="stack report-section">
             <h2 style={{ margin: 0, fontSize: '1.15rem' }}>Data and files</h2>
             <ul style={{ margin: 0 }}>
               {r.releases.map((x) => (
                 <li key={x.id}>
                   {x.dataset_name} — {x.kind.replace(/_/g, ' ')}, {x.row_count} rows
-                  {x.tool
-                    ? ` (${x.tool}${x.tool_version && x.tool_version !== 'unknown' ? ` ${x.tool_version}` : ', version not recorded'})`
-                    : ''}
+                  {toolOf(x) ? ` (${toolOf(x)})` : ''}
                 </li>
               ))}
               {r.files.map((f) => (
