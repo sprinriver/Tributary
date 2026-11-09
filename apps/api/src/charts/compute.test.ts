@@ -33,4 +33,30 @@ describe('compute client', () => {
     expect(out.groups.map((g) => g.name)).toEqual(groups.map((g) => g.name));
     expect(out.compute_version).toBe('test');
   });
+
+  it('QCD-04: batches answered by different compute versions record every version', async () => {
+    let calls = 0;
+    const fakeFetch = (async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(String(init.body)) as { groups: { name: string; values: number[] }[] };
+      calls += 1;
+      return Response.json({
+        compute_version: calls === 1 ? 'a' : 'b',
+        groups: body.groups.map((g) => ({
+          name: g.name,
+          n: 1,
+          mean: 1,
+          sd: null,
+          sem: null,
+          ci95: null,
+          median: 1,
+          cv: null,
+        })),
+      });
+    }) as typeof fetch;
+    const compute = httpCompute(loadConfig({ NODE_ENV: 'test' }), fakeFetch);
+    const out = await compute.groupSummary({
+      groups: Array.from({ length: 250 }, (_, i) => ({ name: `P${i}`, values: [1] })),
+    });
+    expect(out.compute_version).toBe('a, b');
+  });
 });

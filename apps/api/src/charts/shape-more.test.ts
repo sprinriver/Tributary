@@ -326,6 +326,59 @@ describe('MA plot, PCA and QC panel', () => {
     expect(raw.data.find((t: Json) => t.name === 'intensity').y).toContain(59);
   });
 
+  it('QCD-04: runs not in the sample sheet get their own labelled box and a note, never "all runs"', async () => {
+    const joined = ['F1', 'F2'].flatMap((id, f) =>
+      [
+        ['r1', 'DMSO'],
+        ['r2', 'DMSO'],
+        ['r3', null],
+        ['r4', null],
+      ].map(([run, condition], i) => ({ id, run, b: 100 * (f + 1) + 10 * i, 's.condition': condition })),
+    );
+    const s = await shape(
+      'qc_panel',
+      { x: 'run', rowLabel: 'id', values: 'b', color: 's.condition' },
+      {},
+      joined,
+    );
+    const cv = s.data.find((t: Json) => t.name === 'CV (%)');
+    expect(new Set(cv.x)).toEqual(new Set(['DMSO', 'not in the sample sheet']));
+    expect(s.transformations.join(' ')).toContain('2 run(s) not in the sample sheet');
+  });
+
+  it('QCD-04: the CV note counts feature–condition pairs without a CV and names conditions with none', async () => {
+    const joined = ['F1', 'F2'].flatMap((id, f) =>
+      [
+        ['r1', 'DMSO'],
+        ['r2', 'DMSO'],
+        ['r3', 'CPD'],
+      ].map(([run, condition], i) => ({ id, run, b: 100 * (f + 1) + 10 * i, 's.condition': condition })),
+    );
+    const s = await shape(
+      'qc_panel',
+      { x: 'run', rowLabel: 'id', values: 'b', color: 's.condition' },
+      {},
+      joined,
+    );
+    const note = s.transformations.join(' ');
+    expect(note).toContain('2 feature–condition pair(s) with < 2 quantified values have no CV');
+    expect(note).toContain('no CV for: CPD');
+  });
+
+  it('QCD-04: imputed values count as not quantified (IDs, missing values, CVs) and are counted in a note', async () => {
+    const data = ['F1', 'F2'].flatMap((id, f) =>
+      ['r1', 'r2'].map((run, i) => ({
+        id,
+        run,
+        b: 100 * (f + 1) + 10 * i,
+        is_imputed: id === 'F2' && run === 'r2',
+      })),
+    );
+    const s = await shape('qc_panel', { x: 'run', rowLabel: 'id', values: 'b' }, {}, data);
+    expect(s.data.find((t: Json) => t.name === 'IDs per run').y).toEqual([2, 1]);
+    expect(s.transformations.join(' ')).toContain('1 imputed value(s) counted as not quantified');
+  });
+
   it('QCD-04: CVs per condition from a joined sample sheet; the note names the column without the join alias', async () => {
     // Two features measured in two replicate runs of each condition.
     const joined = ['F1', 'F2'].flatMap((id, f) =>
