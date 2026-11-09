@@ -523,3 +523,18 @@ Definition of done:
 - [x] Slide-plan unit tests (REP-04…06) and the e2e test (REP-07) fail first
 - [x] Sections on the page and in the PowerPoint
 - [x] `pnpm check` exits 0; `pnpm e2e REP-0` passes; screenshot in artifacts/phase-39/
+
+## Phase 40 — Content-Security-Policy
+Status: in progress
+Goal: Close the security whitepaper's CSP gap. The browser may load and connect only to what the app needs.
+Features: SEC-01 … SEC-02
+In scope:
+- The policy is JSON in `infra/terraform/modules/cloudfront/csp.json`.
+- CloudFront's response-headers policy and the Vite dev and preview servers all build the header from it. The dev
+  server also allows inline scripts, for React refresh.
+- The raw bucket's origin is the only extra `connect-src` (presigned uploads).
+- CI's e2e job serves the production build, so every e2e test runs under the production policy.
+Definition of done:
+- [ ] Unit tests (SEC-01) and the e2e test (SEC-02) fail first
+- [ ] Policy in Terraform and Vite; whitepaper and ARCHITECTURE updated
+- [ ] `pnpm check` exits 0; `pnpm e2e SEC-02` passes against the production build
