@@ -553,3 +553,23 @@ Definition of done:
 - [x] QCD-04 unit tests and QCD-05 e2e fail first
 - [x] Results page and report use the shared spec; report caption and slide say which CV is shown
 - [x] `pnpm check` exits 0; `pnpm e2e "QCD-05|REP-07|SEC-02"` passes
+
+## Phase 42 — Compound selectivity profile
+Status: in progress
+Goal: Answer the chemoproteomics question competitors' registries and ELNs do not answer from proteomics data: how
+selective is this compound, and what else does it engage?
+Features: SEL-01 … SEL-03
+In scope:
+- **Endpoint:** `GET /v1/compounds/{id}/selectivity` computes the profile within one readable dose-response release
+  (one profiling experiment). Potencies are never pooled across experiments.
+- **Proteins tested:** every protein with a fitted curve. **Engaged:** the tool's up/down calls.
+- **S(x)** = engaged proteins with pEC50 ≥ x divided by proteins tested (after Karaman et al. 2008, Nat Biotechnol
+  26:127, S(3 µM)). It is labelled apparent cellular potency, not Kd.
+- **Selectivity window:** the best engaged annotated primary target's pEC50 minus the most potent other engaged
+  protein's pEC50.
+- **Display:** a ranked figure with a table alternative.
+- **Science rules:** counting and selection only, so no statistics in TypeScript beyond the rules.
+Definition of done:
+- [ ] SEL-01 unit tests, SEL-02 API tests and SEL-03 e2e fail first
+- [ ] Endpoint, contracts (OpenAPI regenerated), compound page section
+- [ ] `pnpm check` exits 0; `pnpm e2e SEL-03` passes; screenshot in artifacts/phase-42/; omics review

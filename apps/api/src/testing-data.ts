@@ -32,6 +32,8 @@ export async function publishedDaRelease(
     species?: { id: string; label: string };
     file?: string;
     importer?: string;
+    /** Importer options (e.g. compound and doses for CurveCurator). */
+    importOptions?: Record<string, unknown>;
     experimentDate?: string;
   } = {},
 ): Promise<{ version: string; release: string }> {
@@ -52,7 +54,7 @@ export async function publishedDaRelease(
     await call('PUT', `/v1/versions/${version}/contrasts`, { contrasts: [CONTRAST] })
   ).json() as Json;
   const file = options.file ?? 'toptable.tsv';
-  const bytes = options.bytes ?? readFileSync(`${ONC_DIA_05}/${file}`);
+  const bytes = options.bytes ?? readFileSync(resolve(ONC_DIA_05, file));
   const started = (
     await call('POST', '/v1/files/uploads', {
       experiment_version_id: version,
@@ -71,6 +73,7 @@ export async function publishedDaRelease(
   const imported = await call('POST', '/v1/imports', {
     file_id: started.file.id,
     importer: options.importer ?? 'limma_toptable',
+    ...(options.importOptions ? { options: options.importOptions } : {}),
     ...(options.importer && options.importer !== 'limma_toptable'
       ? {}
       : { contrast_id: (contrasts.items ?? contrasts)[0].id }),
