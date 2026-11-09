@@ -487,3 +487,13 @@ Definition of done:
 - [x] Admin opens Usage and downloads the CSV (e2e, screenshot in artifacts/phase-36/)
 - [x] `pnpm check` exits 0
 
+## Phase 37 — Support diagnostics bundle
+Status: in progress
+Goal: When something goes wrong at a customer, support gets everything it needs in one file, without secrets or personal data.
+Features: SUP-01 … SUP-02
+In scope: GET /v1/admin/support-bundle (system admins, audited as an export): version, Node, migrations applied and pending, the health report, a configuration summary built from an allowlist of feature switches (never values such as URLs with credentials, tokens or keys), counts, and the last 7 days' failures (pipeline runs, channel and email deliveries without addresses, rejected imports); a download button on Admin → Health.
+Definition of done:
+- [ ] API tests for content, absence of secrets and personal data, access and audit
+- [ ] Download from Admin → Health (e2e)
+- [ ] `pnpm check` exits 0
+
