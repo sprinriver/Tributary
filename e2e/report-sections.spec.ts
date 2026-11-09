@@ -19,7 +19,7 @@ test('REP-07: the report adds QC, pathway enrichment and dose-response sections,
 
   const qc = page.getByRole('region', { name: 'QC' });
   await expect(qc).toContainText(
-    /IDs and missing values per sample, CV across all runs \(conditions pooled\)/,
+    /IDs and missing values per sample, CV within each condition \(from the sample sheet\)/,
     {
       timeout: 30_000,
     },
