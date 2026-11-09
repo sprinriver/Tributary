@@ -540,7 +540,7 @@ Definition of done:
 - [x] `pnpm check` exits 0; `pnpm e2e SEC-02` passes against the production build
 
 ## Phase 41 — QC CVs per condition
-Status: in progress
+Status: done
 Goal: The QC panel's CVs mean what a reader expects: replicate variability within a condition, not variability
 pooled across treatments (follow-up from the Phase 39 science review).
 Features: QCD-04 … QCD-05
@@ -550,6 +550,6 @@ In scope:
   computed per condition by the existing chart code.
 - Otherwise the CVs stay pooled, and the caption says so.
 Definition of done:
-- [ ] QCD-04 unit tests and QCD-05 e2e fail first
-- [ ] Results page and report use the shared spec; report caption and slide say which CV is shown
-- [ ] `pnpm check` exits 0; `pnpm e2e "QCD-05|REP-07|SEC-02"` passes
+- [x] QCD-04 unit tests and QCD-05 e2e fail first
+- [x] Results page and report use the shared spec; report caption and slide say which CV is shown
+- [x] `pnpm check` exits 0; `pnpm e2e "QCD-05|REP-07|SEC-02"` passes

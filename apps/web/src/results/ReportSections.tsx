@@ -11,6 +11,7 @@ import { useState } from 'react';
 import { api, ApiError } from '../api.ts';
 import { ErrorMessage } from '../components/ui.tsx';
 import { ChartView, LAYOUT } from './ChartView.tsx';
+import { qcPanelSpec } from './qc-spec.ts';
 import {
   DOSE_HEAD,
   doseCells,
@@ -23,6 +24,7 @@ import {
   PEC50_ONLY,
   PEC50_NOTE,
   QC_CAPTION,
+  QC_CAPTION_BY_CONDITION,
   type DoseClass,
   type DoseRow,
   type EnrichmentContrast,
@@ -73,23 +75,27 @@ function Table({ label, head, rows }: { label: string; head: string[]; rows: str
 }
 
 /** REP-04: the QC panel of the version's protein-quantity release. */
-export function QcSection({ release, onData }: { release: Release; onData: (d: SectionData['qc']) => void }) {
-  onData({ dataset: release.dataset_name, tool: toolOf(release) });
-  const spec = {
-    type: 'qc_panel',
-    data: { source: { releaseIds: [release.id] } },
-    encodings: { x: 'sample_key', rowLabel: 'protein_group', values: 'intensity' },
-    options: {},
-    layout: LAYOUT,
-  } as ChartSpec;
+export function QcSection({
+  release,
+  versionId,
+  byCondition,
+  onData,
+}: {
+  release: Release;
+  versionId: string;
+  /** Every sample has a condition: CVs within each condition (Phase 41). */
+  byCondition: boolean;
+  onData: (d: SectionData['qc']) => void;
+}) {
+  onData({ dataset: release.dataset_name, tool: toolOf(release), byCondition });
   return (
     <section role="region" aria-label="QC" className="stack report-section" data-section="qc">
       <h2 style={H2}>QC</h2>
       <p style={{ margin: 0 }}>
         {release.dataset_name}
-        {toolOf(release) ? ` (${toolOf(release)})` : ''}. {QC_CAPTION}
+        {toolOf(release) ? ` (${toolOf(release)})` : ''}. {byCondition ? QC_CAPTION_BY_CONDITION : QC_CAPTION}
       </p>
-      <ChartView spec={spec} />
+      <ChartView spec={qcPanelSpec(release.id, versionId, byCondition)} />
     </section>
   );
 }

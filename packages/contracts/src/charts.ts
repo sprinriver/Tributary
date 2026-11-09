@@ -64,6 +64,8 @@ export interface ChartDefinition {
   options: z.ZodType;
   /** Columns the chart always reads besides its encodings (e.g. fitted curve parameters of a dose_response). */
   requiresColumns?: string[];
+  /** Columns the chart also reads when the dataset has them (e.g. is_imputed for the QC panel). */
+  readIfPresent?: string[];
   /** Rules that need the encodings too (e.g. labelling hits needs a label column). */
   rules?: (spec: ChartSpec, options: unknown) => ContractError[];
   dataRules: {

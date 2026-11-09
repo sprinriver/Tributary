@@ -4,6 +4,9 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- QC CVs per condition (QCD-04…05): when the sample sheet records conditions, the QC panel shows replicate CVs
+  within each condition. Imputed values no longer count as quantified.
+- Fixed: QC panels of more than 200 proteins failed to compute; group summaries are now sent in batches.
 - Content-Security-Policy (SEC-01…02): the app is served with a strict CSP, with no eval and no inline scripts. Its
   only extra origin is the upload bucket. WebGL charts now use Plotly's strict renderer, and Mol*'s eval-based
   helper is rewritten at build time. Every e2e test runs under the policy in CI.

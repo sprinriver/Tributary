@@ -60,6 +60,7 @@ export async function renderChart(
     ...new Set([
       ...Object.values(spec.encodings).flatMap((v) => (Array.isArray(v) ? v : [v])),
       ...(def.requiresColumns ?? []),
+      ...(def.readIfPresent ?? []).filter((c) => c in types),
     ]),
   ];
   const cap = def.dataRules.maxPoints ?? 100_000;

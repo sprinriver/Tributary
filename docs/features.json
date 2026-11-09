@@ -144,6 +144,6 @@
   {"id": "REP-07", "phase": 39, "parity": "new", "description": "Report page shows the QC, enrichment and dose-response sections; controls are not printed; the PowerPoint carries them", "verify": "pnpm e2e REP-07", "passes": true},
   {"id": "SEC-01", "phase": 40, "parity": "new", "description": "One Content-Security-Policy (JSON in the CloudFront module) for CloudFront and the Vite servers: same origin, no eval or inline script in production, no framing, uploads only to the raw bucket", "verify": "pnpm run test:web SEC-01", "passes": true},
   {"id": "SEC-02", "phase": 40, "parity": "new", "description": "The app is served with the policy and its charts, 3D viewer, structures and browser uploads work under it with no violation", "verify": "pnpm e2e SEC-02", "passes": true},
-  {"id": "QCD-04", "phase": 41, "parity": "new", "description": "QC panel CVs within each condition (sample sheet joined) when every sample has one, else pooled and said so; report caption and slide say which", "verify": "pnpm run test:web QCD-04", "passes": false},
-  {"id": "QCD-05", "phase": 41, "parity": "new", "description": "Report and results QC show per-condition CVs for an experiment whose samples record conditions", "verify": "pnpm e2e QCD-05", "passes": false}
+  {"id": "QCD-04", "phase": 41, "parity": "new", "description": "QC panel CVs within each condition (sample sheet joined) when every sample has one, else pooled and said so; report caption and slide say which", "verify": "pnpm run test:web QCD-04", "passes": true},
+  {"id": "QCD-05", "phase": 41, "parity": "new", "description": "Report and results QC show per-condition CVs for an experiment whose samples record conditions", "verify": "pnpm e2e QCD-05", "passes": true}
 ]

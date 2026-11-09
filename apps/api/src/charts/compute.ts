@@ -55,6 +55,23 @@ export function computeCall(config: ApiConfig, fetchImpl: typeof fetch) {
     };
 }
 
+/** apps/compute's group summary takes at most this many groups per request (GroupSummaryRequest). */
+export const GROUPS_PER_CALL = 200;
+
+/** Sends group summaries in batches and merges them in order (a QC panel has one group per protein). */
+function batched(one: (body: Body) => Promise<GroupSummaryResult>) {
+  return async (body: Body): Promise<GroupSummaryResult> => {
+    const groups = body.groups as unknown[];
+    if (!Array.isArray(groups) || groups.length <= GROUPS_PER_CALL) return one(body);
+    const parts: GroupSummaryResult[] = [];
+    for (let i = 0; i < groups.length; i += GROUPS_PER_CALL)
+      parts.push(await one({ ...body, groups: groups.slice(i, i + GROUPS_PER_CALL) }));
+    // Every version that answered (a redeploy mid-panel is recorded, not hidden).
+    const versions = [...new Set(parts.map((p) => p.compute_version))];
+    return { groups: parts.flatMap((p) => p.groups), compute_version: versions.join(', ') };
+  };
+}
+
 /** HTTP client; compute 422s become chart field errors (the control the user changes). */
 export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute {
   const call = computeCall(config, fetchImpl);
@@ -65,7 +82,7 @@ export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute
     }),
     kde: call('/stats/kde', KdeResultSchema, { values: 'encodings.x' }),
     groupTest: call('/stats/group-test', GroupTestResultSchema, { groups: 'options.p_values' }),
-    groupSummary: call('/stats/group-summary', GroupSummaryResultSchema, { groups: 'encodings.y' }),
+    groupSummary: batched(call('/stats/group-summary', GroupSummaryResultSchema, { groups: 'encodings.y' })),
     pca: call('/stats/pca', PcaResultSchema, {
       values: 'encodings.values',
       components: 'options.components',

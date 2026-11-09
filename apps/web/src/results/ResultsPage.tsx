@@ -5,6 +5,8 @@ import { useState } from 'react';
 import { api } from '../api.ts';
 import { ErrorMessage } from '../components/ui.tsx';
 import { ChartView, LAYOUT } from './ChartView.tsx';
+import { conditionsOf, qcPanelSpec } from './qc-spec.ts';
+import { useSamples } from '../registry/queries.ts';
 import { DoseResponseViewer } from './DoseResponseViewer.tsx';
 import { EnrichmentPanel } from './EnrichmentPanel.tsx';
 
@@ -91,6 +93,7 @@ export const volcano = (release: string, contrastId: string): ChartSpec =>
   }) as ChartSpec;
 
 function Results({ r }: { r: VersionResults }) {
+  const samples = useSamples(r.version_id);
   const of = (kind: string) => r.releases.filter((x) => x.kind === kind);
   const pq = of('protein_quant')[0];
   const da = of('differential_abundance');
@@ -101,17 +104,10 @@ function Results({ r }: { r: VersionResults }) {
       {pq && (
         <section role="region" aria-label="QC" className="stack">
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>QC</h2>
-          <ChartView
-            spec={
-              {
-                type: 'qc_panel',
-                data: { source: { releaseIds: [pq.id] } },
-                encodings: { x: 'sample_key', rowLabel: 'protein_group', values: 'intensity' },
-                options: {},
-                layout: LAYOUT,
-              } as ChartSpec
-            }
-          />
+          {/* Waits for the samples, so the panel is drawn once (per condition or pooled). */}
+          {(samples.data || samples.error) && (
+            <ChartView spec={qcPanelSpec(pq.id, r.version_id, !!conditionsOf(samples.data?.items ?? []))} />
+          )}
         </section>
       )}
       {da.length > 0 &&

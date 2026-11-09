@@ -18,7 +18,7 @@ export interface ReportInput {
     top: { feature: string; genes: string; log2_fc: number; adj_p: number }[];
   }[];
   /** QC panel of the protein-quantity release (Phase 39). */
-  qc?: { dataset: string; tool: string | null; image: string | null };
+  qc?: { dataset: string; tool: string | null; image: string | null; byCondition?: boolean };
   /** Pathway enrichment per contrast, with the report's hit thresholds (Phase 39). */
   enrichment?: {
     collection: string;
@@ -74,6 +74,8 @@ export interface DoseRow {
 // What shapeQc (apps/api/src/charts/omics-shapes.ts) draws for this spec: x is the sample, no colour groups.
 export const QC_CAPTION =
   'IDs and missing values per sample, CV across all runs (conditions pooled) and log2 intensity distributions. Intensities that are missing or ≤ 0 count as not quantified.';
+export const QC_CAPTION_BY_CONDITION =
+  'IDs and missing values per sample, CV within each condition (from the sample sheet), over all runs of the condition, and log2 intensity distributions. Intensities that are missing, ≤ 0 or imputed count as not quantified.';
 export const ENRICHMENT_METHOD = 'Over-representation (hypergeometric), Benjamini–Hochberg adjusted.';
 export const NO_TERMS = 'No gene set was tested: no set had enough measured members within the size limits.';
 export const PEC50_NOTE = 'pEC50 = −log10(EC50 in M).';
@@ -169,7 +171,10 @@ export function reportSlides(r: ReportInput): SlideSpec[] {
   if (r.qc)
     slides.push({
       title: 'QC',
-      lines: [r.qc.tool ? `${r.qc.dataset} (${r.qc.tool})` : r.qc.dataset, QC_CAPTION],
+      lines: [
+        r.qc.tool ? `${r.qc.dataset} (${r.qc.tool})` : r.qc.dataset,
+        r.qc.byCondition ? QC_CAPTION_BY_CONDITION : QC_CAPTION,
+      ],
       ...(r.qc.image ? { image: r.qc.image } : {}),
     });
   for (const c of r.contrasts) {

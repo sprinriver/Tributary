@@ -8,6 +8,7 @@ import { ErrorMessage } from '../components/ui.tsx';
 import { useSamples } from '../registry/queries.ts';
 import { ChartView } from './ChartView.tsx';
 import { writePptx } from './pptx.ts';
+import { conditionsOf } from './qc-spec.ts';
 import { reportSlides, type ReportInput } from './report-slides.ts';
 import { DoseSection, EnrichmentSection, QcSection, toolOf, type SectionData } from './ReportSections.tsx';
 import { volcano } from './ResultsPage.tsx';
@@ -257,7 +258,14 @@ export function ReportPage() {
             <h2 style={{ margin: 0, fontSize: '1.15rem' }}>Methods</h2>
             <p style={{ margin: 0 }}>{r.methods}</p>
           </section>
-          {pq && <QcSection release={pq} onData={(d) => (sections.current.qc = d)} />}
+          {pq && version && (samples.data || samples.error) && (
+            <QcSection
+              release={pq}
+              versionId={version}
+              byCondition={!!conditionsOf(samples.data?.items ?? [])}
+              onData={(d) => (sections.current.qc = d)}
+            />
+          )}
           {da ? (
             r.contrasts.map((c) => (
               <ContrastSection

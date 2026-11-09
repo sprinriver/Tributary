@@ -1744,6 +1744,34 @@ Entry template:
     - zod runs `jitless`, so its eval probe does not trigger a violation.
 - Evidence:
   - The whole e2e suite (64 tests) passes against the production build served with the policy.
-  - SEC-02, STRUC-03, NET-02 and REP-03 pass on the dev server.
+  - SEC-02, STRUC-03, NET-02 and REP-03 pass on the dev server. Correction (Phase 41): that run actually hit a
+    leftover preview server. SEC-02 and STRUC-03 were re-run on fresh dev servers in Phase 41 and pass.
 - Not verified locally: Terraform is not installed here; CI's infra job runs fmt, validate, tflint and checkov.
+- Dependencies added: none.
+
+## 2026-11-09 — Phase 41: QC CVs per condition — done
+- Built:
+  - **Shared spec:** `apps/web/src/results/qc-spec.ts` is used by the results page and the report.
+    - When every sample of the version has a condition, it left-joins the version's sample sheet on
+      (experiment_version_id, sample_key) and colours by condition, so CVs are computed within each condition.
+    - Otherwise CVs stay pooled, and the caption and slide say which.
+  - **CV note:** names the column without the join alias.
+- Fixed:
+  - **Pre-existing:** the compute service takes at most 200 groups per group-summary request. QC panels of more
+    than 200 proteins failed ("The computation failed"), so every real-sized dataset did. The API now batches
+    requests at 200 and merges them in order, and records every compute version that answered.
+  - **Science review (omics-reviewer):**
+    - runs not in the sample sheet form a labelled "not in the sample sheet" group with a note, never "all runs";
+    - the CV note counts feature–condition pairs and names conditions without CVs;
+    - imputed values (`is_imputed`, read when present via the chart registry's new `readIfPresent`) count as not
+      quantified, with a note (this predates the phase);
+    - the caption says CVs use all runs of a condition.
+- Test amendments (disclosed, each in its own commit):
+  - QCD-05 note wording ("within condition");
+  - QCD-04 replicate test data;
+  - REP-07's QC caption: the fixture records conditions, so the caption is now the per-condition one;
+  - a type-only `!` in the QCD-04 contract test.
+- Evidence: `pnpm check` ✓, and `pnpm e2e "QCD-0|REP-0|RES-01|SEC-02"` ✓ (6) on fresh dev servers. Before the
+  review fixes, the full e2e suite (65) passed.
+- Not done: no screenshot for this phase. The QC panel looks as before, with one box per condition in the CV panel.
 - Dependencies added: none.
