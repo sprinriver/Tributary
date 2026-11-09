@@ -325,6 +325,19 @@ describe('MA plot, PCA and QC panel', () => {
     const raw = await shape('qc_panel', enc, { log2: false });
     expect(raw.data.find((t: Json) => t.name === 'intensity').y).toContain(59);
   });
+
+  it('QCD-04: CVs per condition from a joined sample sheet; the note names the column without the join alias', async () => {
+    const joined = rows.map((r) => ({ ...r, 's.condition': r.cond }));
+    const s = await shape(
+      'qc_panel',
+      { x: 'run', rowLabel: 'id', values: 'b', color: 's.condition' },
+      {},
+      joined,
+    );
+    const cv = s.data.find((t: Json) => t.name === 'CV (%)');
+    expect(new Set(cv.x)).toEqual(new Set(['DMSO', 'CPD']));
+    expect(s.transformations.join(' ')).toContain('per feature within condition;');
+  });
 });
 
 describe('REFERENCE_V1 §8 — every v1 defect has a named test (data part)', () => {
