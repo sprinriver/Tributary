@@ -8,7 +8,7 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "check": "turbo run typecheck test && tsc -p e2e && pnpm run lint && pnpm run test:compute && pnpm run lint:compute",
+    "check": "turbo run typecheck test && tsc -p e2e && pnpm run lint && pnpm run test:compute && pnpm run lint:compute && pnpm run test:scripts && pnpm run validation:pack --check",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "dev": "turbo run dev",
@@ -36,7 +36,7 @@
     "compute:sync": "cd apps/compute && uv sync",
     "bootstrap": "pnpm install --frozen-lockfile && cd apps/compute && uv sync --frozen",
     "licence:scan": "node scripts/licence-scan.mjs",
-    "test:scripts": "node --test scripts/",
+    "test:scripts": "node --test \"scripts/*.test.mjs\"",
     "validation:pack": "node scripts/validation-pack.mjs",
     "e2e:install-browsers": "playwright install --with-deps chromium",
     "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format",
