@@ -53,19 +53,35 @@ describe('PowerPoint report sections (Phase 39)', () => {
     enrichment: {
       collection: 'Reactome pathways (human) — Reactome 94',
       settings:
-        'Hits: adjusted p ≤ 0.05 and |log2 FC| ≥ 1, both directions; sets of 10–500; universe: measured',
+        'Hits: adjusted p ≤ 0.05 and |log2 FC| ≥ 1, both directions; sets with 10–500 measured members; universe: measured',
+      method: 'Method: hypergeometric (one-sided), over-representation analysis; adjusted p: BH.',
       contrasts: [
         {
           label: 'CPD-1@1 µM vs DMSO',
+          summary: '8 hits of 900 background; 40 sets tested; 1 at adjusted p ≤ 0.05',
+          notes: ['Protein groups expanded to each gene symbol they contain.'],
           terms: [{ id: 'R-HSA-1', name: 'Cell cycle', overlap: 8, size: 120, fold: 3.456, adj_p: 0.000123 }],
         },
-        { label: 'CPD-2@1 µM vs DMSO', terms: [] },
+        {
+          label: 'CPD-2@1 µM vs DMSO',
+          summary: '3 hits of 900 background; 0 sets tested',
+          notes: [],
+          terms: [],
+        },
+        {
+          label: 'CPD-3@1 µM vs DMSO',
+          skipped: 'No feature passes the hit thresholds: enrichment not run.',
+          summary: '',
+          notes: [],
+          terms: [],
+        },
       ],
     },
     dose: {
       dataset: 'CurveCurator curves',
       method: 'CurveCurator',
-      counts: { up: 3, down: 2, not: 40, unclear: null },
+      counts: { up: 3, down: 2, not: 1_000_000, unclear: null },
+      capped: ['not' as const],
       image: null,
       top: [
         {
@@ -88,49 +104,67 @@ describe('PowerPoint report sections (Phase 39)', () => {
       title: 'QC',
       lines: [
         'DIA-NN protein groups (DIA-NN 1.9)',
-        'IDs per run, data completeness, CV and log2 intensity distributions. Intensities ≤ 0 are left out of the log2 view.',
+        'IDs and missing values per sample, CV across all runs (conditions pooled) and log2 intensity distributions. Intensities that are missing or ≤ 0 count as not quantified.',
       ],
       image: 'data:image/png;base64,QC',
     });
   });
 
-  it('REP-05: enrichment slides state the collection and hit definition, then the top terms per contrast', () => {
+  it('REP-05: enrichment slides state the collection, hit definition, method and counts, then the top terms per contrast', () => {
     const slides = reportSlides(full);
     const at = slides.findIndex((s) => s.title === 'Pathway enrichment');
     expect(at).toBeGreaterThan(slides.findIndex((s) => s.title === 'CPD-1@1 µM vs DMSO: top hits'));
     expect(slides[at]!.lines).toEqual([
       'Gene sets: Reactome pathways (human) — Reactome 94',
-      'Hits: adjusted p ≤ 0.05 and |log2 FC| ≥ 1, both directions; sets of 10–500; universe: measured',
-      'Over-representation (hypergeometric), Benjamini–Hochberg adjusted.',
+      'Hits: adjusted p ≤ 0.05 and |log2 FC| ≥ 1, both directions; sets with 10–500 measured members; universe: measured',
+      'Method: hypergeometric (one-sided), over-representation analysis; adjusted p: BH.',
+      'CPD-1@1 µM vs DMSO: 8 hits of 900 background; 40 sets tested; 1 at adjusted p ≤ 0.05',
+      'CPD-2@1 µM vs DMSO: 3 hits of 900 background; 0 sets tested',
+      'CPD-3@1 µM vs DMSO: No feature passes the hit thresholds: enrichment not run.',
     ]);
     expect(slides[at + 1]).toEqual({
       title: 'CPD-1@1 µM vs DMSO: enrichment',
       table: [
-        ['term', 'name', 'hits / set size', 'fold enrichment', 'adjusted p'],
+        ['term', 'name', 'hits / measured set members', 'fold enrichment', 'adjusted p'],
         ['R-HSA-1', 'Cell cycle', '8 / 120', '3.46', '1.23e-4'],
       ],
     });
     expect(slides[at + 2]).toEqual({
+      title: 'CPD-1@1 µM vs DMSO: enrichment details',
+      lines: ['Protein groups expanded to each gene symbol they contain.'],
+    });
+    expect(slides[at + 3]).toEqual({
       title: 'CPD-2@1 µM vs DMSO: enrichment',
       lines: ['No gene set was tested: no set had enough measured members within the size limits.'],
     });
+    expect(slides[at + 4]!.title).toBe('Dose-response'); // a skipped contrast has no slide of its own
   });
 
-  it('REP-06: a dose-response slide counts curves per regulation class, then a table of the top curves', () => {
+  it('REP-06: a dose-response slide counts curves per class (capped and missing counts said so), then the top curves', () => {
     const slides = reportSlides(full);
     const at = slides.findIndex((s) => s.title === 'Dose-response');
     expect(at).toBe(slides.length - 2);
     expect(slides[at]).toEqual({
       title: 'Dose-response',
       lines: [
-        'CurveCurator curves: 3 up, 2 down, 40 not regulated, unclear not counted (regulation classes from CurveCurator)',
+        'CurveCurator curves: 3 up, 2 down, > 1000000 not regulated, unclassified not available (classes from CurveCurator; unclassified: the tool gave no class)',
         'pEC50 = −log10(EC50 in M).',
       ],
     });
     expect(slides[at + 1]!.table).toEqual([
-      ['feature', 'genes', 'compound', 'pEC50', 'regulation', 'FDR'],
+      ['feature', 'genes', 'compound', 'pEC50', 'regulation', 'FDR (q-value)'],
       ['P04637', 'TP53', 'CPD-000001', '7.12', 'down', '1.20e-3'],
       ['Q9Y6K9', '', 'CPD-000001', '—', 'up', '—'],
     ]);
+  });
+
+  it('REP-06: when no curve has an FDR, the ranking is said to be by pEC50 only', () => {
+    const slides = reportSlides({
+      ...full,
+      dose: { ...full.dose, top: full.dose.top.map((d) => ({ ...d, fdr: null })) },
+    });
+    expect(slides.at(-1)!.title).toBe(
+      'Dose-response: top curves (ranked by pEC50 only: no FDR in the source)',
+    );
   });
 });
