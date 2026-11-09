@@ -498,12 +498,12 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 38 — Validation pack
-Status: in progress
+Status: done
 Goal: Customers whose data feeds GLP studies or submissions can validate their installation quickly: a traceability matrix and protocol templates ship with every release.
 Features: VAL-01 … VAL-02
 In scope: scripts/validation-pack.mjs (no dependency) writes docs/validation/TRACEABILITY.md and .csv from features.json and the test titles (feature IDs); `--check` (part of `pnpm check`) fails if the matrix is stale or a requirement marked passing has no evidence; IQ and OQ protocol templates, a 21 CFR Part 11 controls map and a README. Tributary is not a validated system: the pack supports the customer's validation.
 Definition of done:
-- [ ] Generator tests (node:test)
-- [ ] Matrix generated and checked in `pnpm check`; templates written
-- [ ] `pnpm check` exits 0
+- [x] Generator tests (node:test)
+- [x] Matrix generated and checked in `pnpm check`; templates written
+- [x] `pnpm check` exits 0
 

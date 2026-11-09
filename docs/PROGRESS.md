@@ -1674,3 +1674,19 @@ Entry template:
 - Tests: secrets (cookie secret, OIDC client secret, internal token, SMTP password, webhook URL) and personal data
   never appear in the bundle.
 - Evidence: `pnpm check` ✓ (api 268), and `pnpm e2e SUP-02`, `ADM-03` and `OPS-09` ✓ locally.
+
+## 2026-11-09 — Phase 38: Validation pack — done
+- Built:
+  - **Generator:** `scripts/validation-pack.mjs` (no dependency) writes `docs/validation/TRACEABILITY.md` and `.csv`.
+    Each requirement in features.json gets its verification method (automated test, or command/document check), the
+    tests that carry its feature ID and its status. 139 requirements and 562 linked tests, with no gaps.
+  - **Check:** `pnpm check` now runs `test:scripts` and `validation:pack --check`. It fails when the matrix is stale or
+    a requirement marked passing has no evidence. A verify command that runs tests counts only with tests that
+    match.
+  - **Templates:** `docs/validation/` holds:
+    - a README (Tributary is not a validated system; the pack supports the customer's own validation);
+    - IQ and OQ protocol templates, with the OQ steps tied to feature IDs;
+    - a 21 CFR Part 11 controls map, with partial and procedural controls stated as such.
+- Fixed during the phase: test-shaped text inside strings (the generator's own fixtures) was counted as evidence. Only
+  calls at the start of a line in the file's own language count now, and a regression test covers this.
+- Dependencies added: none.

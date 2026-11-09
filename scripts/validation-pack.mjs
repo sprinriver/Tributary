@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = resolve(fileURLToPath(new URL('.', import.meta.url)), '..');
 const OUT = join(ROOT, 'docs/validation');
-const TEST_DIRS = ['apps', 'packages', 'e2e'];
+const TEST_DIRS = ['apps', 'packages', 'e2e', 'scripts'];
 const IGNORE = new Set([
   'node_modules',
   'dist',
@@ -27,7 +27,7 @@ export function readTestFiles(root = ROOT) {
       if (IGNORE.has(name)) continue;
       const path = join(dir, name);
       if (statSync(path).isDirectory()) walk(path);
-      else if (/\.(test|spec)\.ts$/.test(name) || /^test_.*\.py$/.test(name))
+      else if (/\.(test|spec)\.(ts|mjs)$/.test(name) || /^test_.*\.py$/.test(name))
         out[relative(root, path)] = readFileSync(path, 'utf8');
     }
   };
@@ -40,9 +40,14 @@ export function testsByFeature(files) {
   const found = new Map();
   const add = (id, file, title) => found.set(id, [...(found.get(id) ?? []), { file, title }]);
   for (const [file, text] of Object.entries(files)) {
-    for (const m of text.matchAll(/\b(?:it|test)\(\s*(['"`])([A-Z]+-\d+):((?:(?!\1).)*)\1/g))
-      add(m[2], file, `${m[2]}:${m[3]}`);
-    for (const m of text.matchAll(/def (test_([A-Z]+)_(\d+)_\w*)\(/g)) add(`${m[2]}-${m[3]}`, file, m[1]);
+    // Calls at the start of a line in the file's own language, so test fixtures inside strings never count.
+    if (file.endsWith('.py')) {
+      for (const m of text.matchAll(/^[ \t]*(?:async )?def (test_([A-Z]+)_(\d+)_\w*)\(/gm))
+        add(`${m[2]}-${m[3]}`, file, m[1]);
+    } else {
+      for (const m of text.matchAll(/^[ \t]*(?:it|test)\(\s*(['"`])([A-Z]+-\d+):((?:(?!\1).)*)\1/gm))
+        add(m[2], file, `${m[2]}:${m[3]}`);
+    }
   }
   for (const list of found.values())
     list.sort((a, b) => a.file.localeCompare(b.file) || a.title.localeCompare(b.title));
@@ -146,12 +151,14 @@ function main() {
   const md = renderMarkdown(rows, sameContent ? date : today);
   const csv = renderCsv(rows);
   if (check) {
-    let stale = false;
-    try {
-      stale = readFileSync(mdPath, 'utf8') !== md || readFileSync(csvPath, 'utf8') !== csv;
-    } catch {
-      stale = true;
-    }
+    const read = (p) => {
+      try {
+        return readFileSync(p, 'utf8');
+      } catch {
+        return null;
+      }
+    };
+    const stale = read(mdPath) !== md || read(csvPath) !== csv;
     if (gaps.length)
       console.error(`validation:pack: requirements marked passing without evidence: ${gaps.join(', ')}`);
     if (stale)

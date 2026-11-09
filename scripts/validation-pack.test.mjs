@@ -34,6 +34,14 @@ test('VAL-01: tests are found by the feature ID that starts their title, in Type
   );
 });
 
+test('VAL-01: test-shaped text inside strings (fixtures) is not evidence', () => {
+  const found = testsByFeature({
+    'scripts/x.test.mjs':
+      "const f = { 'a.test.ts': \"it('REG-01: fake', () => {})\", 'b.py': 'def test_REG_01_fake():' };\n",
+  });
+  assert.equal(found.get('REG-01'), undefined);
+});
+
 test('VAL-01: every requirement gets a method and evidence; claimed-passing ones without evidence are gaps', () => {
   const rows = matrix(features, testsByFeature(files));
   assert.deepEqual(

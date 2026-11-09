@@ -4,6 +4,9 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Validation pack (VAL-01…02): `docs/validation/` gives a traceability matrix from every requirement to its tests
+  and status, regenerated and checked by `pnpm check`. It also has IQ and OQ protocol templates and a 21 CFR Part 11
+  controls map that customers adapt for their own validation.
 - Support bundle (SUP-01…02): Admin → Health → Download support bundle gives versions, migrations, health,
   configuration switches and the last week's failures, with no secrets or personal data. The download is audited.
 - Usage analytics (USE-01…03): Admin → Usage shows active people, weekly activity, programs and people, with a CSV
