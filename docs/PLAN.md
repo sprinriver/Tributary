@@ -525,7 +525,7 @@ Definition of done:
 - [x] `pnpm check` exits 0; `pnpm e2e REP-0` passes; screenshot in artifacts/phase-39/
 
 ## Phase 40 — Content-Security-Policy
-Status: in progress
+Status: done
 Goal: Close the security whitepaper's CSP gap. The browser may load and connect only to what the app needs.
 Features: SEC-01 … SEC-02
 In scope:
@@ -535,6 +535,6 @@ In scope:
 - The raw bucket's origin is the only extra `connect-src` (presigned uploads).
 - CI's e2e job serves the production build, so every e2e test runs under the production policy.
 Definition of done:
-- [ ] Unit tests (SEC-01) and the e2e test (SEC-02) fail first
-- [ ] Policy in Terraform and Vite; whitepaper and ARCHITECTURE updated
-- [ ] `pnpm check` exits 0; `pnpm e2e SEC-02` passes against the production build
+- [x] Unit tests (SEC-01) and the e2e test (SEC-02) fail first
+- [x] Policy in Terraform and Vite; whitepaper and ARCHITECTURE updated
+- [x] `pnpm check` exits 0; `pnpm e2e SEC-02` passes against the production build

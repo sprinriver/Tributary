@@ -8,7 +8,9 @@ import histogram from 'plotly.js/lib/histogram';
 import pie from 'plotly.js/lib/pie';
 import scatter from 'plotly.js/lib/scatter';
 import scatter3d from 'plotly.js/lib/scatter3d';
-import scattergl from 'plotly.js/lib/scattergl';
+// The strict WebGL scatter: precompiled regl code instead of `new Function`, so it runs under the CSP without
+// 'unsafe-eval' (the same module Plotly's own lib/index-strict.js uses; Phase 40).
+import scattergl from 'plotly.js/src/traces/scattergl/strict';
 import violin from 'plotly.js/lib/violin';
 
 Plotly.register([scatter, scattergl, heatmap, bar, box, violin, histogram, pie, scatter3d]);

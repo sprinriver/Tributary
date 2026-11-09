@@ -1725,3 +1725,25 @@ Entry template:
 - Test amendments (disclosed): this phase's own REP-04…07 tests were tightened after the review, before the
   implementation was committed, in commits `5f319c6` and the REP-07 caption commit.
 - Dependencies added: none.
+
+## 2026-11-09 — Phase 40: Content-Security-Policy — done
+- Built:
+  - **One policy:** `infra/terraform/modules/cloudfront/csp.json`.
+    - CloudFront's response-headers policy builds the header from it in Terraform: new `upload_origin` input, from the
+      S3 module's `raw_bucket_origin`.
+    - The Vite dev and preview servers build it with `apps/web/src/security/csp.ts`. The dev server also allows inline
+      scripts, for React refresh.
+    - No `unsafe-eval`, no inline scripts, `frame-ancestors 'none'`, `object-src 'none'`. `connect-src` allows
+      `'self'` plus the raw bucket, for presigned uploads.
+  - **Eval removed from the browser (found by the e2e test):**
+    - Plotly `scattergl` now uses Plotly's strict (precompiled regl) module, the one its own `lib/index-strict.js`
+      uses.
+    - Mol* 5.11 `mol-util/string.js` `interpolate` (`new Function`, mouse-binding help only) is rewritten by a
+      Vite/Rolldown plugin. A changed Mol* fails the build.
+    - Mol*'s movie-export encoder (`h264-mp4-encoder`, Emscripten embind) is aliased to a stub that refuses.
+    - zod runs `jitless`, so its eval probe does not trigger a violation.
+- Evidence:
+  - The whole e2e suite (64 tests) passes against the production build served with the policy.
+  - SEC-02, STRUC-03, NET-02 and REP-03 pass on the dev server.
+- Not verified locally: Terraform is not installed here; CI's infra job runs fmt, validate, tflint and checkov.
+- Dependencies added: none.

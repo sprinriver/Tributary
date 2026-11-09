@@ -102,7 +102,16 @@ Tributary is installed in the customer's own AWS account from the Terraform modu
   - HSTS;
   - `X-Content-Type-Options: nosniff`;
   - `X-Frame-Options: DENY`;
-  - `Referrer-Policy: strict-origin-when-cross-origin`.
+  - `Referrer-Policy: strict-origin-when-cross-origin`;
+  - a Content-Security-Policy (`modules/cloudfront/csp.json`).
+- **Content-Security-Policy:**
+  - **Allowed:** scripts, styles, images, fonts and connections from the app's own origin only. The single
+    exception is browser uploads to the raw bucket.
+  - **Refused:** inline scripts, `eval`, plug-ins and framing by other sites.
+  - **Libraries:** WebGL charts use Plotly's precompiled (strict) renderer. The 3D viewer runs without string
+    evaluation; its unused movie-export encoder is left out.
+  - **Testing:** every end-to-end test runs under the production policy in CI, and one test fails on any reported
+    violation.
 - **Emails** carry no experiment values: they link back to the app, where access is checked.
 
 ## 6. AI features (optional)
@@ -140,7 +149,6 @@ Tributary is installed in the customer's own AWS account from the Terraform modu
 | Gap | Meanwhile |
 |---|---|
 | No request rate limiting in the API | Add AWS WAF rate-based rules on CloudFront or the load balancer. |
-| No Content-Security-Policy header | Planned in the CloudFront headers policy. The other headers above are set. |
 | No row-level security in PostgreSQL | Each installation serves one organisation in its own account. Access is checked in the API per program. |
 | No independent penetration test or SOC 2 report yet | Customers may run their own test against their installation. |
 | Electronic signatures (21 CFR 11.50, 11.200) are partly covered | See `docs/validation/PART11_CONTROLS.md`: re-authentication and audit cover part; signature manifestation is procedural. |

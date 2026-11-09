@@ -269,7 +269,11 @@ Spectronaut, MaxQuant. Have counsel confirm the container-separation pattern bef
 - Publish/approve requires recent authentication (`max_age`), recorded in the audit row.
 - Secrets in AWS Secrets Manager (rotation for RDS); config in SSM Parameter Store.
 - KMS customer-managed keys for S3, S3 Tables, RDS; TLS 1.2+.
-- Security headers are set by the CloudFront response-headers policy (`modules/cloudfront`), not by the API.
+- Security headers are set by the CloudFront response-headers policy (`modules/cloudfront`), not by the API. That
+  includes the Content-Security-Policy from `modules/cloudfront/csp.json`, which the Vite dev and preview servers
+  also send (Phase 40).
+  - **Policy:** no `unsafe-eval` and no inline scripts. Plotly's WebGL scatter is the strict, precompiled one.
+    Mol*'s eval-based template helper is rewritten at build time, and its movie-export encoder is stubbed out.
   `@fastify/helmet` and `@fastify/rate-limit` were planned and not adopted. There is no rate limiting in the API:
   use AWS WAF rate-based rules (see `docs/SECURITY_WHITEPAPER.md` §8).
 

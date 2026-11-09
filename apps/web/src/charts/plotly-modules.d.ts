@@ -20,7 +20,7 @@ declare module 'plotly.js/lib/scatter' {
   const trace: unknown;
   export default trace;
 }
-declare module 'plotly.js/lib/scattergl' {
+declare module 'plotly.js/src/traces/scattergl/strict' {
   const trace: unknown;
   export default trace;
 }

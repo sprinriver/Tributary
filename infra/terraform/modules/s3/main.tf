@@ -228,6 +228,11 @@ output "web_bucket_regional_domain" {
   value       = aws_s3_bucket.this["web"].bucket_regional_domain_name
 }
 
+output "raw_bucket_origin" {
+  description = "HTTPS origin of the raw bucket (browser uploads with presigned URLs)."
+  value       = "https://${aws_s3_bucket.this["raw"].bucket_regional_domain_name}"
+}
+
 output "logs_bucket" {
   description = "Access-log bucket name."
   value       = aws_s3_bucket.logs.bucket

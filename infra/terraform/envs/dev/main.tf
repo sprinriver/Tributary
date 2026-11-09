@@ -291,4 +291,5 @@ module "cloudfront" {
   aliases                    = [var.domain_name]
   certificate_arn            = var.cloudfront_certificate_arn
   logs_bucket_domain         = module.s3.logs_bucket_domain
+  upload_origin              = module.s3.raw_bucket_origin
 }
