@@ -538,3 +538,18 @@ Definition of done:
 - [x] Unit tests (SEC-01) and the e2e test (SEC-02) fail first
 - [x] Policy in Terraform and Vite; whitepaper and ARCHITECTURE updated
 - [x] `pnpm check` exits 0; `pnpm e2e SEC-02` passes against the production build
+
+## Phase 41 — QC CVs per condition
+Status: in progress
+Goal: The QC panel's CVs mean what a reader expects: replicate variability within a condition, not variability
+pooled across treatments (follow-up from the Phase 39 science review).
+Features: QCD-04 … QCD-05
+In scope:
+- One QC chart spec for the results page and the report. When every sample of the version has a condition, the
+  spec left-joins the version's sample metadata (on version and sample key) and colours by condition, so CVs are
+  computed per condition by the existing chart code.
+- Otherwise the CVs stay pooled, and the caption says so.
+Definition of done:
+- [ ] QCD-04 unit tests and QCD-05 e2e fail first
+- [ ] Results page and report use the shared spec; report caption and slide say which CV is shown
+- [ ] `pnpm check` exits 0; `pnpm e2e "QCD-05|REP-07|SEC-02"` passes
