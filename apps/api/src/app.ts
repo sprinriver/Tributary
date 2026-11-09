@@ -48,7 +48,9 @@ import { registerTriageRoutes } from './routes/triage.ts';
 import { registerWatchRoutes } from './routes/watch.ts';
 import { providerFor, type ModelProvider } from './ai/provider.ts';
 import { systemHealth } from './admin/health.ts';
-import { HealthReportSchema, InstanceInfoSchema } from '@tributary/contracts';
+import { supportBundle } from './support/bundle.ts';
+import { insertAudit, requestActor } from './audit.ts';
+import { HealthReportSchema, InstanceInfoSchema, SupportBundleSchema } from '@tributary/contracts';
 import { respond } from './respond.ts';
 import { embeddingProvider } from './search/embeddings.ts';
 import { searchIndex } from './search/index-service.ts';
@@ -172,6 +174,29 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerEmailRoutes(scoped, { db, config });
     registerScimRoutes(scoped, { db, config });
     registerUsageRoutes(scoped, db);
+    scoped.get('/v1/admin/support-bundle', async (request, reply) => {
+      const admin = requireSystemAdmin(request);
+      const runners = options.runners ?? {};
+      const health = await systemHealth({ db, config, storage, fetch: fetchImpl, runners });
+      const bundle = await supportBundle(
+        { db, config, runners: Object.keys(runners) },
+        health,
+        admin.tenantId,
+      );
+      // A download that leaves the installation: audited like any export.
+      await insertAudit(db, requestActor(request), {
+        action: 'support.bundle',
+        entityType: 'installation',
+        entityId: admin.tenantId,
+        after: { version: bundle.instance.version, migrations: bundle.database.migrations_applied.length },
+      });
+      return reply
+        .header(
+          'content-disposition',
+          `attachment; filename="tributary-support-${bundle.generated_at.slice(0, 10)}.json"`,
+        )
+        .send(respond(SupportBundleSchema, bundle));
+    });
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

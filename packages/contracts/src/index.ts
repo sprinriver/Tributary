@@ -24,6 +24,7 @@ export * from './api/protein-model.ts';
 export * from './api/notifications.ts';
 export * from './api/email.ts';
 export * from './api/usage.ts';
+export * from './api/support.ts';
 export * from './api/instance.ts';
 export * from './api/registry.ts';
 export * from './api/routes.ts';
