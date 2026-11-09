@@ -327,7 +327,15 @@ describe('MA plot, PCA and QC panel', () => {
   });
 
   it('QCD-04: CVs per condition from a joined sample sheet; the note names the column without the join alias', async () => {
-    const joined = rows.map((r) => ({ ...r, 's.condition': r.cond }));
+    // Two features measured in two replicate runs of each condition.
+    const joined = ['F1', 'F2'].flatMap((id, f) =>
+      [
+        ['r1', 'DMSO'],
+        ['r2', 'DMSO'],
+        ['r3', 'CPD'],
+        ['r4', 'CPD'],
+      ].map(([run, condition], i) => ({ id, run, b: 100 * (f + 1) + 10 * i, 's.condition': condition })),
+    );
     const s = await shape(
       'qc_panel',
       { x: 'run', rowLabel: 'id', values: 'b', color: 's.condition' },
