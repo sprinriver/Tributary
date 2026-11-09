@@ -69,7 +69,12 @@ describe('personal email notifications', () => {
     expect(mails[0]!.subject).toMatch(/1 new hit for your watched items/);
     expect(mails[0]!.text).toContain(hit.id);
     expect(mails[0]!.text).toContain(`/releases/${release}`);
-    expect(mails[0]!.text).not.toMatch(/log2|adj|p-value|e-\d/i); // no data values in email
+    // No data values in email. IDs are removed first: a UUID such as …8dfe-58… looks like 1e-5 to the pattern.
+    const withoutIds = mails[0]!.text.replace(
+      /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
+      '<id>',
+    );
+    expect(withoutIds).not.toMatch(/log2|adj|p-value|e-\d/i);
   });
 
   it('MAIL-03: assigning a triage item emails the new owner (not oneself); failed sends retry', async () => {

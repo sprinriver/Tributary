@@ -1690,3 +1690,6 @@ Entry template:
 - Fixed during the phase: test-shaped text inside strings (the generator's own fixtures) was counted as evidence. Only
   calls at the start of a line in the file's own language count now, and a regression test covers this.
 - Dependencies added: none.
+- Test amendment (disclosed): MAIL-01 in `apps/api/src/email.test.ts` failed in CI by chance. Its "no data values"
+  pattern `e-\d` matched a random release UUID (`…8dfe-58…`). The test now replaces UUIDs with `<id>` before applying
+  the same pattern. The assertion is otherwise unchanged.
