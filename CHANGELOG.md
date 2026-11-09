@@ -4,6 +4,8 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Security whitepaper (`docs/SECURITY_WHITEPAPER.md`) for security and procurement reviews. Every statement points to
+  where it is implemented, and gaps are listed with what to do meanwhile.
 - Fuller experiment reports (REP-04…07): the report and its PowerPoint now include:
   - QC;
   - pathway enrichment for every contrast, added on demand with the report's display thresholds and full

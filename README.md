@@ -257,7 +257,7 @@ docs              spec, architecture, plan, progress, ADRs
 - Conventions: [`CLAUDE.md`](CLAUDE.md) and `.claude/rules/`.
 
 - Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md). Report security
-  issues privately ([`SECURITY.md`](SECURITY.md)).
+  issues privately ([`SECURITY.md`](SECURITY.md)). For security reviews, see the [security whitepaper](docs/SECURITY_WHITEPAPER.md).
 
 ## Licence
 Apache License 2.0: see [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). The demo data is synthetic.

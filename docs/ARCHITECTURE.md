@@ -268,8 +268,10 @@ Spectronaut, MaxQuant. Have counsel confirm the container-separation pattern bef
 - Service accounts and personal access tokens (hashed, scoped, expiring) for API/SDK and MCP clients.
 - Publish/approve requires recent authentication (`max_age`), recorded in the audit row.
 - Secrets in AWS Secrets Manager (rotation for RDS); config in SSM Parameter Store.
-- KMS customer-managed keys for S3, S3 Tables, RDS; TLS 1.2+; security headers via `@fastify/helmet`;
-  rate limits via `@fastify/rate-limit`.
+- KMS customer-managed keys for S3, S3 Tables, RDS; TLS 1.2+.
+- Security headers are set by the CloudFront response-headers policy (`modules/cloudfront`), not by the API.
+  `@fastify/helmet` and `@fastify/rate-limit` were planned and not adopted. There is no rate limiting in the API:
+  use AWS WAF rate-based rules (see `docs/SECURITY_WHITEPAPER.md` §8).
 
 ## 11. AI architecture
 
