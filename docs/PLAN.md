@@ -507,3 +507,19 @@ Definition of done:
 - [x] Matrix generated and checked in `pnpm check`; templates written
 - [x] `pnpm check` exits 0
 
+
+## Phase 39 — Fuller experiment reports
+Status: in progress
+Goal: The report a scientist sends to the team covers the whole experiment: QC, pathway enrichment and dose-response,
+not only the volcano and top hits.
+Features: REP-04 … REP-07
+In scope: web only, built from existing endpoints (chart registry, query service, `/v1/enrichment`):
+- a QC section (QC panel of the protein-quantity release);
+- an enrichment section that runs on demand per contrast with the report's display thresholds and states the
+  collection, hit definition and method;
+- a dose-response section (counts per regulation class, the curves figure, top curves by FDR).
+Each section is added to the PowerPoint plan. Controls are not printed.
+Definition of done:
+- [ ] Slide-plan unit tests (REP-04…06) and the e2e test (REP-07) fail first
+- [ ] Sections on the page and in the PowerPoint
+- [ ] `pnpm check` exits 0; `pnpm e2e REP-0` passes; screenshot in artifacts/phase-39/
