@@ -4,6 +4,8 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Support bundle (SUP-01…02): Admin → Health → Download support bundle gives versions, migrations, health,
+  configuration switches and the last week's failures, with no secrets or personal data. The download is audited.
 - Usage analytics (USE-01…03): Admin → Usage shows active people, weekly activity, programs and people, with a CSV
   download. It is counted from the audit log, with nothing tracked or sent elsewhere.
 - SCIM 2.0 provisioning (SCIM-01…04):

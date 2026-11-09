@@ -1658,3 +1658,19 @@ Entry template:
 - Dependencies added: none.
 - Evidence: `pnpm check` ✓ (api 266), and `pnpm e2e USE-03` and `OPS-09` ✓ locally. The screenshot is
   `artifacts/phase-36/usage.png`.
+
+## 2026-11-09 — Phase 37: Support diagnostics bundle — done
+- Built:
+  - **Endpoint:** `GET /v1/admin/support-bundle` (system admins), audited as `support.bundle`. It contains:
+    - version and build, Node and Postgres versions;
+    - migrations applied and pending;
+    - the health report;
+    - a configuration summary from an allowlist (switches, counts and host names only);
+    - record counts;
+    - the last 7 days' failures: pipeline runs, channel deliveries, emails without addresses, rejected imports.
+  - **UI:** a "Download support bundle" button on Admin → Health.
+  - **Version:** the API reports 2.1.0-dev (it was a hard-coded 0.0.0), plus `APP_BUILD` when the deployment sets
+    it.
+- Tests: secrets (cookie secret, OIDC client secret, internal token, SMTP password, webhook URL) and personal data
+  never appear in the bundle.
+- Evidence: `pnpm check` ✓ (api 268), and `pnpm e2e SUP-02`, `ADM-03` and `OPS-09` ✓ locally.

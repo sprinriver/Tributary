@@ -123,6 +123,18 @@ Search updates as things change. After a bulk load or a restore, rebuild it with
 - **Collections never change:** import a newer source release as a new collection. Every import is audited.
 - **Demo:** the demo data includes "Demo modules (synthetic)", 20 invented modules.
 
+## Getting help: the support bundle
+**Admin → Health → Download support bundle** saves one JSON file to send to support. It contains:
+- versions;
+- database migrations;
+- the health checks;
+- which features are switched on (never their secrets);
+- record counts;
+- the last week's failures (pipeline runs, Slack/Teams and email deliveries, rejected imports).
+
+It contains no passwords, tokens, keys or webhook URLs, and no names or email addresses. Each download is recorded
+in the audit log.
+
 ## Usage
 **Admin → Usage** counts what happened, from the audit log and the registry, for the last 4 to 52 weeks:
 - active people;
