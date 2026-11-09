@@ -138,15 +138,13 @@ export async function supportBundle(
       },
       notification_deliveries: {
         count: failedDeliveries.length,
-        latest: failedDeliveries
-          .slice(0, LATEST)
-          .map((d) => ({
-            kind: d.kind,
-            event: d.event,
-            error: d.error,
-            attempts: d.attempts,
-            at: iso(d.updated_at),
-          })),
+        latest: failedDeliveries.slice(0, LATEST).map((d) => ({
+          kind: d.kind,
+          event: d.event,
+          error: d.error,
+          attempts: d.attempts,
+          at: iso(d.updated_at),
+        })),
       },
       emails: {
         count: failedEmails.length,
