@@ -216,6 +216,7 @@ module "api" {
   kms_key_arn                = local.common.kms_key_arn
   environment = merge(local.s3_env, local.db_env, {
     NODE_ENV             = "production"
+    TRUST_PROXY          = "2" # CloudFront and the load balancer
     API_HOST             = "0.0.0.0"
     TRIBUTARY_TENANT_ID  = local.tenant_id
     PUBLIC_URL           = local.app_url

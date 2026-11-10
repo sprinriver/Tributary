@@ -37,6 +37,7 @@ import { registerAiRoutes } from './routes/ai.ts';
 import { registerWebhookRoutes } from './routes/webhooks.ts';
 import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { registerEnrichmentRoutes } from './routes/enrichment.ts';
+import { registerRateLimit } from './rate-limit.ts';
 import { registerChemRoutes } from './routes/chem.ts';
 import { registerSelectivityRoutes } from './routes/selectivity.ts';
 import { registerNotificationRoutes } from './routes/notifications.ts';
@@ -98,6 +99,8 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
   if (!options.db) app.addHook('onClose', () => db.destroy());
 
   registerErrorHandler(app);
+  // Before authentication, for every route (health checks excepted).
+  registerRateLimit(app, config.rateLimit);
   // Clients often send `content-type: application/json` with no body (e.g. POST …/clone); treat it as no body.
   app.addContentTypeParser('application/json', { parseAs: 'string' }, (_request, body, done) => {
     const text = typeof body === 'string' ? body : body.toString('utf8');

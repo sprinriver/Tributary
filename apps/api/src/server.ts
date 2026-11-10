@@ -65,7 +65,8 @@ const app = buildApp({
   storage,
   runners,
   ingestQueue: new PgBossIngestQueue(boss),
-  server: { logger: true },
+  // The client address behind CloudFront and the load balancer (rate limiting, audit): trust the first N hops.
+  server: { logger: true, trustProxy: (_address: string, hop: number) => hop < config.trustProxyHops },
 });
 app.addHook('onClose', async () => {
   await boss.stop({ graceful: true });

@@ -575,15 +575,35 @@ Definition of done:
 - [x] `pnpm check` exits 0; `pnpm e2e SEL-03` passes; screenshot in artifacts/phase-42/; omics review
 
 ## Phase 43 — Selectivity table across compounds
-Status: in progress
+Status: done
 Goal: A program team sees every profiled compound side by side and picks the most selective ones.
 Features: SEL-04 … SEL-05
 In scope:
 - `GET /v1/selectivity?program_id&pec50_min&direction`: one row per compound and readable dose-response dataset,
-  built with the Phase 42 profile (no new computation). Rows are sorted by S(x), lowest first.
+  built with the Phase 42 profile (no new computation). Rows are grouped by dataset; within one, lowest S(x) first,
+  then inactive compounds (nothing regulated at the threshold).
 - A Selectivity page (Analysis menu) with the table, the same threshold and direction controls, and links to each
   compound's profile. Rows from different experiments are not directly comparable: the page says so.
 Definition of done:
-- [ ] SEL-04 API test and SEL-05 e2e fail first
-- [ ] Endpoint, contracts, page and menu entry
-- [ ] `pnpm check` exits 0; `pnpm e2e "SEL-0"` passes; screenshot in artifacts/phase-43/
+- [x] SEL-04 API test and SEL-05 e2e fail first
+- [x] Endpoint, contracts, page and menu entry
+- [x] `pnpm check` exits 0; `pnpm e2e "SEL-0"` passes; screenshot in artifacts/phase-43/
+
+## Phase 44 — API rate limiting
+Status: done
+Goal: Close the security whitepaper's rate-limiting gap without adding a dependency.
+Features: SEC-03
+In scope:
+- `apps/api/src/rate-limit.ts`: a fixed-window counter per key, in memory, that forgets finished windows.
+- An `onRequest` hook before authentication. The key is the hash of the bearer token or session cookie, else the
+  client address. Over the limit: 429 `rate_limited` with `Retry-After`. Health checks and verified in-process
+  calls are exempt.
+- Config: `RATE_LIMIT_PER_MINUTE` (default 600 in production, off elsewhere), `RATE_LIMIT_ANON_PER_MINUTE` (default
+  120) and `TRUST_PROXY` (number of proxy hops, so the client address is the real one behind CloudFront and the
+  load balancer).
+- The limit is per API process. With two replicas a client can make up to twice the limit. A WAF rule is still the
+  global limit; the docs say so.
+Definition of done:
+- [x] SEC-03 tests fail first
+- [x] Limiter, hook, config; whitepaper, ARCHITECTURE and ADMIN_GUIDE updated
+- [x] `pnpm check` exits 0

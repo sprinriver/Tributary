@@ -112,6 +112,9 @@ Tributary is installed in the customer's own AWS account from the Terraform modu
     evaluation; its unused movie-export encoder is left out.
   - **Testing:** every end-to-end test runs under the production policy in CI, and one test fails on any reported
     violation.
+- **Rate limiting:** the API limits requests per minute for each credential (default 600) and, for requests
+  without one, for each client address (default 120). Over the limit it answers 429 with `Retry-After`. The limit
+  applies before authentication, so guessing tokens is limited too.
 - **Emails** carry no experiment values: they link back to the app, where access is checked.
 
 ## 6. AI features (optional)
@@ -148,7 +151,7 @@ Tributary is installed in the customer's own AWS account from the Terraform modu
 
 | Gap | Meanwhile |
 |---|---|
-| No request rate limiting in the API | Add AWS WAF rate-based rules on CloudFront or the load balancer. |
+| Rate limiting is per API process, not global | The API limits each credential and each anonymous client address per minute (§5). With several replicas the effective limit is multiplied, so add AWS WAF rate-based rules for a global limit. |
 | No row-level security in PostgreSQL | Each installation serves one organisation in its own account. Access is checked in the API per program. |
 | No independent penetration test or SOC 2 report yet | Customers may run their own test against their installation. |
 | Electronic signatures (21 CFR 11.50, 11.200) are partly covered | See `docs/validation/PART11_CONTROLS.md`: re-authentication and audit cover part; signature manifestation is procedural. |

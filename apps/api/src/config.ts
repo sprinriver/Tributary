@@ -37,6 +37,10 @@ export interface ApiConfig {
   /** Personal email (Phase 34): EMAIL_TRANSPORT ses | smtp | none (default none: emails are not queued). */
   email: { transport: 'none' | 'ses' | 'smtp' | 'memory'; from: string; smtpUrl: string; sesRegion: string };
   sessionTtlHours: number;
+  /** Requests per minute per credential and per anonymous client address (Phase 44); perMinute 0 = off. */
+  rateLimit: { perMinute: number; anonymousPerMinute: number };
+  /** Proxy hops in front of the API (CloudFront + load balancer = 2), so the client address is the real one. */
+  trustProxyHops: number;
   groupRoleMap: GroupRoleMapping[];
   s3: S3Config;
   /** AI assistant (SPEC §11); `none`, the default, means no assistant. */
@@ -207,6 +211,12 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
       alphafoldUrl: env.ALPHAFOLD_URL ?? 'https://www.alphafold.ebi.ac.uk',
     },
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 12),
+    // On in production; off elsewhere unless set (tests and local e2e send bursts from one address).
+    rateLimit: {
+      perMinute: Number(env.RATE_LIMIT_PER_MINUTE ?? (production ? 600 : 0)),
+      anonymousPerMinute: Number(env.RATE_LIMIT_ANON_PER_MINUTE ?? 120),
+    },
+    trustProxyHops: Number(env.TRUST_PROXY ?? 0),
     reauthMaxAgeSeconds: Number(env.REAUTH_MAX_AGE_SECONDS ?? 900),
     s3: {
       endpoint: env.S3_ENDPOINT ?? (production ? undefined : 'http://localhost:8333'),

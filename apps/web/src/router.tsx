@@ -28,6 +28,7 @@ import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
 import { CompoundSearchPage, type CompoundSearchSearch } from './chem/CompoundSearchPage.tsx';
 import { QcPage, type QcSearch } from './qc/QcPage.tsx';
+import { SelectivityPage, type SelectivitySearch } from './results/SelectivityPage.tsx';
 import { TriagePage, type TriageSearch } from './triage/TriagePage.tsx';
 
 const str = (v: unknown) => (typeof v === 'string' && v !== '' ? v : undefined);
@@ -176,6 +177,16 @@ const qcRoute = createRoute({
     };
   },
 });
+const selectivityRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/selectivity',
+  component: SelectivityPage,
+  validateSearch: (search: Record<string, unknown>): SelectivitySearch => ({
+    ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+    ...(typeof search.pec50 === 'number' || str(search.pec50) ? { pec50: String(search.pec50) } : {}),
+    ...(search.dir === 'down' || search.dir === 'up' ? { dir: search.dir } : {}),
+  }),
+});
 const triageRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/triage',
@@ -258,6 +269,7 @@ export const router = createRouter({
     compareRoute,
     triageRoute,
     qcRoute,
+    selectivityRoute,
     viewsRoute,
     releaseRoute,
     runRoute,

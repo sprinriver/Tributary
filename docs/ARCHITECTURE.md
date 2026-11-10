@@ -274,8 +274,10 @@ Spectronaut, MaxQuant. Have counsel confirm the container-separation pattern bef
   also send (Phase 40).
   - **Policy:** no `unsafe-eval` and no inline scripts. Plotly's WebGL scatter is the strict, precompiled one.
     Mol*'s eval-based template helper is rewritten at build time, and its movie-export encoder is stubbed out.
-  `@fastify/helmet` and `@fastify/rate-limit` were planned and not adopted. There is no rate limiting in the API:
-  use AWS WAF rate-based rules (see `docs/SECURITY_WHITEPAPER.md` §8).
+  `@fastify/helmet` and `@fastify/rate-limit` were planned and not adopted.
+- Rate limiting (Phase 44) is built in, with no dependency (`apps/api/src/rate-limit.ts`): a per-minute limit per
+  credential, and per client address for requests without one. It is counted per API process, so AWS WAF
+  rate-based rules remain the global limit.
 
 ## 11. AI architecture
 

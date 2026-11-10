@@ -1811,3 +1811,32 @@ Entry template:
 - Not done: TPP (thermal proteome profiling) import. The TPP package's result-table format could not be read from
   here: Firecrawl's daily limit was reached, and Bioconductor and rdrr.io are blocked. Guessing a format is not
   allowed.
+
+## 2026-11-10 — Phase 43: Selectivity table across compounds — done
+- Built:
+  - **Endpoint:** `GET /v1/selectivity?program_id&pec50_min&direction`: one row per compound and readable
+    dose-response dataset, from the Phase 42 profile.
+  - **Page:** Analysis → Selectivity, with program, direction and threshold in the URL, and links to each
+    compound's profile.
+- Science review (omics-reviewer), all fixed:
+  - a compound with nothing regulated at the threshold is "inactive, not selective" and is not ranked first;
+  - rows are grouped by dataset and S(x) is only ordered within one; the caveat is shown above the table;
+  - target annotations are read per program (compound IDs are unique within a program only). This also fixes the
+    Phase 42 compound profile, which read annotations from every readable program;
+  - profile warnings (dose range, unclassified curves, no pEC50) are shown per row;
+  - several fitting tools for one compound are named; curves without a compound ID are counted in a note;
+  - a program picker, so "choose a program" can be acted on.
+- Test amendments (disclosed, each in its own commit): this phase's SEL-04 and SEL-05 tests, twice for wrong
+  assumptions about the fixture (EGFR annotation, the unclassified-curves flag) and once after the review.
+- Evidence: `pnpm check` ✓, `pnpm e2e "SEL-0|OPS-09"` ✓. Screenshot: `artifacts/phase-43/selectivity-table.png`.
+
+## 2026-11-10 — Phase 44: API rate limiting — done
+- Built: `apps/api/src/rate-limit.ts`, a fixed-window counter per key with no dependency.
+  - **Keys:** the hash of the bearer token or session cookie; else the client address.
+  - **Behaviour:** 429 `rate_limited` with `Retry-After`. It runs before authentication. Health checks and verified
+    in-process calls are exempt.
+  - **Config:** `RATE_LIMIT_PER_MINUTE` (600 in production, off elsewhere), `RATE_LIMIT_ANON_PER_MINUTE` (120),
+    `TRUST_PROXY` (set to 2 in the Terraform environment).
+- Limits: counted per API process, so a WAF rule is still the global limit. The whitepaper says so.
+- Not verified locally: the one-line Terraform change (CI's infra job validates it).
+- Dependencies added: none (this replaces the `@fastify/rate-limit` request).

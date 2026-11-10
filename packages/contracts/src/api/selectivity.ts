@@ -96,3 +96,55 @@ export const SelectivityResponseSchema = z
   })
   .meta({ id: 'SelectivityResponse' });
 export type SelectivityResponse = z.infer<typeof SelectivityResponseSchema>;
+
+export const SelectivityTableQuerySchema = z
+  .strictObject({
+    program_id: z.uuid().optional(),
+    pec50_min: z.coerce.number().min(3).max(12).default(6),
+    direction: z.enum(['both', 'down', 'up']).default('both'),
+  })
+  .meta({ id: 'SelectivityTableQuery' });
+
+/** One row per compound and profiling dataset, grouped by dataset (Phase 43, SEL-04). */
+export const SelectivityTableSchema = z
+  .object({
+    items: z.array(
+      z.object({
+        compound_id: z.string(),
+        program_id: z.uuid(),
+        release_id: z.uuid(),
+        dataset_name: z.string(),
+        experiment_id: z.uuid(),
+        experiment_name: z.string(),
+        experiment_date: z.string().nullable(),
+        program_code: z.string(),
+        method: z.string().nullable(),
+        tested: z.int(),
+        unclassified: z.int(),
+        regulated: z.int(),
+        regulated_down: z.int(),
+        regulated_up: z.int(),
+        regulated_without_pec50: z.int(),
+        /** Regulated in the chosen direction with pEC50 ≥ the threshold. */
+        s_regulated: z.int(),
+        s_score: z.number().nullable(),
+        /** ranked: something is regulated at the threshold; inactive: nothing is; no_score: nothing was tested. */
+        status: z.enum(['ranked', 'inactive', 'no_score']),
+        primary: z.object({ feature_id: z.string(), pec50: z.number() }).nullable(),
+        window_delta: z.number().nullable(),
+        window_note: z.string().nullable(),
+        /** Warnings from the profile (threshold or potencies outside the tested doses, unclassified curves…). */
+        flags: z.array(z.string()),
+      }),
+    ),
+    thresholds: z.object({
+      pec50_min: z.number(),
+      ec50_max_molar: z.number(),
+      direction: z.enum(['both', 'down', 'up']),
+    }),
+    /** Datasets not read, and why (never read partly). */
+    skipped: z.array(z.object({ experiment_name: z.string(), dataset_name: z.string(), reason: z.string() })),
+    notes: z.array(z.string()),
+  })
+  .meta({ id: 'SelectivityTable' });
+export type SelectivityTable = z.infer<typeof SelectivityTableSchema>;

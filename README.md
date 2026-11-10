@@ -153,6 +153,9 @@ in production (`NODE_ENV=production`) the required ones must be set, or the API 
 | `SEARCH_EMBEDDINGS` | | `none` (default), `local`, `voyage_4` or `bedrock_titan_v2` (see ADR 0020) |
 | `SEARCH_EMBEDDING_DIMS`, `SEARCH_MIN_SIMILARITY`, `VOYAGE_API_KEY` | | Embedding options |
 | `SESSION_TTL_HOURS` | | Browser session lifetime (default 12) |
+| `RATE_LIMIT_PER_MINUTE` | | Requests per minute per credential (default 600 in production, off elsewhere; 0 = off) |
+| `RATE_LIMIT_ANON_PER_MINUTE` | | Requests per minute per client address without a credential (default 120) |
+| `TRUST_PROXY` | | Proxy hops in front of the API, so client addresses are real (CloudFront + load balancer = 2) |
 | `AI_PROVIDER` | | `none` (default), `anthropic`, `bedrock` or `stub` (tests). See ADR 0022 |
 | `AI_MODEL`, `AI_MONTHLY_TOKEN_BUDGET` | | Model id (required for `bedrock`); monthly token budget (default 5,000,000) |
 | `ANTHROPIC_API_KEY` / `BEDROCK_REGION` | | Credentials for `anthropic`; region for `bedrock` (uses the task role) |
