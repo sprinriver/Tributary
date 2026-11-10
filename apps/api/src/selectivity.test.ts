@@ -27,26 +27,15 @@ describe('compound selectivity API', () => {
     t = await startTestApi({ s3: true, query: true });
     const program = await t.program('SEL');
     const other = await t.program('SEX');
-    const user = await t.user('sel-user', { [program]: 'contributor' });
-    token = user.token;
+    token = (await t.user('sel-user', { [program]: 'contributor' })).token;
     outsider = (await t.user('sel-outsider', { [other]: 'viewer' })).token;
     ({ version } = await publishedDaRelease(t, token, program, 'Selectivity A', CURVES));
-    const { tenant_id } = await t.db
-      .selectFrom('program')
-      .select('tenant_id')
-      .where('id', '=', program)
-      .executeTakeFirstOrThrow();
-    await t.db
-      .insertInto('target_annotation')
-      .values({
-        tenant_id,
-        created_by: user.id,
-        uniprot_accession: 'P04637',
-        gene_symbol: 'TP53',
-        key: 'primary_target',
-        value: 'CPD-000001',
-      })
-      .execute();
+    // Compound → target links are a reference dataset (as on the compound page's Targets table): TP53 (P04637) is
+    // CPD-000001's annotated primary target, KRAS (P01116) an off-target.
+    await publishedDaRelease(t, token, program, 'Selectivity targets', {
+      file: '../../reference/compound_targets.tsv',
+      importer: 'reference_target_annotation',
+    });
   }, 300_000);
   afterAll(() => t.close());
 
