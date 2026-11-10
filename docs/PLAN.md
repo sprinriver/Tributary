@@ -573,3 +573,17 @@ Definition of done:
 - [x] SEL-01 unit tests, SEL-02 API tests and SEL-03 e2e fail first
 - [x] Endpoint, contracts (OpenAPI regenerated), compound page section
 - [x] `pnpm check` exits 0; `pnpm e2e SEL-03` passes; screenshot in artifacts/phase-42/; omics review
+
+## Phase 43 — Selectivity table across compounds
+Status: in progress
+Goal: A program team sees every profiled compound side by side and picks the most selective ones.
+Features: SEL-04 … SEL-05
+In scope:
+- `GET /v1/selectivity?program_id&pec50_min&direction`: one row per compound and readable dose-response dataset,
+  built with the Phase 42 profile (no new computation). Rows are sorted by S(x), lowest first.
+- A Selectivity page (Analysis menu) with the table, the same threshold and direction controls, and links to each
+  compound's profile. Rows from different experiments are not directly comparable: the page says so.
+Definition of done:
+- [ ] SEL-04 API test and SEL-05 e2e fail first
+- [ ] Endpoint, contracts, page and menu entry
+- [ ] `pnpm check` exits 0; `pnpm e2e "SEL-0"` passes; screenshot in artifacts/phase-43/

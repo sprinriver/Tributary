@@ -115,4 +115,30 @@ describe('compound selectivity API', () => {
     const none = (await get('/v1/compounds/CPD-999999/selectivity')).json() as Json;
     expect(none.experiments).toEqual([]);
   });
+
+  it('SEL-04: the selectivity table has one row per compound and profiling dataset, most selective first', async () => {
+    const res = await get('/v1/selectivity?pec50_min=6');
+    expect(res.statusCode, res.body).toBe(200);
+    const body = res.json() as Json;
+    expect(body.items.map((x: Json) => x.compound_id)).toEqual(['CPD-000001', 'CPD-000002']);
+    expect(body.items[1]).toMatchObject({
+      release_id: releaseB,
+      dataset_name: 'CPD-000002 curves',
+      experiment_name: 'Selectivity A',
+      method: 'CurveCurator',
+      tested: 138,
+      regulated: 16,
+      regulated_down: 11,
+      regulated_up: 5,
+    });
+    const first = body.items[0];
+    expect(first.s_score).toBeCloseTo(first.s_regulated / 138, 10);
+    // TP53 is annotated for CPD-000001 only, and not regulated; CPD-000002 has no annotation.
+    expect(first.window_note).toBe('No annotated primary target is regulated in this experiment.');
+    expect(body.items[1].window_note).toBe('No primary target is annotated for this compound.');
+    expect(body.thresholds).toEqual({ pec50_min: 6, ec50_max_molar: 1e-6, direction: 'both' });
+    const down = (await get('/v1/selectivity?direction=down')).json() as Json;
+    expect(down.items[0].s_regulated).toBeLessThanOrEqual(first.s_regulated);
+    expect(((await get('/v1/selectivity', outsider)).json() as Json).items).toEqual([]);
+  });
 });
