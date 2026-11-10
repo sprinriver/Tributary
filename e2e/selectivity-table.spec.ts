@@ -17,12 +17,14 @@ test('SEL-05: the Selectivity page ranks profiled compounds and opens a compound
   await page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Selectivity' }).click();
   await expect(page.getByRole('heading', { level: 1, name: 'Selectivity' })).toBeVisible();
   const table = page.getByRole('table', { name: 'Compound selectivity' });
-  const row = table.getByRole('row', { name: new RegExp(name) });
+  // Rows are grouped under a header per dataset; the compound's row is labelled.
+  const row = table.getByRole('row', { name: `${CURVE_OPTIONS.compound_id} in ${name}` });
   await expect(row).toContainText(CURVE_OPTIONS.compound_id, { timeout: 30_000 });
   await expect(row).toContainText('16 / 138');
   await expect(page.getByRole('main')).toContainText(
     'apparent potency in each assay, not a binding constant',
   );
+  await expect(page.getByRole('main')).toContainText('Compare S(x) only within a dataset');
   await page.screenshot({ path: `${SHOTS}/selectivity-table.png`, fullPage: true });
 
   await row.getByRole('link', { name: CURVE_OPTIONS.compound_id }).click();
