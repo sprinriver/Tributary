@@ -4,6 +4,19 @@ Internal planning note (2026-11-04). The product is feature-rich: 115 of 116 tra
 green. What it lacks are mostly the things a buyer's legal, security and IT teams ask for, plus a few features
 that come up in every evaluation.
 
+**Status on 2026-11-10** (see `docs/PROGRESS.md` for detail):
+- **Done from §2:** reports (2), notifications (3), Excel manifests (4), SCIM (6), usage analytics (9). Also built:
+  compound selectivity profiles and table, QC per condition, a Content-Security-Policy and API rate limiting.
+- **Done from §3–5:** the security whitepaper, prepared questionnaire answers
+  (`docs/sales/SECURITY_QUESTIONNAIRE.md`), the validation pack, the support bundle, a datasheet
+  (`docs/sales/DATASHEET.md`) and a category comparison (`docs/sales/COMPARISON.md`).
+- **Still open:**
+  - the hosted demo (1): needs a hosting account;
+  - ELN connectors (5): need the choice of system;
+  - STRING networks (7) and TPP views (8): need network access to the format documentation, or the formats pasted;
+  - PTM site-level data (8);
+  - everything in §1 and §4, and the penetration test.
+
 Rank: **P0** blocks a sale, **P1** shows up in most evaluations, **P2** differentiates or scales.
 
 ## 1. Decisions only you can make (P0, before any sales conversation)

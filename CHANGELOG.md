@@ -4,6 +4,7 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Sales documents in `docs/sales/`: a datasheet, a category comparison and prepared security-questionnaire answers.
 - Selectivity table (SEL-04…05): Analysis → Selectivity lists every profiled compound, grouped by profiling
   dataset, with S(x), the selectivity window and warnings. Inactive compounds are not ranked as selective.
 - API rate limiting (SEC-03): per-minute limits per credential and per anonymous client address, answered with 429
