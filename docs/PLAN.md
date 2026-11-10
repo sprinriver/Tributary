@@ -555,7 +555,7 @@ Definition of done:
 - [x] `pnpm check` exits 0; `pnpm e2e "QCD-05|REP-07|SEC-02"` passes
 
 ## Phase 42 — Compound selectivity profile
-Status: in progress
+Status: done
 Goal: Answer the chemoproteomics question competitors' registries and ELNs do not answer from proteomics data: how
 selective is this compound, and what else does it engage?
 Features: SEL-01 … SEL-03
@@ -570,6 +570,6 @@ In scope:
 - **Display:** a ranked figure with a table alternative.
 - **Science rules:** counting and selection only, so no statistics in TypeScript beyond the rules.
 Definition of done:
-- [ ] SEL-01 unit tests, SEL-02 API tests and SEL-03 e2e fail first
-- [ ] Endpoint, contracts (OpenAPI regenerated), compound page section
-- [ ] `pnpm check` exits 0; `pnpm e2e SEL-03` passes; screenshot in artifacts/phase-42/; omics review
+- [x] SEL-01 unit tests, SEL-02 API tests and SEL-03 e2e fail first
+- [x] Endpoint, contracts (OpenAPI regenerated), compound page section
+- [x] `pnpm check` exits 0; `pnpm e2e SEL-03` passes; screenshot in artifacts/phase-42/; omics review

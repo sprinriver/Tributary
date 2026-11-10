@@ -32,6 +32,7 @@ class Experiment(BaseModel):
             pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         ),
     ]
+    dataset_name: str
     method: str | None
 
 
@@ -44,13 +45,22 @@ class VersionId(RootModel[UUID]):
     ]
 
 
+class DoseRange(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    pec50_low: float
+    pec50_high: float
+
+
 class SScore(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
     pec50_min: float
     ec50_max_molar: float
-    engaged: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    direction: Literal["both", "down", "up"]
+    regulated: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     tested: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
     score: float | None
 
@@ -91,6 +101,8 @@ class Protein(BaseModel):
     regulation: str
     fdr: float | None
     known: Literal["primary_target", "off_target"] | None
+    ambiguous: bool
+    outside_dose_range: bool
 
 
 class Profile(BaseModel):
@@ -98,11 +110,17 @@ class Profile(BaseModel):
         extra="forbid",
     )
     tested: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
-    engaged: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
-    engaged_without_pec50: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    unclassified: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    regulated: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    regulated_up: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    regulated_down: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    regulated_without_pec50: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    duplicates: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    dose_range: DoseRange | None
     s_score: SScore
     window: Window
     proteins: list[Protein]
+    notes: list[str]
 
 
 class Figure(BaseModel):

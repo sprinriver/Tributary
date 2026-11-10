@@ -40,6 +40,9 @@
                 "format": "uuid",
                 "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
               },
+              "dataset_name": {
+                "type": "string"
+              },
               "method": {
                 "type": [
                   "string",
@@ -54,6 +57,7 @@
               "experiment_date",
               "program_code",
               "release_id",
+              "dataset_name",
               "method"
             ],
             "additionalProperties": false
@@ -81,15 +85,58 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 },
-                "engaged": {
+                "unclassified": {
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
                 },
-                "engaged_without_pec50": {
+                "regulated": {
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
+                },
+                "regulated_up": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "regulated_down": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "regulated_without_pec50": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "duplicates": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "dose_range": {
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "pec50_low": {
+                          "type": "number"
+                        },
+                        "pec50_high": {
+                          "type": "number"
+                        }
+                      },
+                      "required": [
+                        "pec50_low",
+                        "pec50_high"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "s_score": {
                   "type": "object",
@@ -100,7 +147,15 @@
                     "ec50_max_molar": {
                       "type": "number"
                     },
-                    "engaged": {
+                    "direction": {
+                      "type": "string",
+                      "enum": [
+                        "both",
+                        "down",
+                        "up"
+                      ]
+                    },
+                    "regulated": {
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991
@@ -120,7 +175,8 @@
                   "required": [
                     "pec50_min",
                     "ec50_max_molar",
-                    "engaged",
+                    "direction",
+                    "regulated",
                     "tested",
                     "score"
                   ],
@@ -235,6 +291,12 @@
                             "type": "null"
                           }
                         ]
+                      },
+                      "ambiguous": {
+                        "type": "boolean"
+                      },
+                      "outside_dose_range": {
+                        "type": "boolean"
                       }
                     },
                     "required": [
@@ -243,19 +305,33 @@
                       "pec50",
                       "regulation",
                       "fdr",
-                      "known"
+                      "known",
+                      "ambiguous",
+                      "outside_dose_range"
                     ],
                     "additionalProperties": false
+                  }
+                },
+                "notes": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
                   }
                 }
               },
               "required": [
                 "tested",
-                "engaged",
-                "engaged_without_pec50",
+                "unclassified",
+                "regulated",
+                "regulated_up",
+                "regulated_down",
+                "regulated_without_pec50",
+                "duplicates",
+                "dose_range",
                 "s_score",
                 "window",
-                "proteins"
+                "proteins",
+                "notes"
               ],
               "additionalProperties": false
             },

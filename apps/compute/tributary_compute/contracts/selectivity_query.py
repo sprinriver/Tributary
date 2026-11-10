@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 from uuid import UUID
-from typing import Annotated
+from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, RootModel
 
 
@@ -11,12 +11,13 @@ class SelectivityQuery(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    version_id: Annotated[
+    release_id: Annotated[
         UUID | None,
         Field(
             pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         ),
     ] = None
+    direction: Literal["both", "down", "up"]
     pec50_min: Annotated[float, Field(ge=3.0, le=12.0)]
 
 

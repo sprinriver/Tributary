@@ -4,8 +4,13 @@ import { z } from 'zod';
 
 export const SelectivityQuerySchema = z
   .strictObject({
-    /** The profiling experiment (an experiment version); default: the most recent one with this compound. */
-    version_id: z.uuid().optional(),
+    /** The profiling dataset (a dose-response release); default: the most recent one with this compound. */
+    release_id: z.uuid().optional(),
+    /**
+     * Which regulation calls count: both, or one direction (e.g. down for competition binding, where binding shows as
+     * a decrease).
+     */
+    direction: z.enum(['both', 'down', 'up']).default('both'),
     /** S(x) threshold as pEC50 (−log10 EC50 in M): 6 = 1 µM. */
     pec50_min: z.coerce.number().min(3).max(12).default(6),
   })
@@ -18,27 +23,38 @@ const Figure = z.object({
 });
 
 export const SelectivityProfileSchema = z.object({
-  /** Proteins with a fitted curve for the compound in this experiment. */
+  /** Proteins (features) whose curve the tool classed: up, down or not. */
   tested: z.int(),
-  /** Proteins the source tool called regulated (up or down). */
-  engaged: z.int(),
-  engaged_without_pec50: z.int(),
+  /** Curves the tool left without a class (not counted as tested). */
+  unclassified: z.int(),
+  /** Proteins the tool called regulated (up or down), whatever the direction chosen. */
+  regulated: z.int(),
+  regulated_up: z.int(),
+  regulated_down: z.int(),
+  /** Regulated in the chosen direction but without a pEC50 (never in S). */
+  regulated_without_pec50: z.int(),
+  /** Features with more than one curve (each counted once, with its most potent regulated curve). */
+  duplicates: z.int(),
+  /** pEC50 span of the tested doses; null when the doses are unknown. */
+  dose_range: z.object({ pec50_low: z.number(), pec50_high: z.number() }).nullable(),
   s_score: z.object({
     pec50_min: z.number(),
     ec50_max_molar: z.number(),
-    engaged: z.int(),
+    direction: z.enum(['both', 'down', 'up']),
+    regulated: z.int(),
     tested: z.int(),
-    /** engaged / tested; null when nothing was tested. */
+    /** regulated (chosen direction, pEC50 ≥ threshold) / tested; null when nothing was tested. */
     score: z.number().nullable(),
   }),
   window: z.object({
     primary: z.object({ feature_id: z.string(), pec50: z.number() }).nullable(),
     next: z.object({ feature_id: z.string(), pec50: z.number() }).nullable(),
-    /** Primary target pEC50 − most potent other engaged protein's pEC50 (log units). */
+    /** Primary target pEC50 − most potent other regulated protein's pEC50 (log units). */
     delta: z.number().nullable(),
     /** Why there is no window. */
     note: z.string().nullable(),
   }),
+  /** Regulated proteins in the chosen direction, most potent first. */
   proteins: z.array(
     z.object({
       feature_id: z.string(),
@@ -47,14 +63,19 @@ export const SelectivityProfileSchema = z.object({
       regulation: z.string(),
       fdr: z.number().nullable(),
       known: z.enum(['primary_target', 'off_target']).nullable(),
+      /** A protein group of several accessions. */
+      ambiguous: z.boolean(),
+      outside_dose_range: z.boolean(),
     }),
   ),
+  /** What was counted apart or flagged (unclassified curves, duplicates, dose range, ambiguous groups). */
+  notes: z.array(z.string()),
 });
 
 export const SelectivityResponseSchema = z
   .object({
     compound_id: z.string(),
-    /** Readable profiling experiments with curves for this compound, newest first. */
+    /** Readable profiling datasets with curves for this compound (one entry per dataset), newest first. */
     experiments: z.array(
       z.object({
         version_id: z.uuid(),
@@ -63,12 +84,13 @@ export const SelectivityResponseSchema = z
         experiment_date: z.string().nullable(),
         program_code: z.string(),
         release_id: z.uuid(),
+        dataset_name: z.string(),
         method: z.string().nullable(),
       }),
     ),
     version_id: z.uuid().nullable(),
     profile: SelectivityProfileSchema.nullable(),
-    /** Engaged proteins ranked by pEC50 (Plotly figure JSON; the page renders it, it computes nothing). */
+    /** Regulated proteins ranked by pEC50 (Plotly figure JSON; the page renders it, it computes nothing). */
     figure: Figure.nullable(),
     provenance: z.object({ release_id: z.uuid().nullable(), notes: z.array(z.string()) }),
   })

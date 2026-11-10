@@ -4,6 +4,14 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Compound selectivity (SEL-01…03): a compound page shows, per profiling experiment:
+  - proteins tested and regulated;
+  - an S(x) score at a chosen potency;
+  - the selectivity window against annotated primary targets;
+  - a ranked potency plot with a table.
+
+  You choose which regulation direction counts, and caveats (assay design, dose range, unclassified curves) are
+  stated.
 - QC CVs per condition (QCD-04…05): when the sample sheet records conditions, the QC panel shows replicate CVs
   within each condition. Imputed values no longer count as quantified.
 - Fixed: QC panels of more than 200 proteins failed to compute; group summaries are now sent in batches.

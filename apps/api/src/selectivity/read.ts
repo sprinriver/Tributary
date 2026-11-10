@@ -6,7 +6,7 @@ import type { ApiConfig } from '../config.ts';
 import { callQueryService } from '../datasets/query-client.ts';
 import { HttpError } from '../errors.ts';
 import { resolveSource } from '../query/resolve.ts';
-import type { CurveRow, KnownRole } from './profile.ts';
+import type { CurveRow, Known, KnownRole } from './profile.ts';
 
 /** Curves read for the experiments list (all releases) and for one experiment. */
 const MAX_ROWS = 500_000;
@@ -41,6 +41,25 @@ async function query(deps: Deps, releaseIds: string[], compoundId: string, selec
   return result.rows;
 }
 
+/** One curve of the compound in a release (to know whether it profiles the compound), or null. */
+async function firstCurve(deps: Deps, releaseId: string, compoundId: string) {
+  const source = await resolveSource(deps.db, { releaseIds: [releaseId] }, null);
+  if (!source) return null;
+  const result = QueryResultSchema.parse(
+    await callQueryService(deps.fetch, deps.config, '/internal/query', {
+      spec: {
+        source: { releaseIds: [releaseId] },
+        select: ['method'],
+        where: { combinator: 'and', rules: [{ field: 'compound_id', operator: '=', value: compoundId }] },
+      },
+      source,
+      joins: [],
+      all_rows: 1,
+    }),
+  );
+  return result.rows[0] ?? null;
+}
+
 /** Readable experiments (latest published version, latest published dose-response release) profiling the compound. */
 export async function profilingExperiments(
   deps: Deps,
@@ -56,6 +75,7 @@ export async function profilingExperiments(
     .innerJoin('program as p', 'p.id', 'e.program_id')
     .select([
       'r.id as release_id',
+      'd.name as dataset_name',
       'v.id as version_id',
       'e.id as experiment_id',
       'e.name as experiment_name',
@@ -78,21 +98,17 @@ export async function profilingExperiments(
     .orderBy('r.id', 'desc')
     .execute();
   if (releases.length === 0) return [];
-  const rows =
-    (await query(
-      deps,
-      releases.map((r) => r.release_id),
-      compoundId,
-      ['experiment_version_id', 'method'],
-    )) ?? [];
+  // Per release, not per version: one version can hold a dose-response dataset per compound.
   const methods = new Map<string, string | null>();
-  for (const r of rows)
-    methods.set(String(r.experiment_version_id), r.method == null ? null : String(r.method));
+  for (const r of releases) {
+    const first = await firstCurve(deps, r.release_id, compoundId);
+    if (first) methods.set(r.release_id, first.method == null ? null : String(first.method));
+  }
   // Newest first: experiment date, else creation.
   const when = (r: (typeof releases)[number]) => iso(r.experiment_date) ?? iso(r.created_at) ?? '';
   return releases
-    .filter((r) => methods.has(r.version_id))
-    .sort((a, b) => when(b).localeCompare(when(a)) || b.version_id.localeCompare(a.version_id))
+    .filter((r) => methods.has(r.release_id))
+    .sort((a, b) => when(b).localeCompare(when(a)) || b.release_id.localeCompare(a.release_id))
     .map((r) => ({
       version_id: r.version_id,
       experiment_id: r.experiment_id,
@@ -100,7 +116,8 @@ export async function profilingExperiments(
       experiment_date: iso(r.experiment_date),
       program_code: r.program_code,
       release_id: r.release_id,
-      method: methods.get(r.version_id) ?? null,
+      dataset_name: r.dataset_name,
+      method: methods.get(r.release_id) ?? null,
     }));
 }
 
@@ -116,6 +133,7 @@ export async function curvesOf(deps: Deps, releaseId: string, compoundId: string
       'pec50',
       'regulation',
       'fdr',
+      'doses_molar',
     ])) ?? [];
   return rows.map((r) => ({
     feature_id: String(r.feature_id),
@@ -124,6 +142,7 @@ export async function curvesOf(deps: Deps, releaseId: string, compoundId: string
     pec50: num(r.pec50),
     regulation: String(r.regulation ?? ''),
     fdr: num(r.fdr),
+    doses_molar: r.doses_molar,
   }));
 }
 
@@ -136,15 +155,15 @@ export async function knownTargets(
   deps: Deps,
   readable: string[] | null,
   compoundId: string,
-): Promise<Map<string, KnownRole>> {
-  const out = new Map<string, KnownRole>();
+): Promise<Known> {
+  const out: Known = { accessions: new Map(), genes: new Map() };
   const source = await resolveSource(deps.db, { kind: 'target_annotation', scope: {} }, readable);
   if (!source || ('releases' in source && source.releases.length === 0)) return out;
   const result = QueryResultSchema.parse(
     await callQueryService(deps.fetch, deps.config, '/internal/query', {
       spec: {
         source: { kind: 'target_annotation', scope: {} },
-        select: ['uniprot_accession', 'key'],
+        select: ['uniprot_accession', 'gene_symbol', 'key'],
         where: {
           combinator: 'and',
           rules: [
@@ -158,13 +177,26 @@ export async function knownTargets(
       all_rows: MAX_ROWS,
     }),
   );
+  // A protein annotated both ways counts as a primary target.
+  const put = (map: Map<string, KnownRole>, key: string, role: KnownRole) => {
+    if (key && map.get(key) !== 'primary_target') map.set(key, role);
+  };
   for (const r of result.rows) {
-    const id = String(r.uniprot_accession ?? '')
-      .trim()
-      .replace(/-\d+$/, '');
-    if (!id) continue;
-    // A protein annotated both ways counts as a primary target.
-    if (out.get(id) !== 'primary_target') out.set(id, r.key as KnownRole);
+    const role = r.key as KnownRole;
+    put(
+      out.accessions,
+      String(r.uniprot_accession ?? '')
+        .trim()
+        .replace(/-\d+$/, ''),
+      role,
+    );
+    put(
+      out.genes,
+      String(r.gene_symbol ?? '')
+        .trim()
+        .toUpperCase(),
+      role,
+    );
   }
   return out;
 }

@@ -21,7 +21,7 @@ export function registerSelectivityRoutes(
     const principal = requirePrincipal(request);
     const compoundId = request.params.id;
     const experiments = await profilingExperiments(deps, readablePrograms(principal), compoundId);
-    const chosen = experiments.find((e) => e.version_id === query.version_id) ?? experiments[0];
+    const chosen = experiments.find((e) => e.release_id === query.release_id) ?? experiments[0];
     if (!chosen)
       return respond(SelectivityResponseSchema, {
         compound_id: compoundId,
@@ -34,19 +34,21 @@ export function registerSelectivityRoutes(
     const profile = selectivityProfile(
       await curvesOf(deps, chosen.release_id, compoundId),
       await knownTargets(deps, readablePrograms(principal), compoundId),
-      query.pec50_min,
+      { pec50Min: query.pec50_min, direction: query.direction },
     );
     const notes = [
-      `pEC50 (−log10 EC50 in M) is ${chosen.method ?? 'the source tool'}'s apparent cellular potency, not a binding constant (Kd): S(x) here is not comparable with Kd-based panel scores.`,
-      'Proteins tested: every protein with a curve for this compound in this experiment. Engaged: the tool’s regulation call (up or down). Potencies are never pooled across experiments.',
-      'S(x) = engaged proteins with pEC50 ≥ x / proteins tested (after Karaman et al. 2008, Nat Biotechnol 26:127, doi:10.1038/nbt1358).',
-      'Selectivity window = pEC50 of the most potent engaged annotated primary target − pEC50 of the most potent other engaged protein (annotated off-targets included). Annotations: the target-annotation datasets you can read, as in the Targets table.',
-      ...(profile.engaged_without_pec50
+      `pEC50 (−log10 EC50 in M) is ${chosen.method ?? 'the source tool'}'s apparent potency in this assay, not a binding constant (Kd): S(x) here is not comparable with Kd-based panel scores.`,
+      'Tested: proteins whose curve the tool classed (up, down or not) in this dataset. Regulated: the tool’s call. Potencies are never pooled across experiments.',
+      'Whether a regulated curve means target engagement depends on the assay: in competition binding (e.g. affinity beads) binding shows as a decrease, so count "down" only; in thermal profiling both directions can mean engagement; in expression proteomics most calls are downstream effects.',
+      `S(x) = proteins regulated (${query.direction === 'both' ? 'up or down' : `${query.direction} only`}) with pEC50 ≥ x / proteins tested (after Karaman et al. 2008, Nat Biotechnol 26:127, doi:10.1038/nbt1358).`,
+      'Selectivity window = pEC50 of the most potent regulated annotated primary target − pEC50 of the most potent other regulated protein (annotated off-targets included); negative means another protein is more potent. Annotations: the target-annotation datasets you can read, as in the Targets table.',
+      ...(profile.regulated_without_pec50
         ? [
-            `${profile.engaged_without_pec50} engaged protein(s) have no pEC50: they do not count towards S(x).`,
+            `${profile.regulated_without_pec50} regulated protein(s) have no pEC50: they do not count towards S(x).`,
           ]
         : []),
     ];
+
     return respond(SelectivityResponseSchema, {
       compound_id: compoundId,
       experiments,

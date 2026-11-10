@@ -289,6 +289,27 @@ A protein page has a **3D model** section.
   - **Unreadable structures:** registered SMILES that RDKit cannot read are listed under the results so the registry
     can be corrected.
 
+## Compound selectivity
+A compound page has a **Selectivity** section when a dose-response experiment you can read has curves for it
+(for example, from CurveCurator).
+- **One experiment at a time:** pick the profiling experiment and dataset. Potencies are never pooled across
+  experiments.
+- **Tested and regulated:**
+  - **Tested:** proteins whose curve the tool classed as up, down or not.
+  - **Regulated:** the tool's own up/down call.
+  - Curves the tool left without a class are listed but not counted.
+- **Regulation counted:** choose up and down, down only or up only. In competition binding (e.g. affinity beads),
+  binding shows as a decrease: count **down only**. In expression proteomics, most calls are downstream effects.
+- **S(x):** the number of regulated proteins with EC50 at or below the threshold, divided by the proteins tested.
+  Lower is more selective. It follows Karaman et al. 2008, but uses the tool's apparent potency in this assay, not
+  a Kd. The page warns when the threshold or a potency lies outside the tested doses.
+- **Selectivity window:** the pEC50 of the annotated primary target minus that of the most potent other regulated
+  protein. If there is no window, the page says why. Annotations come from the target-annotation datasets, as in
+  the Targets table.
+- **Figure and table:** the figure ranks regulated proteins by pEC50, and the table lists all of them. Protein
+  groups and potencies outside the dose range are flagged.
+- **Sharing:** the experiment, direction and threshold are in the address, so you can share the view.
+
 ## Email notifications
 Under your name (top right) → **Email notifications**, choose what reaches your inbox:
 - new hits for items you watch;

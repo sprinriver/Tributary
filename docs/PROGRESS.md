@@ -1775,3 +1775,39 @@ Entry template:
   review fixes, the full e2e suite (65) passed.
 - Not done: no screenshot for this phase. The QC panel looks as before, with one box per condition in the CV panel.
 - Dependencies added: none.
+
+## 2026-11-10 — Phase 42: Compound selectivity profile — done
+- Why: competitors' registries and ELNs do not answer "how selective is this compound, and what else does it hit?"
+  from proteomics data. Tributary holds the dose-response curves needed to answer it.
+- Built:
+  - **Endpoint:** `GET /v1/compounds/{id}/selectivity?release_id&pec50_min&direction`, computed per readable
+    dose-response dataset (one profiling experiment). It reports:
+    - proteins tested (classed by the tool) and regulated (up, down);
+    - S(x) after Karaman et al. 2008;
+    - the selectivity window against annotated primary targets;
+    - a ranked figure and provenance notes.
+  - **Compound page:** a Selectivity section with dataset, direction and threshold in the URL.
+- Science review (omics-reviewer), all fixed:
+  - **P0:** an experiment with one dose-response dataset per compound could profile the wrong dataset. Selection is
+    now per release.
+  - **P1s:**
+    - curves without a class are no longer counted as tested;
+    - a direction choice, with notes on what regulation means per assay design;
+    - correct notes when a target is regulated but has no pEC50;
+    - gene-level features match annotations by gene symbol.
+  - **P2s:**
+    - ambiguous protein groups flagged;
+    - duplicate curves counted and noted;
+    - "apparent potency in this assay" (not "cellular");
+    - thresholds and potencies outside the tested dose range flagged;
+    - figure symbols, threshold and truncation labelled;
+    - EC50 unit rounding.
+- Found from the screenshot: compound-to-target links are a reference dataset (as the compound page's Targets table
+  reads them), not the `target_annotation` table. The test setup first inserted into the table, which hid the bug.
+- Test amendments (disclosed, each in its own commit): this phase's SEL-02 setup, and SEL-01…03 tightened after the
+  review. The shared test helper gained importer options and extra datasets per version.
+- Evidence: `pnpm check` ✓, and `pnpm e2e "SEL-03|RES-04|SEC-02"` ✓. Screenshot: `artifacts/phase-42/selectivity.png`.
+- Dependencies added: none.
+- Not done: TPP (thermal proteome profiling) import. The TPP package's result-table format could not be read from
+  here: Firecrawl's daily limit was reached, and Bioconductor and rdrr.io are blocked. Guessing a format is not
+  allowed.

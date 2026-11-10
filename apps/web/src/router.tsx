@@ -109,12 +109,13 @@ const compoundRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/compounds/$id',
   component: CompoundPage,
-  // sel_version and pec50: the selectivity section's experiment and threshold (shareable).
+  // sel_release, pec50 and sel_dir: the selectivity section's dataset, threshold and direction (shareable).
   validateSearch: (
     search: Record<string, unknown>,
-  ): { program_id?: string; sel_version?: string; pec50?: string } => ({
+  ): { program_id?: string; sel_release?: string; pec50?: string; sel_dir?: string } => ({
     ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
-    ...(str(search.sel_version) ? { sel_version: str(search.sel_version)! } : {}),
+    ...(str(search.sel_release) ? { sel_release: str(search.sel_release)! } : {}),
+    ...(str(search.sel_dir) ? { sel_dir: str(search.sel_dir)! } : {}),
     // The router parses `pec50=7` as a number.
     ...(typeof search.pec50 === 'number' || str(search.pec50) ? { pec50: String(search.pec50) } : {}),
   }),
