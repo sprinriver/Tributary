@@ -35,8 +35,15 @@ export async function publishedDaRelease(
     /** Importer options (e.g. compound and doses for CurveCurator). */
     importOptions?: Record<string, unknown>;
     experimentDate?: string;
+    /** More files of the same version, each imported into its own dataset (e.g. one per compound). */
+    extra?: {
+      file: string;
+      importer: string;
+      datasetName: string;
+      importOptions?: Record<string, unknown>;
+    }[];
   } = {},
-): Promise<{ version: string; release: string }> {
+): Promise<{ version: string; release: string; extra: string[] }> {
   const call = (method: 'POST' | 'PUT', url: string, payload: Json) =>
     t.call(token, { method, url, payload, headers: { 'x-change-reason': 'test' } });
   const created = (
@@ -53,25 +60,33 @@ export async function publishedDaRelease(
   const contrasts = (
     await call('PUT', `/v1/versions/${version}/contrasts`, { contrasts: [CONTRAST] })
   ).json() as Json;
+  const upload = async (file: string, bytes: Buffer, name = basename(file)) => {
+    const started = (
+      await call('POST', '/v1/files/uploads', {
+        experiment_version_id: version,
+        name,
+        size_bytes: bytes.length,
+        role: 'processed',
+      })
+    ).json() as Json;
+    const put = await fetch(started.parts[0].url, { method: 'PUT', body: bytes });
+    await call('POST', `/v1/files/${started.file.id}/complete`, {
+      parts: [{ part_number: 1, etag: put.headers.get('etag') }],
+    });
+    return started.file.id as string;
+  };
   const file = options.file ?? 'toptable.tsv';
-  const bytes = options.bytes ?? readFileSync(resolve(ONC_DIA_05, file));
-  const started = (
-    await call('POST', '/v1/files/uploads', {
-      experiment_version_id: version,
-      name: basename(file),
-      size_bytes: bytes.length,
-      role: 'processed',
-    })
-  ).json() as Json;
-  const put = await fetch(started.parts[0].url, { method: 'PUT', body: bytes });
-  await call('POST', `/v1/files/${started.file.id}/complete`, {
-    parts: [{ part_number: 1, etag: put.headers.get('etag') }],
-  });
+  const fileId = await upload(file, options.bytes ?? readFileSync(resolve(ONC_DIA_05, file)));
+  const extraFiles: string[] = [];
+  for (const [i, x] of (options.extra ?? []).entries())
+    extraFiles.push(
+      await upload(x.file, readFileSync(resolve(ONC_DIA_05, x.file)), `extra-${i}-${basename(x.file)}`),
+    );
   await t.drainIngest();
   const published = await call('POST', `/v1/versions/${version}/publish`, { reason: 'ready' });
   if (published.statusCode !== 200) throw new Error(published.body);
   const imported = await call('POST', '/v1/imports', {
-    file_id: started.file.id,
+    file_id: fileId,
     importer: options.importer ?? 'limma_toptable',
     ...(options.importOptions ? { options: options.importOptions } : {}),
     ...(options.importer && options.importer !== 'limma_toptable'
@@ -81,7 +96,19 @@ export async function publishedDaRelease(
   if (imported.statusCode !== 201) throw new Error(imported.body);
   const release = (imported.json() as Json).id as string;
   await call('POST', `/v1/releases/${release}/publish`, { reason: 'checked' });
-  return { version, release };
+  const extra: string[] = [];
+  for (const [i, x] of (options.extra ?? []).entries()) {
+    const more = await call('POST', '/v1/imports', {
+      file_id: extraFiles[i],
+      importer: x.importer,
+      dataset_name: x.datasetName,
+      ...(x.importOptions ? { options: x.importOptions } : {}),
+    });
+    if (more.statusCode !== 201) throw new Error(more.body);
+    extra.push((more.json() as Json).id as string);
+    await call('POST', `/v1/releases/${extra.at(-1)}/publish`, { reason: 'checked' });
+  }
+  return { version, release, extra };
 }
 
 /** limma topTable rows of the fixture (ID, logFC, adj.P.Val), for expected values in tests. */

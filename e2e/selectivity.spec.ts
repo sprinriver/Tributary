@@ -18,17 +18,22 @@ test('SEL-03: the compound page shows its selectivity profile in a profiling exp
   // Other tests profile the same compound: pick this test's experiment.
   const option = section.getByRole('option', { name: new RegExp(name) });
   await section.getByLabel('Profiling experiment').selectOption((await option.getAttribute('value'))!);
-  await expect(section).toContainText(/16 of 157 proteins tested are engaged/, { timeout: 30_000 });
-  await expect(section).toContainText(/S\(1 µM\) = \d+ \/ 157 = 0\.\d{3}/);
-  await expect(section.getByRole('figure', { name: /Engaged proteins by pEC50/ })).toBeVisible({
+  await expect(section).toContainText(/16 of 138 proteins tested are regulated/, { timeout: 30_000 });
+  await expect(section).toContainText(/S\(1 µM\) = \d+ \/ 138 = 0\.\d{3}/);
+  await expect(section).toContainText('19 curves without a class from the tool are not counted as tested');
+  await expect(section.getByRole('figure', { name: /Regulated proteins by pEC50/ })).toBeVisible({
     timeout: 30_000,
   });
-  await expect(section.getByRole('table', { name: 'Engaged proteins' }).getByRole('row')).toHaveCount(17);
-  await expect(section).toContainText('apparent cellular potency, not a binding constant');
+  await expect(section.getByRole('table', { name: 'Regulated proteins' }).getByRole('row')).toHaveCount(17);
+  await expect(section).toContainText('apparent potency in this assay, not a binding constant');
   await page.screenshot({ path: `${SHOTS}/selectivity.png`, fullPage: true });
 
   // A stricter threshold: S(100 nM).
   await section.getByLabel('Potency threshold (pEC50)').fill('7');
   await section.getByRole('button', { name: 'Apply' }).click();
-  await expect(section).toContainText(/S\(100 nM\) = \d+ \/ 157/, { timeout: 30_000 });
+  await expect(section).toContainText(/S\(100 nM\) = \d+ \/ 138/, { timeout: 30_000 });
+
+  // Competition binding: only decreases count as engagement.
+  await section.getByLabel('Regulation counted').selectOption('down');
+  await expect(section).toContainText(/S\(100 nM, down only\) = \d+ \/ 138/, { timeout: 30_000 });
 });
