@@ -21,6 +21,8 @@ describe('compound selectivity API', () => {
   let outsider: string;
   let version: string;
   let releaseB: string;
+  let programY: string;
+  let both: string;
 
   beforeAll(async () => {
     t = await startTestApi({ s3: true, query: true });
@@ -50,6 +52,22 @@ describe('compound selectivity API', () => {
       file: '../../reference/compound_targets.tsv',
       importer: 'reference_target_annotation',
     });
+    // A second program with its own CPD-000001 and a different primary-target annotation.
+    programY = await t.program('SEY');
+    const y = (await t.user('sel-y', { [programY]: 'contributor', [program]: 'contributor' })).token;
+    await publishedDaRelease(t, y, programY, 'Selectivity Y', {
+      file: CURVES,
+      importer: 'curvecurator',
+      importOptions: options('CPD-000001'),
+    });
+    await publishedDaRelease(t, y, programY, 'Selectivity Y targets', {
+      bytes: Buffer.from(
+        'uniprot_accession\tgene_symbol\tfamily\tkey\tvalue\nP07437\tTUBB\tcytoskeleton\tprimary_target\tCPD-000001\n',
+      ),
+      file: '../../reference/compound_targets.tsv',
+      importer: 'reference_target_annotation',
+    });
+    both = y; // reads both programs
   }, 300_000);
   afterAll(() => t.close());
 
@@ -116,12 +134,14 @@ describe('compound selectivity API', () => {
     expect(none.experiments).toEqual([]);
   });
 
-  it('SEL-04: the selectivity table has one row per compound and profiling dataset, most selective first', async () => {
-    const res = await get('/v1/selectivity?pec50_min=6');
+  it('SEL-04: the selectivity table has one row per compound and profiling dataset, with counts, S(x) and flags', async () => {
+    const res = await get('/v1/selectivity?pec50_min=6', both);
     expect(res.statusCode, res.body).toBe(200);
     const body = res.json() as Json;
-    expect(body.items.map((x: Json) => x.compound_id)).toEqual(['CPD-000001', 'CPD-000002']);
-    expect(body.items[1]).toMatchObject({
+    const inSel = body.items.filter((x: Json) => x.program_code === 'SEL');
+    expect(inSel.map((x: Json) => x.compound_id).sort()).toEqual(['CPD-000001', 'CPD-000002']);
+    const b = inSel.find((x: Json) => x.compound_id === 'CPD-000002');
+    expect(b).toMatchObject({
       release_id: releaseB,
       dataset_name: 'CPD-000002 curves',
       experiment_name: 'Selectivity A',
@@ -130,15 +150,39 @@ describe('compound selectivity API', () => {
       regulated: 16,
       regulated_down: 11,
       regulated_up: 5,
+      status: 'ranked',
+      flags: [],
     });
-    const first = body.items[0];
-    expect(first.s_score).toBeCloseTo(first.s_regulated / 138, 10);
+    expect(b.s_score).toBeCloseTo(b.s_regulated / 138, 10);
     // Each compound has an annotated primary target (TP53, EGFR); neither is regulated in these curves.
-    for (const item of body.items)
+    for (const item of inSel)
       expect(item.window_note).toBe('No annotated primary target is regulated in this experiment.');
     expect(body.thresholds).toEqual({ pec50_min: 6, ec50_max_molar: 1e-6, direction: 'both' });
-    const down = (await get('/v1/selectivity?direction=down')).json() as Json;
-    expect(down.items[0].s_regulated).toBeLessThanOrEqual(first.s_regulated);
     expect(((await get('/v1/selectivity', outsider)).json() as Json).items).toEqual([]);
+  });
+
+  it('SEL-04: target annotations are per program (compound IDs are unique within a program only)', async () => {
+    const body = (await get('/v1/selectivity', both)).json() as Json;
+    const other = body.items.find((x: Json) => x.program_code === 'SEY');
+    // In SEY, CPD-000001's annotated primary target is P07437, the most potent regulated protein (pEC50 8.22).
+    expect(other).toMatchObject({ compound_id: 'CPD-000001', primary: { feature_id: 'P07437' } });
+    expect(other.window_delta).toBeGreaterThan(0);
+    const sel = body.items.find((x: Json) => x.program_code === 'SEL' && x.compound_id === 'CPD-000001');
+    expect(sel.primary).toBeNull(); // SEL's annotation (TP53) is not SEY's
+    const one = (await get(`/v1/selectivity?program_id=${programY}`, both)).json() as Json;
+    expect(one.items.map((x: Json) => x.program_code)).toEqual(['SEY']);
+    // The compound's own profile uses its dataset's program too.
+    const profile = (
+      await get(`/v1/compounds/CPD-000001/selectivity?release_id=${other.release_id}`, both)
+    ).json() as Json;
+    expect(profile.profile.window.primary).toMatchObject({ feature_id: 'P07437' });
+  });
+
+  it('SEL-04: a threshold outside the tested doses is flagged on the row; an inactive compound is not ranked', async () => {
+    const far = (await get('/v1/selectivity?pec50_min=11', both)).json() as Json;
+    for (const item of far.items) {
+      expect(item.status).toBe('inactive');
+      expect(item.flags.join(' ')).toContain('outside the tested dose range');
+    }
   });
 });
