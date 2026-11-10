@@ -4,6 +4,7 @@ import {
   CompoundSearchResponseSchema,
   CompoundStructureSchema,
 } from './chem.ts';
+import { SelectivityQuerySchema, SelectivityResponseSchema } from './selectivity.ts';
 import type { ApiRoute } from './route.ts';
 
 /** Compound structures and structure search (Phase 28). Part of API_ROUTES. */
@@ -14,6 +15,14 @@ export const CHEM_ROUTES = {
     summary: 'Depiction, canonical SMILES, InChIKey and descriptors of a compound batch (RDKit)',
     query: CompoundStructureQuerySchema,
     response: CompoundStructureSchema,
+  },
+  getCompoundSelectivity: {
+    method: 'get',
+    path: '/v1/compounds/{id}/selectivity',
+    summary:
+      'Selectivity profile of a compound in one profiling experiment: proteins tested and engaged, S(x), selectivity window',
+    query: SelectivityQuerySchema,
+    response: SelectivityResponseSchema,
   },
   searchCompounds: {
     method: 'post',

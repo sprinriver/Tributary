@@ -8,6 +8,7 @@ import { Link, useParams, useSearch } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { api } from '../api.ts';
 import { ErrorMessage } from '../components/ui.tsx';
+import { SelectivitySection } from './SelectivitySection.tsx';
 import { ChartView, LAYOUT } from './ChartView.tsx';
 import { DoseResponseViewer } from './DoseResponseViewer.tsx';
 
@@ -217,6 +218,7 @@ export function CompoundPage() {
               ])}
             />
           </Section>
+          <SelectivitySection compoundId={id} />
           <Section title="Omics results">
             <Table
               label="Contrasts"

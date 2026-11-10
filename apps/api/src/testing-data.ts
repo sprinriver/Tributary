@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import type { TestApi } from './testing.ts';
 
 type Json = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
@@ -58,7 +58,7 @@ export async function publishedDaRelease(
   const started = (
     await call('POST', '/v1/files/uploads', {
       experiment_version_id: version,
-      name: file,
+      name: basename(file),
       size_bytes: bytes.length,
       role: 'processed',
     })

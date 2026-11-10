@@ -1,0 +1,341 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/SelectivityResponse",
+  "$defs": {
+    "SelectivityResponse": {
+      "type": "object",
+      "properties": {
+        "compound_id": {
+          "type": "string"
+        },
+        "experiments": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "version_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "experiment_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "experiment_name": {
+                "type": "string"
+              },
+              "experiment_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "program_code": {
+                "type": "string"
+              },
+              "release_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "method": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "version_id",
+              "experiment_id",
+              "experiment_name",
+              "experiment_date",
+              "program_code",
+              "release_id",
+              "method"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "version_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "profile": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "tested": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "engaged": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "engaged_without_pec50": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "s_score": {
+                  "type": "object",
+                  "properties": {
+                    "pec50_min": {
+                      "type": "number"
+                    },
+                    "ec50_max_molar": {
+                      "type": "number"
+                    },
+                    "engaged": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "tested": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "score": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "pec50_min",
+                    "ec50_max_molar",
+                    "engaged",
+                    "tested",
+                    "score"
+                  ],
+                  "additionalProperties": false
+                },
+                "window": {
+                  "type": "object",
+                  "properties": {
+                    "primary": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "feature_id": {
+                              "type": "string"
+                            },
+                            "pec50": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "feature_id",
+                            "pec50"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "next": {
+                      "anyOf": [
+                        {
+                          "type": "object",
+                          "properties": {
+                            "feature_id": {
+                              "type": "string"
+                            },
+                            "pec50": {
+                              "type": "number"
+                            }
+                          },
+                          "required": [
+                            "feature_id",
+                            "pec50"
+                          ],
+                          "additionalProperties": false
+                        },
+                        {
+                          "type": "null"
+                        }
+                      ]
+                    },
+                    "delta": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "note": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "primary",
+                    "next",
+                    "delta",
+                    "note"
+                  ],
+                  "additionalProperties": false
+                },
+                "proteins": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "feature_id": {
+                        "type": "string"
+                      },
+                      "genes": {
+                        "type": "string"
+                      },
+                      "pec50": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "regulation": {
+                        "type": "string"
+                      },
+                      "fdr": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "known": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "primary_target",
+                              "off_target"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "feature_id",
+                      "genes",
+                      "pec50",
+                      "regulation",
+                      "fdr",
+                      "known"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "tested",
+                "engaged",
+                "engaged_without_pec50",
+                "s_score",
+                "window",
+                "proteins"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "figure": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  }
+                },
+                "layout": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "data",
+                "layout"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provenance": {
+          "type": "object",
+          "properties": {
+            "release_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "notes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "release_id",
+            "notes"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "compound_id",
+        "experiments",
+        "version_id",
+        "profile",
+        "figure",
+        "provenance"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
