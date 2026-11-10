@@ -151,7 +151,7 @@ describe('compound selectivity API', () => {
       regulated_down: 11,
       regulated_up: 5,
       status: 'ranked',
-      flags: [],
+      flags: ['19 curves without a class from the tool are not counted as tested.'],
     });
     expect(b.s_score).toBeCloseTo(b.s_regulated / 138, 10);
     // Each compound has an annotated primary target (TP53, EGFR); neither is regulated in these curves.
