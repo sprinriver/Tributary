@@ -1,25 +1,17 @@
 // Pathway enrichment of a differential-abundance contrast (Phase 24, ENR-03). The API chooses the identifiers
 // (select.ts) and records how; apps/compute does the statistics (hypergeometric + BH).
-import {
-  EnrichmentResultSchema,
-  QueryResultSchema,
-  type EnrichmentBody,
-  type EnrichmentResponse,
-} from '@tributary/contracts';
+import { EnrichmentResultSchema, type EnrichmentBody, type EnrichmentResponse } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
 import type { FastifyRequest } from 'fastify';
 import { readablePrograms, requirePrincipal } from '../auth/plugin.ts';
 import { computeCall } from '../charts/compute.ts';
 import type { ApiConfig } from '../config.ts';
-import { callQueryService } from '../datasets/query-client.ts';
 import { HttpError, notFound } from '../errors.ts';
 import { resolveSource } from '../query/resolve.ts';
 import { enrichmentFigure, FIGURE_TERMS, TERM_FDR } from './figure.ts';
 import { normaliseId, type IdType } from './ids.ts';
-import { selectIds, type DaRow } from './select.ts';
-
-/** More rows than this for one contrast is refused rather than read partly. */
-const MAX_ROWS = 500_000;
+import { readContrastRows } from './rows.ts';
+import { selectIds } from './select.ts';
 
 async function experimentSpecies(db: Database, releaseId: string): Promise<string | null> {
   const row = await db
@@ -71,46 +63,7 @@ export async function runEnrichment(
       'collection_id',
     );
 
-  // Only the chosen contrast is read (filtered in the query), and a partial read is an error, never a result.
-  const internal = {
-    spec: {
-      source: { releaseIds: [body.release_id] },
-      select: ['contrast_label', 'gene_names', 'protein_ids', 'log2_fc', 'adj_p_value', 'adj_method'],
-      ...(body.contrast_label !== undefined
-        ? {
-            where: {
-              combinator: 'and',
-              rules: [{ field: 'contrast_label', operator: '=', value: body.contrast_label }],
-            },
-          }
-        : {}),
-    },
-    source,
-    joins: [],
-    all_rows: MAX_ROWS,
-  };
-  const result = QueryResultSchema.parse(
-    await callQueryService(deps.fetch, config, '/internal/query', internal),
-  );
-  if (result.totalRows > result.rows.length || result.nextCursor)
-    throw new HttpError(
-      422,
-      'too_many_rows',
-      `More than ${MAX_ROWS} rows: choose one contrast.`,
-      'contrast_label',
-    );
-  const all = result.rows as DaRow[];
-  const labels = [...new Set(all.map((r) => r.contrast_label ?? ''))];
-  if (labels.length > 1)
-    throw new HttpError(
-      422,
-      'contrast_required',
-      `This release has ${labels.length} contrasts: choose one.`,
-      'contrast_label',
-    );
-  const label = body.contrast_label ?? labels[0] ?? '';
-  if (all.length === 0)
-    throw new HttpError(422, 'unknown_contrast', `No rows for contrast "${label}".`, 'contrast_label');
+  const { rows: all, label } = await readContrastRows(deps, source, body.release_id, body.contrast_label);
 
   const sel = selectIds(all, idType, body);
   const sets = (

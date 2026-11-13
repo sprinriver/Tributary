@@ -20,6 +20,7 @@ export * from './api/triage.ts';
 export * from './api/watch.ts';
 export * from './api/qc.ts';
 export * from './api/chem.ts';
+export * from './api/interactions.ts';
 export * from './api/selectivity.ts';
 export * from './api/protein-model.ts';
 export * from './api/notifications.ts';

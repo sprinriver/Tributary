@@ -220,6 +220,17 @@ After an enrichment run, the **gene–concept network** links the top 8 gene set
 - **Shared genes:** genes linked to several sets are the ones those pathways share.
 - **Table:** the table under the network lists the same links.
 
+### Interaction network of hits
+On a results page, **Interaction network** shows which hits of a contrast are known or predicted to interact,
+from a collection your administrator imported (for example STRING).
+- **Controls:** choose the collection, which hits count (up, down or both) and the minimum score, then **Show
+  network**. For STRING, 400 is medium, 700 high and 900 highest confidence.
+- **Network:** each node is a hit gene, coloured by its log2 fold change. A thicker line is a higher score. The
+  table lists the same pairs.
+- **What it is not:** the links come from the collection, not from your experiment. No statistic tests whether the
+  hits interact more than expected by chance.
+- **Counts:** the panel says how many hits the collection knows and how many have a partner among the hits.
+
 ## Triage board
 **Triage** in the sidebar is each program's list of proteins and compounds it is deciding on.
 1. **Add an item:** on a protein or compound page, choose the program in **Triage** and click **Add to triage**. If

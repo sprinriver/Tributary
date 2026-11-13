@@ -412,6 +412,36 @@ export interface ImportPreset {
   updated_at: Generated<Timestamp>;
 }
 
+export interface InteractionCollection {
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  edge_count: number;
+  id: Generated<string>;
+  id_type: string;
+  licence: string | null;
+  name: string;
+  node_count: number;
+  source: string;
+  source_release: string;
+  species: string;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
+export interface InteractionEdge {
+  a: string;
+  b: string;
+  collection_id: string;
+  created_at: Generated<Timestamp>;
+  created_by: string;
+  deleted_at: Timestamp | null;
+  id: Generated<string>;
+  score: number;
+  tenant_id: string;
+  updated_at: Generated<Timestamp>;
+}
+
 export interface LifecyclePolicy {
   created_at: Generated<Timestamp>;
   created_by: string;
@@ -990,6 +1020,8 @@ export interface DB {
   group_member: GroupMember;
   group_role_mapping: GroupRoleMapping;
   import_preset: ImportPreset;
+  interaction_collection: InteractionCollection;
+  interaction_edge: InteractionEdge;
   lifecycle_policy: LifecyclePolicy;
   lineage_edge: LineageEdge;
   lineage_node: LineageNode;

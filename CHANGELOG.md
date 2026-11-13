@@ -4,6 +4,9 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Interaction networks (PPI-01…04): import STRING or in-house interactions (`pnpm run string:prepare` converts
+  STRING's download files), then see on a results page which hits of a contrast interact, with a table and the
+  source's attribution.
 - Sales documents in `docs/sales/`: a datasheet, a category comparison and prepared security-questionnaire answers.
 - Selectivity table (SEL-04…05): Analysis → Selectivity lists every profiled compound, grouped by profiling
   dataset, with S(x), the selectivity window and warnings. Inactive compounds are not ranked as selective.

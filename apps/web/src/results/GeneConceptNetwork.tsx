@@ -3,14 +3,14 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { cnetElements, NETWORK_TERMS } from './cnet.ts';
 
 /** Diverging colour for log2 FC (blue = down, red = up), clamped at ±3. A display transform only. */
-function fcColour(fc: number): string {
+export function fcColour(fc: number): string {
   const t = Math.max(-1, Math.min(1, fc / 3));
   const mix = (a: number, b: number) => Math.round(a + (b - a) * Math.abs(t));
   return t >= 0
     ? `rgb(${mix(247, 178)}, ${mix(247, 24)}, ${mix(247, 43)})`
     : `rgb(${mix(247, 33)}, ${mix(247, 102)}, ${mix(247, 172)})`;
 }
-const MULTI = '#9aa5b1';
+export const MULTI = '#9aa5b1';
 const fmt = (v: number | null | undefined) => (v === null || v === undefined ? '—' : v.toFixed(2));
 
 /**

@@ -123,6 +123,28 @@ Search updates as things change. After a bulk load or a restore, rebuild it with
 - **Collections never change:** import a newer source release as a new collection. Every import is audited.
 - **Demo:** the demo data includes "Demo modules (synthetic)", 20 invented modules.
 
+## Interaction networks (STRING)
+- **Import:** a system admin imports interaction collections with `POST /api/v1/interaction-collections` and a
+  change reason.
+- **What to send:**
+  - `name`;
+  - `source` and `source_release` (for example `STRING` and `v12.0, combined score ≥ 0.7`);
+  - `species` (an NCBITaxon CURIE);
+  - `id_type` (`gene_symbol` or `uniprot_accession`);
+  - `licence` (for STRING: `CC BY 4.0`);
+  - `interactions`: one pair per line, `a<TAB>b<TAB>score`, with the score a whole number from 0 to 1000.
+- **From STRING:**
+  1. Download `<taxon>.protein.links.v12.0.txt.gz` and `<taxon>.protein.info.v12.0.txt.gz` for your species from
+     stringdb-downloads.org (human is taxon 9606).
+  2. Run `pnpm run string:prepare <links file> <info file> 700 > string.tsv`. The number is the lowest combined
+     score kept: 400 is medium, 700 high and 900 highest confidence. Human at 700 gives about 237,000 pairs in a
+     4 MB file.
+  3. Send the file's text as `interactions`.
+- **Licence:** STRING data is CC BY 4.0, which allows commercial use with attribution. The licence you record is
+  shown with every network.
+- **Collections never change:** import a newer source release as a new collection. Every import is audited.
+- **Demo:** the demo data includes "Demo interactions (synthetic)", 2,000 invented pairs.
+
 ## Getting help: the support bundle
 **Admin → Health → Download support bundle** saves one JSON file to send to support. It contains:
 - versions;

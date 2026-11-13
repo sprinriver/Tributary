@@ -39,6 +39,7 @@ import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { registerEnrichmentRoutes } from './routes/enrichment.ts';
 import { registerRateLimit } from './rate-limit.ts';
 import { registerChemRoutes } from './routes/chem.ts';
+import { registerInteractionRoutes } from './routes/interactions.ts';
 import { registerSelectivityRoutes } from './routes/selectivity.ts';
 import { registerNotificationRoutes } from './routes/notifications.ts';
 import { registerEmailRoutes } from './routes/email.ts';
@@ -169,6 +170,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerWebhookRoutes(scoped, { db, config, fetch: fetchImpl });
     registerOnboardingRoutes(scoped, db, storage);
     registerEnrichmentRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerInteractionRoutes(scoped, { db, config, fetch: fetchImpl });
     registerTriageRoutes(scoped, { db, config, fetch: fetchImpl });
     registerWatchRoutes(scoped, db);
     registerQcRoutes(scoped, { db, config, fetch: fetchImpl });
