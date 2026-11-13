@@ -629,3 +629,20 @@ Definition of done:
 - [x] PPI-01…03 tests and the PPI-04 e2e fail first
 - [x] Migration, contracts, API, script, panel, synthetic demo data
 - [x] `pnpm check` exits 0; `pnpm e2e PPI-04` passes; screenshot in artifacts/phase-45/; omics review
+
+## Phase 46 — Thermal proteome profiling (TPP-TR) results
+Status: in progress
+Goal: Chemoproteomics teams load TPP-TR results and see which proteins a compound stabilises or destabilises.
+Features: TPP-01 … TPP-04
+In scope:
+- **Format notes:** `packages/importers/src/tpp_tr/SOURCE.md` (TPP 3.40.2, Artistic-2.0), awaiting the owner's review.
+- **Dataset kind:** `thermal_shift`, one row per protein × comparison (melting points, ΔTm, adjusted p, filters,
+  fold changes by temperature). A new kind needs a contract, a migration for the kind check, and `pnpm gen`.
+- **Importer:** `tpp_tr`, from the result table saved as tab-separated text; temperatures per label from options.
+- **Views:** a ΔTm plot (ΔTm against −log10 adjusted p) with a table, and melting curves per protein from the
+  measured fold changes. No refitting and no recomputed statistics.
+- **Synthetic fixture:** `pnpm synth` writes a small TPP-TR result table in the real layout.
+Definition of done:
+- [ ] SOURCE.md written; tests fail first (golden, renamed quality column, broken file, missing temperatures)
+- [ ] Contract, migration, importer, charts, results section, synthetic fixture
+- [ ] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-46/; omics review
