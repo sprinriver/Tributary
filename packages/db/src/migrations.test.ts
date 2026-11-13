@@ -31,6 +31,8 @@ const TABLES = [
   'group_member',
   'group_role_mapping',
   'import_preset',
+  'interaction_collection',
+  'interaction_edge',
   'lifecycle_policy',
   'lineage_edge',
   'lineage_node',
