@@ -20,12 +20,10 @@ test('PPI-04: results page — the interaction network of a contrast’s hits, w
     .selectOption({ label: 'Demo interactions (synthetic) — synthetic demo-1' });
   await panel.getByLabel('Minimum score').fill('150');
   await panel.getByRole('button', { name: 'Show network' }).click();
-  const table = panel.getByRole('table', { name: 'Interactions between hits' });
+  const table = panel.getByRole('table', { name: 'Associated hits' });
   await expect(table.getByRole('row').nth(1)).toBeVisible({ timeout: 30_000 });
-  await expect(
-    panel.getByRole('img', { name: /Network of \d+ hit genes and \d+ interactions/ }),
-  ).toBeVisible();
-  await expect(panel).toContainText(/\d+ of \d+ hit genes are in this collection/);
+  await expect(panel.getByRole('img', { name: /Network of \d+ hits and \d+ associations/ })).toBeVisible();
+  await expect(panel).toContainText(/\d+ of \d+ hit gene symbols are in this collection/);
   await expect(panel).toContainText('not measured in this experiment');
   await page.screenshot({ path: `${SHOTS}/interaction-network.png`, fullPage: true });
 
