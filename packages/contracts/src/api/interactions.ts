@@ -85,13 +85,17 @@ export const InteractionNetworkSchema = z
       }),
       min_score: z.int(),
       counts: z.object({
+        /** Hit identifiers (protein groups are split into each identifier they contain). */
         hits: z.int(),
+        /** Hits with at least one pair in the collection, at any score. */
         hits_in_collection: z.int(),
         hits_not_in_collection: z.int(),
-        /** Edges between two hits at the score asked for. */
+        /** Pairs of two hits at the score asked for. */
         edges: z.int(),
         edges_shown: z.int(),
+        /** Hits at an end of any such pair (shown or not; `nodes` holds only those of the shown pairs). */
         hits_connected: z.int(),
+        /** Hits in the collection with no pair to another hit at the score asked for. */
         hits_without_partner: z.int(),
       }),
       notes: z.array(z.string()),

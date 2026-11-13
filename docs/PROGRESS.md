@@ -1840,3 +1840,33 @@ Entry template:
 - Limits: counted per API process, so a WAF rule is still the global limit. The whitepaper says so.
 - Not verified locally: the one-line Terraform change (CI's infra job validates it).
 - Dependencies added: none (this replaces the `@fastify/rate-limit` request).
+
+## 2026-11-13 — Phase 45: Interaction networks of hits (STRING) — done
+- Unblocked by the new "tributary" environment, which allows bioconductor.org and the STRING sites.
+- Built:
+  - **Storage:** migration 0028 (`interaction_collection`, `interaction_edge`).
+  - **Import:** `POST /v1/interaction-collections` (system admin, audited), taking "a, b, score" text.
+    `pnpm run string:prepare` converts STRING v12.0 download files. On the human files it gives 236,930 pairs at
+    score ≥ 700 (3.8 MB).
+  - **Network:** `POST /v1/interactions/network` returns the pairs between a contrast's hits, with fold changes,
+    counts and notes. No network statistic is computed.
+  - **Web:** an Interaction network panel on the results page, with a table.
+  - **Demo data:** `pnpm synth` writes 2,000 invented pairs; the seed loads them. Other fixtures are unchanged.
+- Refactors: the contrast-row reader is shared between enrichment and interactions; seed networks moved to their
+  own module to keep `seed/index.ts` under 400 lines.
+- Science review (omics-reviewer), all fixed:
+  - the STRING script no longer drops pairs listed in one direction only;
+  - it reports preferred names shared by several proteins, same-name pairs dropped and pairs merged, and validates
+    the score;
+  - the panel says "pairs" and "associations", not "interactions", and an empty result no longer reads as evidence
+    that hits are unrelated;
+  - labels follow the collection's identifier type; counts are defined in the contract and all shown.
+- STRING licence checked: CC BY 4.0, commercial use allowed with attribution. Customers download the data
+  themselves; the recorded licence is shown with every network.
+- Test amendments (disclosed, each in its own commit): this phase's PPI-01 and PPI-04 tests (pair counting, then
+  the review); DB-01's table list gained the two new tables.
+- Evidence: `pnpm check` ✓, `pnpm e2e "PPI-04|ENR-04|NET-02"` ✓. Screenshot: `artifacts/phase-45/`.
+- Local note: the dev database here was not reseeded (the seed skips when demo data exists), so the demo pairs were
+  loaded by hand for the local e2e run. CI seeds a fresh database.
+- Known follow-up: `apps/api/src/charts/shape-more.test.ts` is over the 400-line limit (452) since Phase 41.
+- Dependencies added: none.

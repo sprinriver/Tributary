@@ -157,6 +157,7 @@ export function registerInteractionRoutes(
     const inCollection = new Set<string>();
     for (let i = 0; i < hits.length; i += IDS_PER_QUERY) {
       const part = hits.slice(i, i + IDS_PER_QUERY);
+      const inPart = new Set(part);
       const touching = await db
         .selectFrom('interaction_edge')
         .select(['a', 'b', 'score'])
@@ -168,7 +169,7 @@ export function registerInteractionRoutes(
         if (sel.hits.has(e.a)) inCollection.add(e.a);
         if (sel.hits.has(e.b)) inCollection.add(e.b);
         // Each edge is seen once per part that holds one of its ends: keep it from the part holding `a`.
-        if (e.score >= body.min_score && sel.hits.has(e.a) && sel.hits.has(e.b) && part.includes(e.a))
+        if (e.score >= body.min_score && sel.hits.has(e.a) && sel.hits.has(e.b) && inPart.has(e.a))
           edges.push({ a: e.a, b: e.b, score: e.score });
       }
     }

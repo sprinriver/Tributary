@@ -221,8 +221,9 @@ After an enrichment run, the **gene–concept network** links the top 8 gene set
 - **Table:** the table under the network lists the same links.
 
 ### Interaction network of hits
-On a results page, **Interaction network** shows which hits of a contrast are known or predicted to interact,
-from a collection your administrator imported (for example STRING).
+On a results page, **Interaction network** shows which hits of a contrast are paired in a collection your
+administrator imported (for example STRING). A pair is a known or predicted association. In STRING that means a
+functional link, which is not necessarily physical binding.
 - **Controls:** choose the collection, which hits count (up, down or both) and the minimum score, then **Show
   network**. For STRING, 400 is medium, 700 high and 900 highest confidence.
 - **Network:** each node is a hit gene, coloured by its log2 fold change. A thicker line is a higher score. The

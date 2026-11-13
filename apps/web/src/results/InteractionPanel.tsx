@@ -79,7 +79,7 @@ function NetworkView({ net }: { net: InteractionNetwork }) {
       <div
         ref={host}
         role="img"
-        aria-label={`Network of ${net.nodes.length} hit genes and ${net.edges.length} interactions; the table below lists the same interactions`}
+        aria-label={`Network of ${net.nodes.length} hits and ${net.edges.length} associations; the table below lists the same pairs`}
         style={{
           width: '100%',
           height: 420,
@@ -138,6 +138,9 @@ export function InteractionPanel({ release, contrasts }: { release: string; cont
   const net = run.data;
   const fc = new Map(net?.nodes.map((n) => [n.id, n]) ?? []);
   const c = net?.provenance.counts;
+  // Identifiers after protein groups are split, in the collection's identifier type.
+  const unit =
+    net?.provenance.collection.id_type === 'uniprot_accession' ? 'UniProt accession' : 'gene symbol';
   return (
     <section role="region" aria-label="Interaction network" className="stack">
       {heading}
@@ -194,22 +197,29 @@ export function InteractionPanel({ release, contrasts }: { release: string; cont
         </button>
       </div>
       <p className="hint" style={{ margin: 0 }}>
-        Hits: adjusted p ≤ 0.05 and |log2 FC| ≥ 1. Score: 0 to 1000 (STRING: 400 medium, 700 high, 900 highest
-        confidence).
+        Pairs come from the collection (known or predicted associations), not from this experiment. Score: 0
+        to 1000 (STRING: 400 medium, 700 high, 900 highest confidence).
       </p>
       <ErrorMessage error={run.error} />
       {net && c && (
         <>
           <p style={{ margin: 0 }}>
             <strong>
-              {c.hits_in_collection} of {c.hits} hit genes are in this collection
-            </strong>
-            ; {c.hits_connected} have an interaction with another hit at score ≥ {net.provenance.min_score} (
-            {c.edges} interaction{c.edges === 1 ? '' : 's'}
-            {c.edges > c.edges_shown ? `, the strongest ${c.edges_shown} shown` : ''}).
+              {c.hits_in_collection} of {c.hits} hit {unit}s are in this collection
+            </strong>{' '}
+            (hits: adjusted p ≤ {net.provenance.thresholds.adj_p_max} and |log2 FC| ≥{' '}
+            {net.provenance.thresholds.abs_log2fc_min}). {c.hits_connected} of them are paired with another
+            hit at score ≥ {net.provenance.min_score} ({c.edges} pair{c.edges === 1 ? '' : 's'}
+            {c.edges > c.edges_shown
+              ? `; the strongest ${c.edges_shown} are shown, joining ${net.nodes.length} hits`
+              : ''}
+            ); {c.hits_without_partner} are in the collection without such a pair.
           </p>
           {net.edges.length === 0 ? (
-            <p className="hint">No interaction between two hits at this score: try a lower score.</p>
+            <p className="hint">
+              No pair of hits in this collection at score ≥ {net.provenance.min_score}: try a lower score.
+              This does not show that the hits are unrelated.
+            </p>
           ) : (
             <>
               <NetworkView net={net} />
@@ -217,10 +227,10 @@ export function InteractionPanel({ release, contrasts }: { release: string; cont
                 Node colour: log2 FC (blue down, red up, ±3 and beyond at full colour); grey with a dashed
                 edge: a hit in several features (no single value). Thicker line: higher score.
               </p>
-              <table aria-label="Interactions between hits" className="data-table">
+              <table aria-label="Associated hits" className="data-table">
                 <thead>
                   <tr>
-                    {['gene', 'log2 FC', 'gene', 'log2 FC', 'score'].map((h, i) => (
+                    {[unit, 'log2 FC', unit, 'log2 FC', 'score'].map((h, i) => (
                       <th key={i} scope="col">
                         {h}
                       </th>

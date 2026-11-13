@@ -609,7 +609,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 45 — Interaction networks of hits (STRING)
-Status: in progress
+Status: done
 Goal: A scientist sees which hits of a contrast are known or predicted to interact, from STRING or an in-house
 network (the long-requested STRING view).
 Features: PPI-01 … PPI-04
@@ -626,6 +626,6 @@ In scope:
 - **Web:** an Interaction network panel on the results page (Cytoscape, already a dependency) with a table.
 - **Demo data:** `pnpm synth` writes invented interactions; the seed loads them.
 Definition of done:
-- [ ] PPI-01…03 tests and the PPI-04 e2e fail first
-- [ ] Migration, contracts, API, script, panel, synthetic demo data
-- [ ] `pnpm check` exits 0; `pnpm e2e PPI-04` passes; screenshot in artifacts/phase-45/; omics review
+- [x] PPI-01…03 tests and the PPI-04 e2e fail first
+- [x] Migration, contracts, API, script, panel, synthetic demo data
+- [x] `pnpm check` exits 0; `pnpm e2e PPI-04` passes; screenshot in artifacts/phase-45/; omics review

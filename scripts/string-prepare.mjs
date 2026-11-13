@@ -23,32 +23,66 @@ function names(infoText) {
   return map;
 }
 
+/** A whole number from 0 to 1000 (default 700). */
+export function parseMinScore(text) {
+  if (text === undefined) return 700;
+  if (!/^\d+$/.test(text) || Number(text) > 1000)
+    throw new Error(`min_score must be a whole number from 0 to 1000 (700 = STRING's 0.7), got "${text}"`);
+  return Number(text);
+}
+
 function collector(nameOf, minScore) {
+  // name pair → { score, ids: the first STRING ID pair seen, merged: another ID pair mapped to the same names }
   const pairs = new Map();
-  const counts = { pairs: 0, belowScore: 0, unmapped: 0 };
+  const sameName = new Set();
+  const seen = new Map();
+  for (const name of nameOf.values()) seen.set(name, (seen.get(name) ?? 0) + 1);
+  const counts = {
+    pairs: 0,
+    rowsBelowScore: 0,
+    rowsUnmapped: 0,
+    // Preferred names carried by more than one STRING protein.
+    sharedNames: [...seen.values()].filter((n) => n > 1).length,
+    // Pairs of two different proteins with one name (dropped: they would be a self-pair).
+    sameNamePairs: 0,
+    // Name pairs that more than one protein pair mapped to (the highest score is kept).
+    mergedPairs: 0,
+  };
   return {
     add(line) {
       if (line === '' || line.startsWith('protein1')) return;
       const [p1, p2, s] = line.split(' ');
       const score = Number(s);
-      // Each pair is listed in both directions: read it once.
-      if (!(p1 < p2)) return;
+      // The file lists each pair in both directions; a pair listed once is kept too (pairs merge below).
       if (score < minScore) {
-        counts.belowScore += 1;
+        counts.rowsBelowScore += 1;
         return;
       }
       const [a, b] = [nameOf.get(p1), nameOf.get(p2)];
       if (!a || !b) {
-        counts.unmapped += 1;
+        counts.rowsUnmapped += 1;
         return;
       }
-      if (a === b) return;
+      const ids = p1 < p2 ? `${p1} ${p2}` : `${p2} ${p1}`;
+      if (a === b) {
+        if (p1 !== p2) sameName.add(ids);
+        return;
+      }
       const key = a < b ? `${a}\t${b}` : `${b}\t${a}`;
-      if ((pairs.get(key) ?? -1) < score) pairs.set(key, score);
+      const entry = pairs.get(key);
+      if (!entry) pairs.set(key, { score, ids, merged: false });
+      else {
+        if (entry.ids !== ids) entry.merged = true;
+        if (score > entry.score) entry.score = score;
+      }
     },
     result() {
-      const lines = [...pairs].sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0)).map(([k, s]) => `${k}\t${s}`);
+      const lines = [...pairs]
+        .sort(([x], [y]) => (x < y ? -1 : x > y ? 1 : 0))
+        .map(([k, v]) => `${k}\t${v.score}`);
       counts.pairs = lines.length;
+      counts.sameNamePairs = sameName.size;
+      counts.mergedPairs = [...pairs.values()].filter((v) => v.merged).length;
       return { tsv: lines.length ? `${lines.join('\n')}\n` : '', counts };
     },
   };
@@ -67,21 +101,35 @@ const text = (path) => {
 };
 
 if (import.meta.url === pathToFileURL(process.argv[1] ?? '').href) {
-  const [links, info, min = '700'] = process.argv.slice(2);
+  const [links, info, min] = process.argv.slice(2);
   if (!links || !info) {
     console.error(
       'usage: node scripts/string-prepare.mjs <protein.links> <protein.info> [min_score=700] > out.tsv',
     );
     process.exit(2);
   }
+  let minScore;
+  try {
+    minScore = parseMinScore(min);
+  } catch (e) {
+    console.error(String(e.message));
+    process.exit(2);
+  }
   // The links file has millions of lines: read it as a stream.
-  const c = collector(names(text(info)), Number(min));
+  const c = collector(names(text(info)), minScore);
   const stream = createReadStream(links);
   const rl = createInterface({ input: links.endsWith('.gz') ? stream.pipe(createGunzip()) : stream });
   for await (const line of rl) c.add(line);
   const out = c.result();
   process.stdout.write(out.tsv);
+  const n = out.counts;
   console.error(
-    `string-prepare: ${out.counts.pairs} pairs at score ≥ ${min}; ${out.counts.belowScore} below; ${out.counts.unmapped} lines with an ID missing from protein.info`,
+    [
+      `string-prepare: ${n.pairs} pairs at score ≥ ${minScore}.`,
+      `Rows left out: ${n.rowsBelowScore} below the score, ${n.rowsUnmapped} with an ID missing from protein.info.`,
+      `Preferred names: ${n.sharedNames} are shared by several proteins; ${n.sameNamePairs} pairs of two proteins with one name were dropped; ${n.mergedPairs} pairs merged (highest score kept).`,
+      'Record the STRING version, this score and these counts in source_release or your import reason.',
+      'Some preferred names are not gene symbols (e.g. Ensembl IDs): they cannot match gene names in results.',
+    ].join('\n'),
   );
 }
