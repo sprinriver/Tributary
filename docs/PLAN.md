@@ -607,3 +607,25 @@ Definition of done:
 - [x] SEC-03 tests fail first
 - [x] Limiter, hook, config; whitepaper, ARCHITECTURE and ADMIN_GUIDE updated
 - [x] `pnpm check` exits 0
+
+## Phase 45 — Interaction networks of hits (STRING)
+Status: in progress
+Goal: A scientist sees which hits of a contrast are known or predicted to interact, from STRING or an in-house
+network (the long-requested STRING view).
+Features: PPI-01 … PPI-04
+Inspired by: STRING's network view (ideas only; no code copied). STRING data is CC BY 4.0: customers download it
+themselves, and the product records and shows the attribution.
+In scope:
+- **Storage:** migration 0028: `interaction_collection` and `interaction_edge` (one row per unordered pair, score
+  0–1000).
+- **Import:** `POST /v1/interaction-collections` (system admin, audited) takes "a<TAB>b<TAB>score" text.
+  `scripts/string-prepare.mjs` converts STRING's `protein.links` and `protein.info` downloads to that text at a
+  chosen score (formats: stringdb-downloads.org, v12.0).
+- **Network:** `POST /v1/interactions/network` uses the enrichment hit rules and returns edges between two hit
+  genes, with fold changes and counts of hits left out. No statistics are computed (no PPI-enrichment p-value).
+- **Web:** an Interaction network panel on the results page (Cytoscape, already a dependency) with a table.
+- **Demo data:** `pnpm synth` writes invented interactions; the seed loads them.
+Definition of done:
+- [ ] PPI-01…03 tests and the PPI-04 e2e fail first
+- [ ] Migration, contracts, API, script, panel, synthetic demo data
+- [ ] `pnpm check` exits 0; `pnpm e2e PPI-04` passes; screenshot in artifacts/phase-45/; omics review
