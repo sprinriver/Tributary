@@ -41,4 +41,8 @@ describe('chart spec', () => {
       false,
     );
   });
+
+  it('QCD-04: the QC panel also reads is_imputed when the dataset has it, so imputed values are not counted as quantified', () => {
+    expect(CHART_REGISTRY.qc_panel!.readIfPresent).toEqual(['is_imputed']);
+  });
 });

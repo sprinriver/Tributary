@@ -67,3 +67,13 @@ def overall_p(method: str, groups: list[Array]) -> float:
 
 def t_quantile(q: float, df: int) -> float:
     return float(_stats.t.ppf(q, df))
+
+
+def hypergeom_sf(k: int, population: int, successes: int, draws: int) -> float:
+    """P(X > k) for X ~ Hypergeometric(population, successes, draws) (scipy.stats.hypergeom.sf)."""
+    return float(_stats.hypergeom.sf(k, population, successes, draws))
+
+
+def hypergeom_logsf(k: int, population: int, successes: int, draws: int) -> float:
+    """log P(X > k) (scipy.stats.hypergeom.logsf): stays finite where sf underflows to 0."""
+    return float(_stats.hypergeom.logsf(k, population, successes, draws))

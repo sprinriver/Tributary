@@ -1,0 +1,234 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/SelectivityTable",
+  "$defs": {
+    "SelectivityTable": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "compound_id": {
+                "type": "string"
+              },
+              "program_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "release_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "dataset_name": {
+                "type": "string"
+              },
+              "experiment_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "experiment_name": {
+                "type": "string"
+              },
+              "experiment_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "program_code": {
+                "type": "string"
+              },
+              "method": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "tested": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "unclassified": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "regulated": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "regulated_down": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "regulated_up": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "regulated_without_pec50": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "s_regulated": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "s_score": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "ranked",
+                  "inactive",
+                  "no_score"
+                ]
+              },
+              "primary": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "feature_id": {
+                        "type": "string"
+                      },
+                      "pec50": {
+                        "type": "number"
+                      }
+                    },
+                    "required": [
+                      "feature_id",
+                      "pec50"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "window_delta": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "window_note": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "flags": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "required": [
+              "compound_id",
+              "program_id",
+              "release_id",
+              "dataset_name",
+              "experiment_id",
+              "experiment_name",
+              "experiment_date",
+              "program_code",
+              "method",
+              "tested",
+              "unclassified",
+              "regulated",
+              "regulated_down",
+              "regulated_up",
+              "regulated_without_pec50",
+              "s_regulated",
+              "s_score",
+              "status",
+              "primary",
+              "window_delta",
+              "window_note",
+              "flags"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "thresholds": {
+          "type": "object",
+          "properties": {
+            "pec50_min": {
+              "type": "number"
+            },
+            "ec50_max_molar": {
+              "type": "number"
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "both",
+                "down",
+                "up"
+              ]
+            }
+          },
+          "required": [
+            "pec50_min",
+            "ec50_max_molar",
+            "direction"
+          ],
+          "additionalProperties": false
+        },
+        "skipped": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "experiment_name": {
+                "type": "string"
+              },
+              "dataset_name": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "experiment_name",
+              "dataset_name",
+              "reason"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "items",
+        "thresholds",
+        "skipped",
+        "notes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

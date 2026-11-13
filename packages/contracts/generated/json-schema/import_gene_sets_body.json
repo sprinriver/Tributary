@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ImportGeneSetsBody",
+  "$defs": {
+    "ImportGeneSetsBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "source_release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "species": {
+          "type": "string",
+          "pattern": "^NCBITaxon:\\d+$"
+        },
+        "id_type": {
+          "type": "string",
+          "enum": [
+            "gene_symbol",
+            "uniprot_accession"
+          ]
+        },
+        "gmt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50000000
+        }
+      },
+      "required": [
+        "name",
+        "source",
+        "source_release",
+        "species",
+        "id_type",
+        "gmt"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

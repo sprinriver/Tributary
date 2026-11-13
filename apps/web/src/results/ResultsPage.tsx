@@ -5,7 +5,11 @@ import { useState } from 'react';
 import { api } from '../api.ts';
 import { ErrorMessage } from '../components/ui.tsx';
 import { ChartView, LAYOUT } from './ChartView.tsx';
+import { conditionsOf, qcPanelSpec } from './qc-spec.ts';
+import { useSamples } from '../registry/queries.ts';
 import { DoseResponseViewer } from './DoseResponseViewer.tsx';
+import { EnrichmentPanel } from './EnrichmentPanel.tsx';
+import { InteractionPanel } from './InteractionPanel.tsx';
 
 const firstAccession = (v: unknown) =>
   Array.isArray(v) ? String(v[0] ?? '') : String(v ?? '').split(';')[0]!;
@@ -77,7 +81,7 @@ function TopHits({ release }: { release: string }) {
   );
 }
 
-const volcano = (release: string, contrastId: string): ChartSpec =>
+export const volcano = (release: string, contrastId: string): ChartSpec =>
   ({
     type: 'volcano',
     data: {
@@ -90,6 +94,7 @@ const volcano = (release: string, contrastId: string): ChartSpec =>
   }) as ChartSpec;
 
 function Results({ r }: { r: VersionResults }) {
+  const samples = useSamples(r.version_id);
   const of = (kind: string) => r.releases.filter((x) => x.kind === kind);
   const pq = of('protein_quant')[0];
   const da = of('differential_abundance');
@@ -100,17 +105,10 @@ function Results({ r }: { r: VersionResults }) {
       {pq && (
         <section role="region" aria-label="QC" className="stack">
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>QC</h2>
-          <ChartView
-            spec={
-              {
-                type: 'qc_panel',
-                data: { source: { releaseIds: [pq.id] } },
-                encodings: { x: 'sample_key', rowLabel: 'protein_group', values: 'intensity' },
-                options: {},
-                layout: LAYOUT,
-              } as ChartSpec
-            }
-          />
+          {/* Waits for the samples, so the panel is drawn once (per condition or pooled). */}
+          {(samples.data || samples.error) && (
+            <ChartView spec={qcPanelSpec(pq.id, r.version_id, !!conditionsOf(samples.data?.items ?? []))} />
+          )}
         </section>
       )}
       {da.length > 0 &&
@@ -121,6 +119,8 @@ function Results({ r }: { r: VersionResults }) {
           </section>
         ))}
       {da[0] && <TopHits release={da[0].id} />}
+      {da[0] && <EnrichmentPanel release={da[0].id} contrasts={r.contrasts.map((c) => c.label)} />}
+      {da[0] && <InteractionPanel release={da[0].id} contrasts={r.contrasts.map((c) => c.label)} />}
       {dr.length > 0 && (
         <section role="region" aria-label="Dose-response" className="stack">
           <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Dose-response</h2>
@@ -170,6 +170,13 @@ export function ResultsPage() {
         Results — {experiment.data?.name ?? '…'}
         {results.data ? ` v${results.data.version_number}` : ''}
       </h1>
+      {version && (
+        <p style={{ margin: 0 }}>
+          <Link to="/experiments/$id/report" params={{ id }} search={{ version }}>
+            Report (PDF or PowerPoint) →
+          </Link>
+        </p>
+      )}
       <ErrorMessage error={experiment.error ?? results.error} />
       {results.data && <Results r={results.data} />}
     </main>

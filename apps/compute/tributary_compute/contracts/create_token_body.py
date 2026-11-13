@@ -11,7 +11,7 @@ class CreateTokenBody(BaseModel):
         extra="forbid",
     )
     name: Annotated[str, Field(max_length=100, min_length=1)]
-    scopes: Annotated[list[Literal["read", "write"]], Field(min_length=1)]
+    scopes: Annotated[list[Literal["read", "write", "scim"]], Field(min_length=1)]
     expires_in_days: Annotated[int, Field(ge=1, le=365)]
 
 

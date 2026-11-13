@@ -4,6 +4,90 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Interaction networks (PPI-01…04): import STRING or in-house interactions (`pnpm run string:prepare` converts
+  STRING's download files), then see on a results page which hits of a contrast interact, with a table and the
+  source's attribution.
+- Sales documents in `docs/sales/`: a datasheet, a category comparison and prepared security-questionnaire answers.
+- Selectivity table (SEL-04…05): Analysis → Selectivity lists every profiled compound, grouped by profiling
+  dataset, with S(x), the selectivity window and warnings. Inactive compounds are not ranked as selective.
+- API rate limiting (SEC-03): per-minute limits per credential and per anonymous client address, answered with 429
+  and `Retry-After`. New settings: `RATE_LIMIT_PER_MINUTE`, `RATE_LIMIT_ANON_PER_MINUTE`, `TRUST_PROXY`.
+- Compound selectivity (SEL-01…03): a compound page shows, per profiling experiment:
+  - proteins tested and regulated;
+  - an S(x) score at a chosen potency;
+  - the selectivity window against annotated primary targets;
+  - a ranked potency plot with a table.
+
+  You choose which regulation direction counts, and caveats (assay design, dose range, unclassified curves) are
+  stated.
+- QC CVs per condition (QCD-04…05): when the sample sheet records conditions, the QC panel shows replicate CVs
+  within each condition. Imputed values no longer count as quantified.
+- Fixed: QC panels of more than 200 proteins failed to compute; group summaries are now sent in batches.
+- Content-Security-Policy (SEC-01…02): the app is served with a strict CSP, with no eval and no inline scripts. Its
+  only extra origin is the upload bucket. WebGL charts now use Plotly's strict renderer, and Mol*'s eval-based
+  helper is rewritten at build time. Every e2e test runs under the policy in CI.
+- Security whitepaper (`docs/SECURITY_WHITEPAPER.md`) for security and procurement reviews. Every statement points to
+  where it is implemented, and gaps are listed with what to do meanwhile.
+- Fuller experiment reports (REP-04…07): the report and its PowerPoint now include:
+  - QC;
+  - pathway enrichment for every contrast, added on demand with the report's display thresholds and full
+    provenance;
+  - dose-response counts per class, the curves figure and the top curves.
+- Validation pack (VAL-01…02): `docs/validation/` gives a traceability matrix from every requirement to its tests
+  and status, regenerated and checked by `pnpm check`. It also has IQ and OQ protocol templates and a 21 CFR Part 11
+  controls map that customers adapt for their own validation.
+- Support bundle (SUP-01…02): Admin → Health → Download support bundle gives versions, migrations, health,
+  configuration switches and the last week's failures, with no secrets or personal data. The download is audited.
+- Usage analytics (USE-01…03): Admin → Usage shows active people, weekly activity, programs and people, with a CSV
+  download. It is counted from the audit log, with nothing tracked or sent elsewhere.
+- SCIM 2.0 provisioning (SCIM-01…04):
+  - Okta, Entra ID and other IdPs create, update and deactivate users and groups.
+  - Deactivation ends access at once.
+  - Admin → Access shows the endpoint and token.
+- Personal email (MAIL-01…03):
+  - Emails for new hits on watched items, triage items assigned to you, and your finished pipeline runs.
+  - Choose them under your name → Email notifications.
+  - Sent through Amazon SES or SMTP.
+- Experiment reports (REP-01…03):
+  - A report page per version, with methods, hit counts, volcano and top hits per contrast.
+  - Print to PDF or download as PowerPoint. Every export is audited.
+- Excel sample sheets (XLS-01…02):
+  - Upload `.xlsx` manifests. Numbers are kept as stored, dates are flagged, and duplicate or unnamed columns are
+    reported.
+  - Download a manifest as `.xlsx`.
+- Team notifications (NOTIF-01…04): post finished runs, published versions and releases, and triage decisions to
+  Slack or Microsoft Teams channels, with retries and a delivery history (Admin → Notifications).
+- Gene–concept network (NET-01…02):
+  - Enrichment results show the top gene sets and their hit genes as a network coloured by log2 FC, with a table.
+  - Genes that are hits in several features are marked, never given one picked value.
+- Fix: error messages meet AA colour contrast.
+- 3D protein models (STRUC-01…03):
+  - A Mol* viewer on protein pages, coloured by pLDDT, with the model's source and licence.
+  - Models come from a local directory or AlphaFold DB, served by the API (`PROTEIN_MODELS_DIR`, `ALPHAFOLD_URL`).
+- Fix: `licence:scan` now checks every workspace package's dependencies.
+- Compound structures and structure search (CHEM-01…04):
+  - Structures and descriptors (RDKit) on compound pages: Lipinski counts, Crippen logP, TPSA, salts and
+    differing batches flagged.
+  - Substructure search (SMARTS or SMILES) and similarity search (Morgan, Tanimoto) on a new Structures page.
+- Fix: pages that send a request on load no longer fail with a CSRF error on a fresh load.
+- Cross-experiment QC (QCD-01…03):
+  - A QC page with identifications per run across experiments and runs flagged for low IDs.
+  - A PCA of runs coloured by experiment, plate, condition or date, to spot batch effects.
+  - A table of runs, with every counting rule listed.
+- Watchlists and alerts (WAT-01…03):
+  - Watch a protein, gene or compound.
+  - When a release you can read is published with a hit for it (adjusted p ≤ 0.05 and |log2 FC| ≥ 1), you get an
+    alert in the Alerts menu.
+- Hit triage board (TRI-01…04):
+  - Proteins and compounds per program are marked advance, watch or drop. A status change needs a reason.
+  - Owners, comments and evidence snapshots from releases.
+  - An append-only history with audit rows.
+  - "Add to triage" on protein and compound pages.
+- Pathway enrichment (ENR-01…04):
+  - Over-representation analysis of a contrast's hits against GO, Reactome or in-house gene sets (imported from
+    GMT), with a dot plot and table on the results page.
+  - The provenance records the universe, thresholds, protein-group handling and the source release of the gene
+    sets.
 - Bulk onboarding of legacy data (ING-06):
   - Path patterns turn a folder layout into experiments, inferred sample manifests and file roles.
   - Resumable batch runs, with imports that wait for QC.

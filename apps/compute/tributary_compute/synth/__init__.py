@@ -12,12 +12,15 @@ from pathlib import Path
 import numpy as np
 
 from tributary_compute.synth.catalog import EXPERIMENTS, PROGRAMS, all_proteins
+from tributary_compute.synth.gene_sets import write_gene_sets
 from tributary_compute.synth.genomics import mageck_gene_summary, rnaseq_counts
+from tributary_compute.synth.interactions import write_interactions
 from tributary_compute.synth.io import write_json, write_tsv
 from tributary_compute.synth.manifests import COLUMNS, build_samples, contrasts
 from tributary_compute.synth.proteomics import dia_contrast, dose_series, tmt_contrast
 from tributary_compute.synth.readme import README
 from tributary_compute.synth.reference import write_reference
+from tributary_compute.synth.structures import write_structures
 from tributary_compute.synth.tools import write_tools
 
 DEFAULT_SEED = 20261026
@@ -73,7 +76,10 @@ def generate(out_dir: Path, seed: int = DEFAULT_SEED) -> dict[str, str]:
     write_json(out_dir / "programs.json", list(PROGRAMS))
     write_json(out_dir / "experiments.json", experiments)
     write_reference(out_dir / "reference", _rng(seed, "reference"))
+    write_gene_sets(out_dir / "reference", proteins, _rng(seed, "gene_sets"))
+    write_interactions(out_dir / "reference", proteins, _rng(seed, "interactions"))
     write_tools(out_dir / "tools", proteins, lambda name: _rng(seed, name))
+    write_structures(out_dir / "structures", _rng(seed, "structures"))
     (out_dir / "README.md").write_text(README.format(seed=seed), encoding="utf-8")
 
     return {

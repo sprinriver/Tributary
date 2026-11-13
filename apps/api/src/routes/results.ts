@@ -4,6 +4,8 @@ import {
   CompareResultSchema,
   CompoundPageSchema,
   ProteinPageSchema,
+  ReportExportBodySchema,
+  ReportExportSchema,
   VersionResultsSchema,
 } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
@@ -12,6 +14,7 @@ import { authorize, readablePrograms, requirePrincipal } from '../auth/plugin.ts
 import type { ApiConfig } from '../config.ts';
 import { notFound, parse } from '../errors.ts';
 import { respond } from '../respond.ts';
+import { writeAudit } from '../audit.ts';
 import { compareContrasts } from '../results/compare.ts';
 import { versionResults } from '../results/load.ts';
 
@@ -30,6 +33,20 @@ export function registerResultRoutes(
     const { program_id, ...results } = await versionResults(db, request.params.id);
     authorize(request, 'read', 'Dataset', program_id);
     return respond(VersionResultsSchema, results);
+  });
+
+  app.post('/v1/versions/:id/report-exports', async (request: IdParams, reply) => {
+    const body = parse(ReportExportBodySchema, request.body);
+    const { program_id } = await versionResults(db, request.params.id);
+    authorize(request, 'read', 'Dataset', program_id);
+    await writeAudit(db, request, {
+      action: 'report.export',
+      entityType: 'experiment_version',
+      entityId: request.params.id,
+      after: { format: body.format },
+    });
+    reply.code(201);
+    return respond(ReportExportSchema, { format: body.format, recorded_at: new Date().toISOString() });
   });
 
   app.get('/v1/compounds/:id', async (request: IdParams) => {

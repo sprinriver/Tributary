@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/CompoundStructure",
+  "$defs": {
+    "CompoundStructure": {
+      "type": "object",
+      "properties": {
+        "compound_id": {
+          "type": "string"
+        },
+        "program_code": {
+          "type": "string"
+        },
+        "batch_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "smiles": {
+          "type": "string"
+        },
+        "canonical_smiles": {
+          "type": "string"
+        },
+        "inchikey": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "components": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "svg": {
+          "type": "string"
+        },
+        "descriptors": {
+          "type": "object",
+          "properties": {
+            "mw": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "exact_mw": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "clogp": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "tpsa": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "hbd": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "hba": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lipinski_hbd": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "lipinski_hba": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "rotatable_bonds": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "rings": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "mw",
+            "exact_mw",
+            "clogp",
+            "tpsa",
+            "hbd",
+            "hba",
+            "lipinski_hbd",
+            "lipinski_hba",
+            "rotatable_bonds",
+            "rings"
+          ],
+          "additionalProperties": false
+        },
+        "batches": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "batch_id": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "smiles": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "batch_id",
+              "smiles"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "batches_differ": {
+          "type": "boolean"
+        },
+        "rdkit_version": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "compound_id",
+        "program_code",
+        "batch_id",
+        "smiles",
+        "canonical_smiles",
+        "inchikey",
+        "components",
+        "svg",
+        "descriptors",
+        "batches",
+        "batches_differ",
+        "rdkit_version"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

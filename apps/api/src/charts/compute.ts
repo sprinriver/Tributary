@@ -23,10 +23,9 @@ export interface Compute {
   pca(body: Body): Promise<z.infer<typeof PcaResultSchema>>;
 }
 
-/** HTTP client; compute 422s become chart field errors (the control the user changes). */
-export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute {
-  const call =
-    <S extends z.ZodType>(path: string, schema: S, fields: Record<string, string>) =>
+/** One apps/compute endpoint; its 422s become field errors on the control the user changes (`fields`). */
+export function computeCall(config: ApiConfig, fetchImpl: typeof fetch) {
+  return <S extends z.ZodType>(path: string, schema: S, fields: Record<string, string>) =>
     async (body: Body): Promise<z.infer<S>> => {
       let res: Response;
       try {
@@ -54,6 +53,28 @@ export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute
         throw new HttpError(502, 'compute_failed', `The compute service answered HTTP ${res.status}.`);
       return schema.parse(json);
     };
+}
+
+/** apps/compute's group summary takes at most this many groups per request (GroupSummaryRequest). */
+export const GROUPS_PER_CALL = 200;
+
+/** Sends group summaries in batches and merges them in order (a QC panel has one group per protein). */
+function batched(one: (body: Body) => Promise<GroupSummaryResult>) {
+  return async (body: Body): Promise<GroupSummaryResult> => {
+    const groups = body.groups as unknown[];
+    if (!Array.isArray(groups) || groups.length <= GROUPS_PER_CALL) return one(body);
+    const parts: GroupSummaryResult[] = [];
+    for (let i = 0; i < groups.length; i += GROUPS_PER_CALL)
+      parts.push(await one({ ...body, groups: groups.slice(i, i + GROUPS_PER_CALL) }));
+    // Every version that answered (a redeploy mid-panel is recorded, not hidden).
+    const versions = [...new Set(parts.map((p) => p.compute_version))];
+    return { groups: parts.flatMap((p) => p.groups), compute_version: versions.join(', ') };
+  };
+}
+
+/** HTTP client; compute 422s become chart field errors (the control the user changes). */
+export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute {
+  const call = computeCall(config, fetchImpl);
   return {
     cluster: call('/stats/cluster', ClusterResultSchema, {
       values: 'encodings.values',
@@ -61,7 +82,7 @@ export function httpCompute(config: ApiConfig, fetchImpl: typeof fetch): Compute
     }),
     kde: call('/stats/kde', KdeResultSchema, { values: 'encodings.x' }),
     groupTest: call('/stats/group-test', GroupTestResultSchema, { groups: 'options.p_values' }),
-    groupSummary: call('/stats/group-summary', GroupSummaryResultSchema, { groups: 'encodings.y' }),
+    groupSummary: batched(call('/stats/group-summary', GroupSummaryResultSchema, { groups: 'encodings.y' })),
     pca: call('/stats/pca', PcaResultSchema, {
       values: 'encodings.values',
       components: 'options.components',

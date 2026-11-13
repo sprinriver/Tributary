@@ -5,6 +5,7 @@ import { loginHref, useMe } from '../auth.ts';
 import { Icon } from '../components/Icon.tsx';
 import { UserMenu } from '../components/UserMenu.tsx';
 import { NotificationsMenu } from '../pipelines/NotificationsMenu.tsx';
+import { AlertsMenu } from '../watch/AlertsMenu.tsx';
 import { pageTitle } from './nav.ts';
 import { useTheme } from './theme.ts';
 
@@ -57,6 +58,7 @@ export function TopBar({
             Assistant
           </button>
         )}
+        {me.data && <AlertsMenu />}
         {me.data && <NotificationsMenu />}
         {me.data ? (
           <UserMenu me={me.data} />

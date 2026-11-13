@@ -8,7 +8,7 @@
     "node": ">=24.0.0"
   },
   "scripts": {
-    "check": "turbo run typecheck test && tsc -p e2e && pnpm run lint && pnpm run test:compute && pnpm run lint:compute",
+    "check": "turbo run typecheck test && tsc -p e2e && pnpm run lint && pnpm run test:compute && pnpm run lint:compute && pnpm run test:scripts && pnpm run validation:pack --check",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "dev": "turbo run dev",
@@ -27,6 +27,7 @@
     "test:ui": "node scripts/vitest-pattern.mjs packages/ui",
     "test:compute": "cd apps/compute && uv run --locked pytest",
     "lint:compute": "cd apps/compute && uv run --locked ruff check . && uv run --locked ruff format --check . && uv run --locked pyright",
+    "format:compute": "cd apps/compute && uv run --locked ruff format . && uv run --locked ruff check --fix .",
     "e2e": "node scripts/e2e-pattern.mjs",
     "db:migrate": "node packages/db/scripts/migrate.ts",
     "db:seed": "node packages/db/scripts/seed.ts",
@@ -35,6 +36,9 @@
     "compute:sync": "cd apps/compute && uv sync",
     "bootstrap": "pnpm install --frozen-lockfile && cd apps/compute && uv sync --frozen",
     "licence:scan": "node scripts/licence-scan.mjs",
+    "test:scripts": "node --test \"scripts/*.test.mjs\"",
+    "string:prepare": "node scripts/string-prepare.mjs",
+    "validation:pack": "node scripts/validation-pack.mjs",
     "e2e:install-browsers": "playwright install --with-deps chromium",
     "gen:python": "cd apps/compute && rm -rf tributary_compute/contracts && uv run --locked datamodel-codegen --input ../../packages/contracts/generated/json-schema --input-file-type jsonschema --output tributary_compute/contracts --output-model-type pydantic_v2.BaseModel --target-python-version 3.12 --disable-timestamp --field-constraints --use-annotated --use-standard-collections --use-union-operator --enum-field-as-literal all --formatters ruff-format",
     "load:test": "node scripts/ops/load-test.mjs"

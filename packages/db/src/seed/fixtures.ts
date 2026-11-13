@@ -42,7 +42,8 @@ const readJson = <T>(dir: string, path: string) => JSON.parse(readFileSync(join(
 
 /** Tab-separated file with a header row and no quoting (the synth writer never quotes). */
 export function readTsv(dir: string, path: string): Record<string, string>[] {
-  const [header, ...lines] = readFileSync(join(dir, path), 'utf8').trimEnd().split('\n');
+  // Split on LF or CRLF: a checkout made on Windows may have converted the line endings.
+  const [header, ...lines] = readFileSync(join(dir, path), 'utf8').trimEnd().split(/\r?\n/);
   const columns = (header ?? '').split('\t');
   return lines.map((line) => {
     const cells = line.split('\t');

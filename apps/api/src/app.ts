@@ -36,9 +36,24 @@ import { registerAdminSettingsRoutes } from './routes/admin-settings.ts';
 import { registerAiRoutes } from './routes/ai.ts';
 import { registerWebhookRoutes } from './routes/webhooks.ts';
 import { registerOnboardingRoutes } from './routes/onboarding.ts';
+import { registerEnrichmentRoutes } from './routes/enrichment.ts';
+import { registerRateLimit } from './rate-limit.ts';
+import { registerChemRoutes } from './routes/chem.ts';
+import { registerInteractionRoutes } from './routes/interactions.ts';
+import { registerSelectivityRoutes } from './routes/selectivity.ts';
+import { registerNotificationRoutes } from './routes/notifications.ts';
+import { registerEmailRoutes } from './routes/email.ts';
+import { registerScimRoutes } from './routes/scim.ts';
+import { registerUsageRoutes } from './routes/usage.ts';
+import { registerProteinModelRoutes } from './routes/protein-model.ts';
+import { registerQcRoutes } from './routes/qc.ts';
+import { registerTriageRoutes } from './routes/triage.ts';
+import { registerWatchRoutes } from './routes/watch.ts';
 import { providerFor, type ModelProvider } from './ai/provider.ts';
 import { systemHealth } from './admin/health.ts';
-import { HealthReportSchema, InstanceInfoSchema } from '@tributary/contracts';
+import { supportBundle } from './support/bundle.ts';
+import { insertAudit, requestActor } from './audit.ts';
+import { HealthReportSchema, InstanceInfoSchema, SupportBundleSchema } from '@tributary/contracts';
 import { respond } from './respond.ts';
 import { embeddingProvider } from './search/embeddings.ts';
 import { searchIndex } from './search/index-service.ts';
@@ -85,6 +100,8 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
   if (!options.db) app.addHook('onClose', () => db.destroy());
 
   registerErrorHandler(app);
+  // Before authentication, for every route (health checks excepted).
+  registerRateLimit(app, config.rateLimit);
   // Clients often send `content-type: application/json` with no body (e.g. POST …/clone); treat it as no body.
   app.addContentTypeParser('application/json', { parseAs: 'string' }, (_request, body, done) => {
     const text = typeof body === 'string' ? body : body.toString('utf8');
@@ -134,7 +151,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     });
     registerProgramRoutes(scoped, db);
     registerExperimentRoutes(scoped, db, index);
-    registerVersionRoutes(scoped, db, index);
+    registerVersionRoutes(scoped, db, index, config);
     registerSampleRoutes(scoped, db);
     registerPresetRoutes(scoped, db);
     registerOntologyRoutes(scoped, db, config, fetchImpl);
@@ -152,6 +169,41 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerAiRoutes(scoped, { root: app, db, config, provider: aiProvider });
     registerWebhookRoutes(scoped, { db, config, fetch: fetchImpl });
     registerOnboardingRoutes(scoped, db, storage);
+    registerEnrichmentRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerInteractionRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerTriageRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerWatchRoutes(scoped, db);
+    registerQcRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerChemRoutes(scoped, db);
+    registerSelectivityRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerProteinModelRoutes(scoped, { config, fetch: fetchImpl });
+    registerNotificationRoutes(scoped, { db, config, fetch: fetchImpl });
+    registerEmailRoutes(scoped, { db, config });
+    registerScimRoutes(scoped, { db, config });
+    registerUsageRoutes(scoped, db);
+    scoped.get('/v1/admin/support-bundle', async (request, reply) => {
+      const admin = requireSystemAdmin(request);
+      const runners = options.runners ?? {};
+      const health = await systemHealth({ db, config, storage, fetch: fetchImpl, runners });
+      const bundle = await supportBundle(
+        { db, config, runners: Object.keys(runners) },
+        health,
+        admin.tenantId,
+      );
+      // A download that leaves the installation: audited like any export.
+      await insertAudit(db, requestActor(request), {
+        action: 'support.bundle',
+        entityType: 'installation',
+        entityId: admin.tenantId,
+        after: { version: bundle.instance.version, migrations: bundle.database.migrations_applied.length },
+      });
+      return reply
+        .header(
+          'content-disposition',
+          `attachment; filename="tributary-support-${bundle.generated_at.slice(0, 10)}.json"`,
+        )
+        .send(respond(SupportBundleSchema, bundle));
+    });
     scoped.get('/v1/admin/health', async (request) => {
       requireSystemAdmin(request);
       return respond(

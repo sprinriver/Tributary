@@ -22,7 +22,8 @@
             "type": "string",
             "enum": [
               "read",
-              "write"
+              "write",
+              "scim"
             ]
           }
         },

@@ -242,6 +242,7 @@ cBioPortal (Apache-2.0 only for releases from Oct 2026), SEEK (BSD-3), LabKey (A
 CELLxGENE (MIT), Phantasus/Morpheus (MIT/BSD-3), SODAR (MIT), Dash Bio (MIT — port its volcano/clustergram
 parameter designs), Plotly.js, react-querybuilder, AG Grid Community, TanStack, igv.js, Mol*, RDKit.js, Ketcher,
 EBI OLS4 (Apache-2.0, self-hostable), LinkML, Iceberg, DuckDB, OpenLineage, ODCS, datacontract-cli.
+MIT-0 (MIT No Attribution, e.g. nodemailer) counts as permissive: it is MIT without the notice requirement.
 
 **Run only as separate pipeline containers / processes, never copied into product code:**
 limma (GPL), inmoose (GPL-3.0-or-later; Python port of limma/edgeR/DESeq2), DEqMS (LGPL), MultiQC (GPL-3),
@@ -267,8 +268,16 @@ Spectronaut, MaxQuant. Have counsel confirm the container-separation pattern bef
 - Service accounts and personal access tokens (hashed, scoped, expiring) for API/SDK and MCP clients.
 - Publish/approve requires recent authentication (`max_age`), recorded in the audit row.
 - Secrets in AWS Secrets Manager (rotation for RDS); config in SSM Parameter Store.
-- KMS customer-managed keys for S3, S3 Tables, RDS; TLS 1.2+; security headers via `@fastify/helmet`;
-  rate limits via `@fastify/rate-limit`.
+- KMS customer-managed keys for S3, S3 Tables, RDS; TLS 1.2+.
+- Security headers are set by the CloudFront response-headers policy (`modules/cloudfront`), not by the API. That
+  includes the Content-Security-Policy from `modules/cloudfront/csp.json`, which the Vite dev and preview servers
+  also send (Phase 40).
+  - **Policy:** no `unsafe-eval` and no inline scripts. Plotly's WebGL scatter is the strict, precompiled one.
+    Mol*'s eval-based template helper is rewritten at build time, and its movie-export encoder is stubbed out.
+  `@fastify/helmet` and `@fastify/rate-limit` were planned and not adopted.
+- Rate limiting (Phase 44) is built in, with no dependency (`apps/api/src/rate-limit.ts`): a per-minute limit per
+  credential, and per client address for requests without one. It is counted per API process, so AWS WAF
+  rate-based rules remain the global limit.
 
 ## 11. AI architecture
 

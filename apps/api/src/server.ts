@@ -3,6 +3,8 @@ import { buildApp } from './app.ts';
 import { loadConfig } from './config.ts';
 import { createDb } from '@tributary/db';
 import { PgBossIngestQueue, startIngestWorker } from './ingest/queue.ts';
+import { startNotificationSweeper } from './notifications/sweep.ts';
+import { mailerFromConfig } from './notifications/mailer.ts';
 import { Storage } from './storage.ts';
 import { resolve } from 'node:path';
 import { LocalDockerRunner } from './pipelines/local.ts';
@@ -63,7 +65,8 @@ const app = buildApp({
   storage,
   runners,
   ingestQueue: new PgBossIngestQueue(boss),
-  server: { logger: true },
+  // The client address behind CloudFront and the load balancer (rate limiting, audit): trust the first N hops.
+  server: { logger: true, trustProxy: (_address: string, hop: number) => hop < config.trustProxyHops },
 });
 app.addHook('onClose', async () => {
   await boss.stop({ graceful: true });
@@ -86,4 +89,8 @@ if (queueUrl) {
     }
   })();
 }
+// Team notifications (Phase 31): send the outbox every 15 s.
+startNotificationSweeper({ db, fetch, config, mailer: mailerFromConfig(config) }, 15_000, (err) =>
+  app.log.error({ err }, 'notification sweep failed'),
+);
 await app.listen({ port, host });

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { StatusBadge } from '@tributary/ui';
-import { api } from '../api.ts';
+import { api, buildUrl } from '../api.ts';
 import { RequireAuth } from '../components/Layout.tsx';
 import { ErrorMessage } from '../components/ui.tsx';
 import { AiSettingsCard } from './AiSettings.tsx';
@@ -28,9 +28,19 @@ function Health() {
     <main className="stack">
       <div className="row" style={{ alignItems: 'center', justifyContent: 'space-between' }}>
         <h1 style={{ margin: 0 }}>System health</h1>
-        <button type="button" onClick={() => void health.refetch()} disabled={health.isFetching}>
-          {health.isFetching ? 'Checking…' : 'Check again'}
-        </button>
+        <div className="row">
+          <button type="button" onClick={() => void health.refetch()} disabled={health.isFetching}>
+            {health.isFetching ? 'Checking…' : 'Check again'}
+          </button>
+          <a
+            className="button"
+            href={buildUrl('/v1/admin/support-bundle')}
+            download
+            title="Versions, health, configuration switches and last week's failures; no secrets or personal data"
+          >
+            Download support bundle
+          </a>
+        </div>
       </div>
       <ErrorMessage error={health.error} />
       {h && (

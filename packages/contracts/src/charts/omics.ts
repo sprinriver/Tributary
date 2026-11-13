@@ -91,6 +91,8 @@ export const qcPanel: ChartDefinition = {
     color: { required: false, accepts: ['categorical'] },
   },
   options: qcOptions,
+  // Imputed values are not quantified (SPEC §6.2 is_imputed; never counted as measurements).
+  readIfPresent: ['is_imputed'],
   dataRules: { minRows: 1, maxPoints: 500_000, nullPolicy: 'drop-and-report' },
   compute: 'python',
   traces: ['bar', 'box'],

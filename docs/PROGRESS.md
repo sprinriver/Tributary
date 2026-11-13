@@ -1307,3 +1307,566 @@ Entry template:
     data created by other tests.
   - **Fix:** the test now creates its own published experiment and release (56601be). The pages and checks are
     unchanged, and it passes locally (2/2).
+
+## 2026-11-03 — Phase 24: Pathway enrichment — done
+- Built:
+  - **Compute:** `/stats/enrichment`, ORA with a one-sided hypergeometric test from log sf, a p floor and BH across
+    the tested sets (ENR-01).
+  - **Gene-set collections:** migration 0021 and a system-admin GMT import, audited, with line-numbered errors
+    (ENR-02).
+  - **`POST /v1/enrichment`:**
+    - hit selection by source adjusted p and fold change, with a strict sign test;
+    - a tested-only universe, or the annotated option;
+    - species check, isoform normalisation, protein-group counters, and full provenance (ENR-03).
+  - **Results page:** a "Pathway enrichment" panel with a dot plot (term-FDR line) and table.
+  - **Demo data:** `reference/gene_sets.gmt` (20 invented modules, on their own RNG stream, so no other fixture
+    changed), seeded as "Demo modules (synthetic)" (ENR-04).
+- Decisions (and why): ADR 0027.
+  - ORA now, GSEA later.
+  - The default universe is the measured and tested features; the clusterProfiler-style annotated universe is an
+    option.
+  - GO (CC BY) and Reactome (CC0) are allowed; MSigDB is not bundled, because of its licence.
+- Science review (omics-reviewer): 11 findings. Fixed:
+  - untested features were in the universe;
+  - silent truncation of large releases (the contrast is now filtered in the query, and a partial read is a 422);
+  - multi-gene hit groups and conflicting identifiers are now counted;
+  - species mismatch is refused and isoforms are stripped;
+  - the universe choice is offered and recorded;
+  - p underflow;
+  - the term-FDR line had used the hit threshold;
+  - the source adjustment method is now recorded;
+  - strict sign test;
+  - labels;
+  - the error field mapping.
+- Dependencies added: none.
+- Test changes, disclosed in their own commits:
+  - DB-01 table list: the gene-set tables.
+  - The ENR-01 test file runs in pyright basic mode (as `test_stats.py` does, for SciPy).
+  - The ENR-03 untested test counts every gene of a two-gene group.
+  - The ENR-04 e2e expects the reviewed provenance wording.
+  - `publishedDaRelease` (test helper) gained optional bytes and species.
+- Evidence: `pnpm check` ✓ (api 227, compute 86), and `pnpm e2e ENR-04` ✓ and `OPS-09` ✓ locally.
+  - The screenshot is `artifacts/phase-24/enrichment.png`.
+  - With random demo modules, nothing passes the term FDR, which is the honest result.
+- Gaps and follow-ups:
+  - GSEA (rank-based).
+  - Term redundancy reduction.
+  - Network view (needs a graph-renderer dependency, so approval first).
+  - A UI for importing gene sets (API only today).
+- Commits: 6d73c40 … e73f300
+
+## 2026-11-03 — Phase 25: Hit triage board — done
+- Built:
+  - **Schema:** migration 0022 with `triage_item` (unique per program, kind and key), `triage_evidence` (snapshots)
+    and `triage_event` (append-only: the app role has no UPDATE).
+  - **API:** list, create (idempotent), read, change status or owner (a status change needs a reason, which is also
+    the audit reason), comment, add evidence (TRI-01…03).
+    - **Owners:** must be members of the program.
+    - **Evidence:** a release the caller can read that holds the item: the protein's row in a differential-abundance
+      release (log2 FC and adjusted p), or the compound in a dose-response release.
+  - **Web:** a board with one column per decision. Cards are buttons, so it needs no drag and drop. The item panel
+    holds the decision with its reason, "Assign to me", evidence, history and comments. "Add to triage" is on the
+    protein and compound pages (TRI-04).
+- Decisions (and why):
+  - **No drag and drop:** decisions need a reason, and drag and drop is hard to make accessible.
+  - **Evidence is a snapshot:** it stays true because releases are immutable.
+  - **History is append-only:** enforced by grants.
+- Dependencies added: none.
+- Test changes, disclosed:
+  - DB-01 table list: the triage tables.
+  - OPS-09 also checks `/triage`, so the page list grows and nothing is loosened.
+  - TRI-04: Prettier formatting only.
+- Evidence: `pnpm check` ✓ (api 232), and `pnpm e2e TRI-04` ✓ and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-25/triage-board.png`.
+- Gaps and follow-ups:
+  - "Add to triage" is not yet on rows of the results page's top-hits table.
+  - Evidence cannot yet be attached from the UI.
+  - The owner picker supports "Assign to me" only (the API takes any program member).
+
+## 2026-11-03 — Phase 26: Watchlists and alerts — done
+- Built:
+  - **Schema:** migration 0023 with `watch` (per user, kind and key; soft delete) and `alert` (unique per watch,
+    release and contrast).
+  - **Alerts on publish:** `notifyWatchers` runs after every publish, both the UI path and pipeline outputs.
+    - It reads only the release's hit rows (adjusted p ≤ 0.05 and |log2 FC| ≥ 1, in the query) in one query.
+    - It matches watched proteins (isoform suffixes stripped), genes and compounds.
+    - Only watchers whose effective roles let them read the program get an alert.
+    - Inserts skip duplicates, and an audit row is written. It is best effort: it never fails a publish.
+  - **API:** list, create (idempotent), delete (soft) watches; list, read and read-all alerts. Everything is
+    personal, so other users get "not found", and every mutation is audited.
+  - **Web:** a Watch button on the protein and compound pages, and an Alerts menu in the top bar.
+- Found by e2e and fixed:
+  - Alert readers and triage owners had used `role_binding` rows only, which missed group-derived roles.
+  - Both now use `loadBindings`, as the principal does.
+- Dependencies added: none.
+- Test changes: DB-01 table list (watch, alert); Prettier formatting of the WAT-03 spec.
+- Evidence: `pnpm check` ✓ (api 235), and `pnpm e2e WAT-03` ✓ and `TRI-04` ✓ locally. The screenshot is
+  `artifacts/phase-26/alerts.png`.
+- Gaps and follow-ups:
+  - Email or webhook delivery of alerts: the in-app menu only for now (the webhooks from Phase 20 could carry them).
+  - Per-watch thresholds.
+  - A page listing all watches.
+
+## 2026-11-03 — Phase 27: Cross-experiment QC and batch effects — done
+- Built:
+  - **API:** `POST /v1/qc/overview` reads the latest published protein_quant release of each readable experiment
+    (newest N, then oldest first). A run is one sample × instrument run.
+    - IDs = protein groups quantified (intensity > 0, or a log2 intensity) and not imputed.
+    - % missing is measured against the release's protein groups.
+    - Median log2 intensity per run and median IDs per experiment come from apps/compute.
+    - Runs with IDs < 0.5 × their experiment's median are flagged.
+  - **PCA (apps/compute):** unflagged runs × protein groups quantified in all of them, matched by sorted
+    accessions; centred, not scaled. Colour by experiment, plate, condition or date (plates and conditions named
+    within their experiment).
+  - **Provenance:** every counting rule, counts of imputed cells, derived log2 values and dropped rows, the dataset
+    and importer per experiment, and the source normalisation. It warns when normalisation differs. An oversized
+    release is skipped and listed, never truncated.
+  - **Web:** a `/qc` page with the IDs trend, the PCA, a runs table and the provenance list. It is in the nav and
+    the a11y sweep.
+- The omics-reviewer found 15 issues. All are fixed, with unit tests in `qc/runs.test.ts`:
+  - imputed cells counted as IDs
+  - re-injections merged under one sample
+  - log2-only releases read as empty
+  - mixed normalisation not flagged
+  - group-string order
+  - plate labels repeating across experiments
+  - colours repeating
+  - q-value policy not stated
+  - skip reasons, dropped rows, release choice and PC2 fallback
+  - injection-order suggestion in the trend
+  - pca_note wording
+  - flag edge cases
+- Dependencies added: none.
+- Test changes: the QCD-02 expected IDs for the poor run are derived from the modified matrix. The fixture's first
+  protein row is empty in every run, so the hard-coded 10 was wrong; this is its own commit.
+- Evidence: `pnpm check` ✓ (api 243), and `pnpm e2e QCD-03` ✓ and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-27/qc-overview.png`.
+- Gaps and follow-ups:
+  - Precursor-level QC (mzQC, retention-time drift) is not shown.
+  - The overview is computed on request and not cached.
+  - Acquisition order is not recorded, so the trend uses manifest order.
+
+## 2026-11-04 — Phase 28: Compound structures and structure search — done
+- Built (ADR 0028):
+  - **RDKit:** `@rdkit/rdkit` 2025.3.4-1.0.0 (BSD-3-Clause, approved 2026-11-04) runs in apps/api.
+  - **Structure endpoint:** `GET /v1/compounds/{id}/structure` returns:
+    - an SVG depiction, canonical SMILES and computed InChIKey;
+    - descriptors: MW, exact MW, Crippen logP, TPSA from N and O, Lipinski and RDKit donor/acceptor counts,
+      rotatable bonds, rings;
+    - the component count (salts);
+    - every batch, with a flag when batches register different structures.
+  - **Search:** `POST /v1/compounds/search` does substructure search (SMARTS, or SMILES read as a molecule) or
+    similarity search (Morgan radius 2, 2048 bits, Tanimoto).
+    - It covers every distinct batch structure in the readable programs.
+    - The first match is highlighted and matches are counted.
+    - Unreadable registered SMILES are listed with program, compound and batch.
+  - **Web:**
+    - The structure and descriptors appear on the compound page, with a batch picker.
+    - A new "Structures" page has a query, a mode, SMARTS or SMILES, a threshold, and hit thumbnails linking to
+      the compound in its program.
+    - SVGs are shown as images, never injected into the page.
+- Found and fixed along the way: mutations sent while `/v1/auth/me` was still loading went out without a CSRF
+  token, so pages that POST on load (QC, structure search) got 403 on a fresh load. React Query's retries had
+  hidden this on the QC page. They now wait for the session (AUTH-01 unit test).
+- Chemistry review: 11 findings, all fixed with tests (`chem-structures.test.ts`):
+  - Lipinski vs RDKit HBD/HBA
+  - SMILES vs SMARTS queries
+  - stereochemistry stated
+  - salt components flagged
+  - batch structures
+  - program-scoped compound IDs
+  - null instead of 0
+  - labels
+  - match counts
+  - text after a space
+  - invalid entries named in full
+- Dependencies added: `@rdkit/rdkit` 2025.3.4-1.0.0 (approved).
+- Test changes, each in its own commit:
+  - The CHEM-02 `invalid_structures` assertion now expects program, compound and batch.
+  - The AUTH-01 test now drives the wait through `fetchMe`.
+  - The CHEM-04 e2e test uses the exact name for the Search button.
+  - The CHEM-02 chloro query uses chlorobenzene: the Cl is meta to the amide N, not para.
+- Evidence: `pnpm check` ✓ (api 249, web 32), and `pnpm e2e CHEM-04` ✓ and `OPS-09` ✓ locally. The screenshots are
+  `artifacts/phase-28/substructure-search.png` and `compound-structure.png`.
+- Gaps and follow-ups:
+  - There is no structure drawing (sketcher): queries are typed.
+  - No parent-structure standardisation.
+  - No stereo-aware search.
+  - Search time grows with the number of compounds (up to 50k batches per search).
+
+## 2026-11-04 — Phase 29: 3D protein structure viewer — done
+- Built (ADR 0029):
+  - **API:** `GET /v1/proteins/{id}/model` and `/model.cif` serve models from a local directory
+    (`PROTEIN_MODELS_DIR`) or AlphaFold DB (`ALPHAFOLD_URL`), from the same origin.
+    - Only UniProt accessions are sent out.
+    - Other hosts and redirects are refused.
+    - Files are cached in memory.
+    - Each model is labelled predicted, with its confidence metric and licence.
+  - **Synth:** three synthetic ModelCIF models (helix–loop–helix) with per-residue pLDDT. They carry
+    `ma_qa_metric` and B-factors, so the viewer behaves as it does with AlphaFold files.
+  - **Web:** a "3D model" section on protein pages. Mol* loads on demand, coloured by pLDDT with a key, and the
+    source, entry and licence are shown.
+- Also fixed: `licence:scan` checked only the root workspace's dependencies (147 of about 1000 Node packages). It
+  now checks every workspace (`-r`), and all 1026 pass. `stack-trace@0.0.9` (via plotly.js) has no licence field;
+  its LICENSE file is MIT and is recorded by exact version.
+- Dependencies added: `molstar` 5.11.0 (approved).
+- Root script added: `format:compute` (ruff format and fix).
+- Test changes: the STRUC-02 test's mmCIF loop parser was fixed (it dropped the first header line), and an unused
+  type was removed from the STRUC-01 test, each in its own commit.
+- Evidence: `pnpm check` ✓ (api 252, web 32, compute 88), and `pnpm e2e STRUC-03` ✓ locally. The screenshot is
+  `artifacts/phase-29/protein-3d-model.png`.
+- Gaps and follow-ups:
+  - Peptide or site mapping onto the structure.
+  - Experimental PDB structures.
+  - PAE.
+  - The AlphaFold path was tested with a stub, because this environment cannot reach EBI.
+
+## 2026-11-04 — Phase 30: Gene–concept network — done
+- Built:
+  - **API:** enrichment responses carry `hit_genes`. Each hit identifier in the universe has its log2 FC when it is
+    a hit in one feature. When it is a hit in several, it has the feature count and whether their signs agree, and
+    no value is picked.
+  - **Web:** a gene–concept network (Cytoscape.js `cose` layout) under the enrichment results.
+    - It shows the top 8 sets and their hit genes.
+    - Genes are coloured by log2 FC (diverging, clamped at ±3). Multi-feature genes are grey with a dashed edge.
+    - A table alternative lists every gene with its value and sets.
+    - Cytoscape loads on demand.
+- Also fixed: the error-alert text on its pink background was 4.4:1 contrast, now 5.9:1 (AA). The a11y sweep found
+  it on a protein page whose AlphaFold lookup cannot reach EBI from this environment.
+- Dependencies added: `cytoscape` 3.34.0 (approved).
+- Test changes: none.
+- Evidence: `pnpm check` ✓ (api 253, web 33), and `pnpm e2e NET-02`, `ENR-04` and `OPS-09` ✓ locally. The
+  screenshot is `artifacts/phase-30/gene-concept-network.png`.
+- Gaps and follow-ups:
+  - Protein–protein interaction networks need a STRING-style reference dataset: a new dataset contract and
+    importer.
+  - The network cannot be exported as an image yet.
+
+## 2026-11-04 — Phase 31: Team notifications (Slack and Teams) — done
+- Built (ADR 0030):
+  - **Migration 0024:** `notification_route` and the `notification_delivery` outbox.
+  - **API:** system-admin routes, kept secret and checked against Slack's and Teams' own hosts, with audit. They
+    support list, create, update, delete, test and deliveries.
+  - **Events** from publish (UI and pipeline outputs), version publish, triage decisions and finished runs.
+  - **Sweep:** a 15 s sweep in the API process. It claims rows with `SKIP LOCKED` and makes 5 attempts with
+    backoff.
+  - **Web:** an Admin → Notifications page to add a channel, send a test, pause, remove, and see the last
+    deliveries.
+- Dependencies added: none.
+- Test changes: DB-01's table list gains the two new tables.
+- Evidence: `pnpm check` ✓ (api 256, web 33, db 17), and `pnpm e2e NOTIF-04` ✓ and `OPS-09` ✓ locally. The
+  screenshot is `artifacts/phase-31/notifications.png`. The test message fails locally because this sandbox
+  cannot reach Slack, and the page reports that.
+- Gaps and follow-ups:
+  - Personal email (needs SES or SMTP approval).
+  - Per-user preferences.
+  - A real Slack/Teams check: use **Send test** on a real channel.
+
+## 2026-11-04 — Phase 32: Excel sample sheets — done
+- Built:
+  - **Upload:** the manifest editor's **Upload file** accepts `.xlsx`, parsed in the browser by read-excel-file.
+    - It reads the sheet named "samples", or else the first, and says which sheet it read.
+    - Numbers keep the text Excel stored.
+    - Date cells become ISO dates, with a warning (Excel turns names like SEPT1 into dates).
+    - Duplicate and unnamed columns are reported.
+    - The usual preview and column mapping follow.
+  - **Download Excel:** writes the manifest as `.xlsx` with every cell as text (write-excel-file).
+  - **Also fixed:** wide upload previews now scroll inside their card.
+- Dependencies added: `read-excel-file` 9.3.5 and `write-excel-file` 4.1.1 (approved).
+- Test changes: the XLS-01 e2e checks "1 µM" in the grid after Apply, because the preview shows only the first five
+  rows. This is in its own commit.
+- Evidence: `pnpm check` ✓, and `pnpm e2e XLS-01`, `MAN-01` and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-32/xlsx-preview.png`.
+
+## 2026-11-04 — Phase 33: Experiment reports — done
+- Built:
+  - **Report page:** `/experiments/{id}/report`, linked from the results page. It shows:
+    - methods;
+    - per contrast: hit counts at the display thresholds (counted by the query service), the volcano and the top 10
+      hits;
+    - data and files.
+  - **Print / save as PDF:** print styles hide the app frame.
+  - **Download PowerPoint:** built in the browser with pptxgenjs, from a unit-tested slide plan, using the rendered
+    volcano images.
+  - **Audit:** both exports are recorded by `POST /v1/versions/{id}/report-exports` and audited
+    (`report.export`).
+- Dependencies added: `pptxgenjs` 4.0.1 (approved).
+- Test changes: the REP-01 payload type was tightened (typecheck only, its own commit).
+- Evidence: `pnpm check` ✓ (api 257, web 38), and `pnpm e2e REP-03` and `OPS-09` ✓ locally. The screenshots are
+  `artifacts/phase-33/report.png` and `report-print.png`.
+- Gaps and follow-ups:
+  - The report covers differential-abundance contrasts. QC, dose-response and enrichment sections can follow.
+
+## 2026-11-04 — Phase 34: Personal email — done
+- Built:
+  - **Migration 0025:** `notification_preference` and the `email_delivery` outbox.
+  - **API:** `GET` and `PUT /v1/me/notification-preferences` (own only, audited). Emails are on by default for
+    three events:
+    - a new hit for an item you watch (one email per release);
+    - a triage item assigned to you (not by yourself);
+    - your pipeline run finished.
+  - **Sending:** the 15 s notification sweep sends emails with the same claiming, retries and backoff as channel
+    deliveries.
+  - **Transport:** `EMAIL_TRANSPORT` = `ses` (@aws-sdk/client-sesv2) or `smtp` (nodemailer). Unset means emails
+    are not queued.
+  - **Content:** names and a link only.
+  - **Web:** an "Email notifications" page in the user menu.
+- Dependencies added: `@aws-sdk/client-sesv2` 3.1156.0 and `nodemailer` 9.0.4 (approved). MIT-0 was added to the
+  licence allowlist (ARCHITECTURE §9).
+- Test changes: DB-01's table list gains the two new tables.
+- Evidence: `pnpm check` ✓ (api 260), and `pnpm e2e MAIL-01`, `OPS-09`, `TRI-04` and `WAT-03` ✓ locally. The
+  screenshot is `artifacts/phase-34/email-settings.png`.
+- Gaps and follow-ups:
+  - Digests (daily or weekly).
+  - HTML email.
+  - A real SES/SMTP send needs a configured installation.
+
+## 2026-11-05 — Phase 35: SCIM user provisioning — done
+- Built (ADR 0031):
+  - **Migration 0026:** SCIM identity columns, `deactivated_at`, group-membership `source`, and the `scim` token
+    scope.
+  - **Endpoints:** `/scim/v2` discovery, Users and Groups.
+  - **Deactivation:** blocks access at once and is reversible.
+  - **Linking:** the first sign-in links to the provisioned account.
+  - **Memberships:** sign-in group claims never undo SCIM memberships.
+  - **UI:** Admin → Access shows the SCIM endpoint and creates or revokes the token.
+- **Found and fixed during the phase:**
+  - A token without `read` or `write` could still perform reads through the general auth hook and the MCP
+    endpoint. Now `/v1` and MCP require one of those scopes (tests in SCIM-01).
+- Dependencies added: none.
+- Evidence: `pnpm check` ✓ (api 264), and `pnpm e2e SCIM-04`, `AUTH-01` and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-35/scim-token.png`.
+- Gaps and follow-ups:
+  - Not supported: bulk, sort, ETags, complex filters, enterprise extension attributes.
+  - Not yet tested against a live Okta or Entra tenant.
+
+## 2026-11-05 — Phase 36: Usage analytics for admins — done
+- Built:
+  - **API:** `GET /v1/admin/usage?weeks=` (system admins), counted from the audit log and the registry, with no
+    new tracking. It returns:
+    - weekly measures (active people, experiments, publishes, imports, runs, exports, assistant, triage);
+    - totals;
+    - per program and per person;
+    - a definition for every measure, and a figure.
+  - **CSV:** `/v1/admin/usage/export` is audited (`usage.export`).
+  - **Web:** an Admin → Usage page with headline numbers, a weekly chart plus a table, programs and people, a CSV
+    download, and the definitions.
+- Also fixed:
+  - Weeks are computed as UTC text, so a server in another time zone cannot shift them.
+  - The demo seed created its own account as a person. It is now a service (seed fix, plus migration 0027 for
+    databases seeded before).
+- Dependencies added: none.
+- Evidence: `pnpm check` ✓ (api 266), and `pnpm e2e USE-03` and `OPS-09` ✓ locally. The screenshot is
+  `artifacts/phase-36/usage.png`.
+
+## 2026-11-09 — Phase 37: Support diagnostics bundle — done
+- Built:
+  - **Endpoint:** `GET /v1/admin/support-bundle` (system admins), audited as `support.bundle`. It contains:
+    - version and build, Node and Postgres versions;
+    - migrations applied and pending;
+    - the health report;
+    - a configuration summary from an allowlist (switches, counts and host names only);
+    - record counts;
+    - the last 7 days' failures: pipeline runs, channel deliveries, emails without addresses, rejected imports.
+  - **UI:** a "Download support bundle" button on Admin → Health.
+  - **Version:** the API reports 2.1.0-dev (it was a hard-coded 0.0.0), plus `APP_BUILD` when the deployment sets
+    it.
+- Tests: secrets (cookie secret, OIDC client secret, internal token, SMTP password, webhook URL) and personal data
+  never appear in the bundle.
+- Evidence: `pnpm check` ✓ (api 268), and `pnpm e2e SUP-02`, `ADM-03` and `OPS-09` ✓ locally.
+
+## 2026-11-09 — Phase 38: Validation pack — done
+- Built:
+  - **Generator:** `scripts/validation-pack.mjs` (no dependency) writes `docs/validation/TRACEABILITY.md` and `.csv`.
+    Each requirement in features.json gets its verification method (automated test, or command/document check), the
+    tests that carry its feature ID and its status. 139 requirements and 562 linked tests, with no gaps.
+  - **Check:** `pnpm check` now runs `test:scripts` and `validation:pack --check`. It fails when the matrix is stale or
+    a requirement marked passing has no evidence. A verify command that runs tests counts only with tests that
+    match.
+  - **Templates:** `docs/validation/` holds:
+    - a README (Tributary is not a validated system; the pack supports the customer's own validation);
+    - IQ and OQ protocol templates, with the OQ steps tied to feature IDs;
+    - a 21 CFR Part 11 controls map, with partial and procedural controls stated as such.
+- Fixed during the phase: test-shaped text inside strings (the generator's own fixtures) was counted as evidence. Only
+  calls at the start of a line in the file's own language count now, and a regression test covers this.
+- Dependencies added: none.
+- Test amendment (disclosed): MAIL-01 in `apps/api/src/email.test.ts` failed in CI by chance. Its "no data values"
+  pattern `e-\d` matched a random release UUID (`…8dfe-58…`). The test now replaces UUIDs with `<id>` before applying
+  the same pattern. The assertion is otherwise unchanged.
+
+## 2026-11-09 — Phase 39: Fuller experiment reports — done
+- Built (web only, from existing endpoints):
+  - **QC section:** the QC panel of the version's protein-quantity release.
+  - **Pathway enrichment:**
+    - Pick gene sets, then **Add to report**. Enrichment runs for every contrast with the report's display thresholds.
+    - It states the collection, hit definition and method, plus per contrast: hits, background, sets tested and how
+      many pass the term FDR.
+    - It shows the top 10 sets and the API's recorded transformations.
+    - A contrast without hits says so; the others still run.
+  - **Dose-response section:**
+    - curves per class, as the source tool classed them (a capped count is shown as "> n");
+    - the curves figure;
+    - the top regulated curves by FDR, then pEC50 (it says when ranking is by pEC50 only).
+  - **Output:** every section is in the PowerPoint plan. Controls are not printed, nor is the enrichment section until
+    it has a result.
+- Science review (omics-reviewer):
+  - **P1, fixed:** a contrast without hits made the whole enrichment fail.
+  - **P2s, fixed:**
+    - an "unclassified" label for curves the tool did not class;
+    - capped counts;
+    - "measured set members" for K;
+    - significance and provenance shown with the enrichment;
+    - QC caption (per sample, pooled CV, missing or ≤ 0 = not quantified);
+    - FDR (q-value) label, and the pEC50-only ranking note.
+- Not changed:
+  - The QC panel still pools conditions for the CV and plots per sample. This is the existing chart (Phase 9); the
+    caption says so.
+  - Colouring by condition would need a sample-metadata join in the chart. That is a follow-up.
+- Test amendments (disclosed): this phase's own REP-04…07 tests were tightened after the review, before the
+  implementation was committed, in commits `5f319c6` and the REP-07 caption commit.
+- Dependencies added: none.
+
+## 2026-11-09 — Phase 40: Content-Security-Policy — done
+- Built:
+  - **One policy:** `infra/terraform/modules/cloudfront/csp.json`.
+    - CloudFront's response-headers policy builds the header from it in Terraform: new `upload_origin` input, from the
+      S3 module's `raw_bucket_origin`.
+    - The Vite dev and preview servers build it with `apps/web/src/security/csp.ts`. The dev server also allows inline
+      scripts, for React refresh.
+    - No `unsafe-eval`, no inline scripts, `frame-ancestors 'none'`, `object-src 'none'`. `connect-src` allows
+      `'self'` plus the raw bucket, for presigned uploads.
+  - **Eval removed from the browser (found by the e2e test):**
+    - Plotly `scattergl` now uses Plotly's strict (precompiled regl) module, the one its own `lib/index-strict.js`
+      uses.
+    - Mol* 5.11 `mol-util/string.js` `interpolate` (`new Function`, mouse-binding help only) is rewritten by a
+      Vite/Rolldown plugin. A changed Mol* fails the build.
+    - Mol*'s movie-export encoder (`h264-mp4-encoder`, Emscripten embind) is aliased to a stub that refuses.
+    - zod runs `jitless`, so its eval probe does not trigger a violation.
+- Evidence:
+  - The whole e2e suite (64 tests) passes against the production build served with the policy.
+  - SEC-02, STRUC-03, NET-02 and REP-03 pass on the dev server. Correction (Phase 41): that run actually hit a
+    leftover preview server. SEC-02 and STRUC-03 were re-run on fresh dev servers in Phase 41 and pass.
+- Not verified locally: Terraform is not installed here; CI's infra job runs fmt, validate, tflint and checkov.
+- Dependencies added: none.
+
+## 2026-11-09 — Phase 41: QC CVs per condition — done
+- Built:
+  - **Shared spec:** `apps/web/src/results/qc-spec.ts` is used by the results page and the report.
+    - When every sample of the version has a condition, it left-joins the version's sample sheet on
+      (experiment_version_id, sample_key) and colours by condition, so CVs are computed within each condition.
+    - Otherwise CVs stay pooled, and the caption and slide say which.
+  - **CV note:** names the column without the join alias.
+- Fixed:
+  - **Pre-existing:** the compute service takes at most 200 groups per group-summary request. QC panels of more
+    than 200 proteins failed ("The computation failed"), so every real-sized dataset did. The API now batches
+    requests at 200 and merges them in order, and records every compute version that answered.
+  - **Science review (omics-reviewer):**
+    - runs not in the sample sheet form a labelled "not in the sample sheet" group with a note, never "all runs";
+    - the CV note counts feature–condition pairs and names conditions without CVs;
+    - imputed values (`is_imputed`, read when present via the chart registry's new `readIfPresent`) count as not
+      quantified, with a note (this predates the phase);
+    - the caption says CVs use all runs of a condition.
+- Test amendments (disclosed, each in its own commit):
+  - QCD-05 note wording ("within condition");
+  - QCD-04 replicate test data;
+  - REP-07's QC caption: the fixture records conditions, so the caption is now the per-condition one;
+  - a type-only `!` in the QCD-04 contract test.
+- Evidence: `pnpm check` ✓, and `pnpm e2e "QCD-0|REP-0|RES-01|SEC-02"` ✓ (6) on fresh dev servers. Before the
+  review fixes, the full e2e suite (65) passed.
+- Not done: no screenshot for this phase. The QC panel looks as before, with one box per condition in the CV panel.
+- Dependencies added: none.
+
+## 2026-11-10 — Phase 42: Compound selectivity profile — done
+- Why: competitors' registries and ELNs do not answer "how selective is this compound, and what else does it hit?"
+  from proteomics data. Tributary holds the dose-response curves needed to answer it.
+- Built:
+  - **Endpoint:** `GET /v1/compounds/{id}/selectivity?release_id&pec50_min&direction`, computed per readable
+    dose-response dataset (one profiling experiment). It reports:
+    - proteins tested (classed by the tool) and regulated (up, down);
+    - S(x) after Karaman et al. 2008;
+    - the selectivity window against annotated primary targets;
+    - a ranked figure and provenance notes.
+  - **Compound page:** a Selectivity section with dataset, direction and threshold in the URL.
+- Science review (omics-reviewer), all fixed:
+  - **P0:** an experiment with one dose-response dataset per compound could profile the wrong dataset. Selection is
+    now per release.
+  - **P1s:**
+    - curves without a class are no longer counted as tested;
+    - a direction choice, with notes on what regulation means per assay design;
+    - correct notes when a target is regulated but has no pEC50;
+    - gene-level features match annotations by gene symbol.
+  - **P2s:**
+    - ambiguous protein groups flagged;
+    - duplicate curves counted and noted;
+    - "apparent potency in this assay" (not "cellular");
+    - thresholds and potencies outside the tested dose range flagged;
+    - figure symbols, threshold and truncation labelled;
+    - EC50 unit rounding.
+- Found from the screenshot: compound-to-target links are a reference dataset (as the compound page's Targets table
+  reads them), not the `target_annotation` table. The test setup first inserted into the table, which hid the bug.
+- Test amendments (disclosed, each in its own commit): this phase's SEL-02 setup, and SEL-01…03 tightened after the
+  review. The shared test helper gained importer options and extra datasets per version.
+- Evidence: `pnpm check` ✓, and `pnpm e2e "SEL-03|RES-04|SEC-02"` ✓. Screenshot: `artifacts/phase-42/selectivity.png`.
+- Dependencies added: none.
+- Not done: TPP (thermal proteome profiling) import. The TPP package's result-table format could not be read from
+  here: Firecrawl's daily limit was reached, and Bioconductor and rdrr.io are blocked. Guessing a format is not
+  allowed.
+
+## 2026-11-10 — Phase 43: Selectivity table across compounds — done
+- Built:
+  - **Endpoint:** `GET /v1/selectivity?program_id&pec50_min&direction`: one row per compound and readable
+    dose-response dataset, from the Phase 42 profile.
+  - **Page:** Analysis → Selectivity, with program, direction and threshold in the URL, and links to each
+    compound's profile.
+- Science review (omics-reviewer), all fixed:
+  - a compound with nothing regulated at the threshold is "inactive, not selective" and is not ranked first;
+  - rows are grouped by dataset and S(x) is only ordered within one; the caveat is shown above the table;
+  - target annotations are read per program (compound IDs are unique within a program only). This also fixes the
+    Phase 42 compound profile, which read annotations from every readable program;
+  - profile warnings (dose range, unclassified curves, no pEC50) are shown per row;
+  - several fitting tools for one compound are named; curves without a compound ID are counted in a note;
+  - a program picker, so "choose a program" can be acted on.
+- Test amendments (disclosed, each in its own commit): this phase's SEL-04 and SEL-05 tests, twice for wrong
+  assumptions about the fixture (EGFR annotation, the unclassified-curves flag) and once after the review.
+- Evidence: `pnpm check` ✓, `pnpm e2e "SEL-0|OPS-09"` ✓. Screenshot: `artifacts/phase-43/selectivity-table.png`.
+
+## 2026-11-10 — Phase 44: API rate limiting — done
+- Built: `apps/api/src/rate-limit.ts`, a fixed-window counter per key with no dependency.
+  - **Keys:** the hash of the bearer token or session cookie; else the client address.
+  - **Behaviour:** 429 `rate_limited` with `Retry-After`. It runs before authentication. Health checks and verified
+    in-process calls are exempt.
+  - **Config:** `RATE_LIMIT_PER_MINUTE` (600 in production, off elsewhere), `RATE_LIMIT_ANON_PER_MINUTE` (120),
+    `TRUST_PROXY` (set to 2 in the Terraform environment).
+- Limits: counted per API process, so a WAF rule is still the global limit. The whitepaper says so.
+- Not verified locally: the one-line Terraform change (CI's infra job validates it).
+- Dependencies added: none (this replaces the `@fastify/rate-limit` request).
+
+## 2026-11-13 — Phase 45: Interaction networks of hits (STRING) — done
+- Unblocked by the new "tributary" environment, which allows bioconductor.org and the STRING sites.
+- Built:
+  - **Storage:** migration 0028 (`interaction_collection`, `interaction_edge`).
+  - **Import:** `POST /v1/interaction-collections` (system admin, audited), taking "a, b, score" text.
+    `pnpm run string:prepare` converts STRING v12.0 download files. On the human files it gives 236,930 pairs at
+    score ≥ 700 (3.8 MB).
+  - **Network:** `POST /v1/interactions/network` returns the pairs between a contrast's hits, with fold changes,
+    counts and notes. No network statistic is computed.
+  - **Web:** an Interaction network panel on the results page, with a table.
+  - **Demo data:** `pnpm synth` writes 2,000 invented pairs; the seed loads them. Other fixtures are unchanged.
+- Refactors: the contrast-row reader is shared between enrichment and interactions; seed networks moved to their
+  own module to keep `seed/index.ts` under 400 lines.
+- Science review (omics-reviewer), all fixed:
+  - the STRING script no longer drops pairs listed in one direction only;
+  - it reports preferred names shared by several proteins, same-name pairs dropped and pairs merged, and validates
+    the score;
+  - the panel says "pairs" and "associations", not "interactions", and an empty result no longer reads as evidence
+    that hits are unrelated;
+  - labels follow the collection's identifier type; counts are defined in the contract and all shown.
+- STRING licence checked: CC BY 4.0, commercial use allowed with attribution. Customers download the data
+  themselves; the recorded licence is shown with every network.
+- Test amendments (disclosed, each in its own commit): this phase's PPI-01 and PPI-04 tests (pair counting, then
+  the review); DB-01's table list gained the two new tables.
+- Evidence: `pnpm check` ✓, `pnpm e2e "PPI-04|ENR-04|NET-02"` ✓. Screenshot: `artifacts/phase-45/`.
+- Local note: the dev database here was not reseeded (the seed skips when demo data exists), so the demo pairs were
+  loaded by hand for the local e2e run. CI seeds a fresh database.
+- Known follow-up: `apps/api/src/charts/shape-more.test.ts` is over the 400-line limit (452) since Phase 41.
+- Dependencies added: none.
