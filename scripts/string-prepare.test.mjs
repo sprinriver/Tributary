@@ -25,7 +25,7 @@ const info = [
 test('PPI-01: STRING links at or above the score become one "gene gene score" line per pair, by preferred name', () => {
   const out = stringToTsv(links, info, 700);
   assert.equal(out.tsv, 'MDM2\tTP53\t999\n');
-  assert.deepEqual(out.counts, { pairs: 1, belowScore: 2, unmapped: 1 });
+  assert.deepEqual(out.counts, { pairs: 1, belowScore: 1, unmapped: 1 }); // pairs are counted once
 });
 
 test('PPI-01: a lower threshold keeps more pairs; pairs are sorted', () => {
