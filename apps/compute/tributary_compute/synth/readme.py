@@ -25,6 +25,7 @@ Statistics in result tables are simulated around known true effects, not compute
 | `structures/<accession>.cif` | ModelCIF 3D models with per-residue pLDDT (`ma_qa_metric`) | Invented helix-turn-helix backbones for the 3D viewer demo; not predictions |
 | `reference/gene_sets.gmt` | GMT gene-set collection (id, description, genes) | 20 invented modules of 12-30 genes; no biological meaning |
 | `reference/interactions.tsv` | Interaction pairs (`gene`, `gene`, score 0-1000; the layout of a thresholded STRING file) | 2000 invented pairs; no biological meaning |
+| `tools/tpp/tr_results.tsv` | TPP 3.40.2 `analyzeTPPTR` result table, as R's `write.table` writes it (tab-separated, `NA`, `TRUE`/`FALSE`) | 30 proteins, 2 vehicle and 2 treatment experiments, 10 temperatures; values from the melting-curve model plus noise, invented p-values, nothing fitted |
 | `tools/samples.tsv` | Manifest for the tool fixtures | 4 runs `TOOLS_run01..04`, 2 DMSO + 2 treated |
 | `tools/diann/report.tsv` | DIA-NN main report columns (TSV; tests convert to Parquet) | Precursor rows, q < 0.01 |
 | `tools/alphadia/precursors.tsv`, `pg.matrix.tsv` | AlphaDIA 2.3 outputs | Columns from `alphadia/constants/keys.py` |

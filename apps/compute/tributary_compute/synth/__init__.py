@@ -22,6 +22,7 @@ from tributary_compute.synth.readme import README
 from tributary_compute.synth.reference import write_reference
 from tributary_compute.synth.structures import write_structures
 from tributary_compute.synth.tools import write_tools
+from tributary_compute.synth.tpp import write_tpp
 
 DEFAULT_SEED = 20261026
 
@@ -79,6 +80,7 @@ def generate(out_dir: Path, seed: int = DEFAULT_SEED) -> dict[str, str]:
     write_gene_sets(out_dir / "reference", proteins, _rng(seed, "gene_sets"))
     write_interactions(out_dir / "reference", proteins, _rng(seed, "interactions"))
     write_tools(out_dir / "tools", proteins, lambda name: _rng(seed, name))
+    write_tpp(out_dir / "tools", proteins, _rng(seed, "tools/tpp"))
     write_structures(out_dir / "structures", _rng(seed, "structures"))
     (out_dir / "README.md").write_text(README.format(seed=seed), encoding="utf-8")
 
