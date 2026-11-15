@@ -132,7 +132,7 @@ describe('melting curves', () => {
 
   it('TPP-03: melting_curve refuses a dataset that is not a thermal_shift', async () => {
     await expect(shape('melting_curve', {}, [{ feature_id: 'P1', log2_fc: 1 }])).rejects.toMatchObject({
-      code: 'wrong_kind',
+      body: { code: 'wrong_kind', field: 'data' },
     });
   });
 });
