@@ -23,7 +23,9 @@
             "ma",
             "pca",
             "dose_response",
-            "qc_panel"
+            "qc_panel",
+            "melting_curve",
+            "thermal_shift"
           ]
         },
         "title": {

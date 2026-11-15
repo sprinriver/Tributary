@@ -36,6 +36,7 @@ export * from './charts/distribution.ts';
 export * from './charts/heatmap.ts';
 export * from './charts/omics.ts';
 export * from './charts/results.ts';
+export * from './charts/thermal.ts';
 export * from './charts/validate.ts';
 export * from './charts/volcano.ts';
 export * from './charts/xy.ts';

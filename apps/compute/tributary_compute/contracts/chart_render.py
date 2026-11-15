@@ -293,6 +293,8 @@ class ChartSpec(BaseModel):
         "pca",
         "dose_response",
         "qc_panel",
+        "melting_curve",
+        "thermal_shift",
     ]
     title: str | None = None
     data: QuerySpec | Data
