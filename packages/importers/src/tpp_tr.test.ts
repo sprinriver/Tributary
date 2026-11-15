@@ -150,4 +150,110 @@ describe('TPP-01: tpp_tr', () => {
       'adj_p_value_range',
     );
   });
+  // Review follow-ups (omics review of Phase 46).
+  const edited = (
+    name: string,
+    header: (h: string) => string,
+    cell?: (column: string, v: string, row: number) => string,
+  ) => {
+    const [head, ...lines] = readFileSync(FIXTURE, 'utf8').trim().split('\n');
+    const cols = head!.split('\t');
+    return write(
+      name,
+      [
+        cols.map(header).join('\t'),
+        ...lines.map((l, n) =>
+          l
+            .split('\t')
+            .map((v, k) => (cell ? cell(cols[k]!, v, n) : v))
+            .join('\t'),
+        ),
+      ].join('\n'),
+    );
+  };
+  const warnings = (r: Awaited<ReturnType<typeof runImport>>) =>
+    r.failures.filter((f) => f.severity === 'warn').map((f) => f.rule_id);
+
+  it('TPP-01: tpp_tr reads the filter column in either name order and warns when the table has none', async () => {
+    const swapped = edited('swapped.tsv', (h) =>
+      h.replace(/^passed_filter_(Vehicle_\d)_vs_(CPD5_\d)$/, 'passed_filter_$2_vs_$1'),
+    );
+    const rows = await canonicalRows(conn, await runImport(conn, 'tpp_tr', swapped, ctx()));
+    const at = (f: string) => rows.find((r) => r.feature_id === f && r.comparison === 'CPD5_1 vs Vehicle_1')!;
+    expect([at('TP53').passed_filter, at('PTEN').passed_filter]).toEqual([true, false]);
+    const none = await runImport(
+      conn,
+      'tpp_tr',
+      edited('nofilter.tsv', (h) => h.replace(/^passed_filter_/, 'other_')),
+      ctx(),
+    );
+    expect(warnings(none)).toContain('no_filter_column');
+    expect(warnings(await runImport(conn, 'tpp_tr', FIXTURE, ctx()))).not.toContain('no_filter_column');
+  });
+
+  it('TPP-01: tpp_tr needs the feature type stated (TPP’s Protein_ID is often a gene symbol) and records it', async () => {
+    await expect(runImport(conn, 'tpp_tr', FIXTURE, ctx({ feature_type: undefined }))).rejects.toThrow(
+      /feature_type/,
+    );
+    const groups = await runImport(conn, 'tpp_tr', FIXTURE, ctx({ feature_type: 'protein_group' }));
+    const row = (await canonicalRows(conn, groups)).find((r) => r.feature_id === 'TP53')!;
+    expect(row).toMatchObject({ protein_ids: ['TP53'], gene_names: [] });
+    for (const type of ['gene', 'protein_group'])
+      expect(
+        (await runImport(conn, 'tpp_tr', FIXTURE, ctx({ feature_type: type }))).transformations.find(
+          (t) => t.step === 'feature',
+        )?.detail,
+      ).toContain(type);
+  });
+
+  it('TPP-01: tpp_tr takes one temperature map in °C for every experiment and says so', async () => {
+    await expect(
+      runImport(conn, 'tpp_tr', FIXTURE, ctx({ temperatures: { Vehicle_1: temperatures } })),
+    ).rejects.toThrow(/one map for all experiments/);
+    const kelvin = Object.fromEntries(Object.entries(temperatures).map(([l, t]) => [l, t + 273.15]));
+    await expect(runImport(conn, 'tpp_tr', FIXTURE, ctx({ temperatures: kelvin }))).rejects.toThrow(/°C/);
+    const result = await runImport(conn, 'tpp_tr', FIXTURE, ctx());
+    expect(result.transformations.find((t) => t.step === 'temperatures')?.detail).toContain(
+      'the same temperatures for every experiment',
+    );
+  });
+
+  it('TPP-01: tpp_tr names the column families it does not import and counts non-finite values read as null', async () => {
+    const result = await runImport(conn, 'tpp_tr', FIXTURE, ctx());
+    const reshape = result.transformations.find((t) => t.step === 'reshape')!.detail;
+    for (const dropped of [
+      'model_converged',
+      'qupm',
+      'qssm',
+      'inflPoint',
+      'diff_meltP_Vehicle_1_vs_Vehicle_2',
+    ])
+      expect(reshape).toContain(dropped);
+    expect(warnings(result)).not.toContain('non_finite_values');
+    const inf = await runImport(
+      conn,
+      'tpp_tr',
+      edited(
+        'inf.tsv',
+        (h) => h,
+        (column, v, row) => (column === 'meltPoint_CPD5_1' && row === 0 ? 'Inf' : v),
+      ),
+      ctx(),
+    );
+    expect(warnings(inf)).toContain('non_finite_values');
+    expect((await canonicalRows(conn, inf))[0]).toMatchObject({ melt_point_treatment: null });
+  });
+
+  it('TPP-02: thermal_shift allows one row per feature and comparison', async () => {
+    const [head, ...lines] = readFileSync(FIXTURE, 'utf8').trim().split('\n');
+    const twice = await runImport(
+      conn,
+      'tpp_tr',
+      write('twice.tsv', [head, lines[0], ...lines].join('\n')),
+      ctx(),
+    );
+    expect(twice.failures.filter((f) => f.severity === 'error').map((f) => f.rule_id)).toContain(
+      'one_row_per_feature_comparison',
+    );
+  });
 });

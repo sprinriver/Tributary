@@ -87,7 +87,7 @@ describe('melting curves', () => {
     });
     expect(points[2]).toMatchObject({ xaxis: 'x2', yaxis: 'y2' });
     expect(s.layout.xaxis.title.text).toBe('temperature (°C)');
-    expect((s.layout.annotations as Json[])[0].text).toContain('ΔTm +5.00 °C');
+    expect((s.layout.annotations as Json[])[0]!.text).toContain('ΔTm +5.00 °C');
     expect(s.rows).toBe(5);
   });
 
@@ -181,5 +181,24 @@ describe('thermal shift plot', () => {
       'CPD5_1 vs Vehicle_1',
       'CPD5_2 vs Vehicle_2',
     ]);
+  });
+  it('TPP-04: thermal_shift says when the tool computed no replicate checks, and that classes are per comparison', async () => {
+    const s = await shape('thermal_shift', {}, [
+      shift('TP53', 5, 0.001, { fulfills_all_requirements: null }),
+    ]);
+    const t = s.data.find((x: Json) => x.name === 'stabilised');
+    expect(t.customdata[0][1]).toBe('not computed by the tool');
+    expect(t.marker.symbol).toEqual(['circle']);
+    expect(s.transformations.join(' ')).toMatch(/replicate checks were not computed/);
+    expect(s.layout.legend.title.text).toMatch(/per comparison/);
+    expect(s.transformations.join(' ')).toMatch(/only proteins that passed the tool’s filter were tested/);
+  });
+
+  it('TPP-03: melting_curve says on the axis whether the fold changes are normalised', async () => {
+    const y = async (v: boolean) =>
+      (await shape('melting_curve', {}, [shift('TP53', 5, 0.001, { fold_change_normalised: v })])).layout
+        .yaxis.title.text;
+    expect(await y(true)).toBe('normalised fold change vs lowest temperature');
+    expect(await y(false)).toBe('fold change vs lowest temperature');
   });
 });
