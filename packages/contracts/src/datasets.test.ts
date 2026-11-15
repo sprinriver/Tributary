@@ -9,6 +9,7 @@ describe('dataset contract registry', () => {
         'precursor_quant',
         'differential_abundance',
         'dose_response',
+        'thermal_shift',
         'qc_metrics',
         'rnaseq_counts',
         'crispr_gene_summary',
@@ -59,5 +60,19 @@ describe('dataset contract registry', () => {
       max: 1,
       maxInclusive: true,
     });
+  });
+
+  it('TPP-02: thermal_shift holds one protein × comparison with melting points in °C and ΔTm = treatment − vehicle', () => {
+    const contract = DATASET_CONTRACTS.thermal_shift;
+    expect(contract.category).toBe('experiment');
+    const column = (name: string) => contract.columns.find((c) => c.name === name);
+    for (const name of ['melt_point_treatment', 'melt_point_vehicle', 'delta_tm'])
+      expect(column(name), name).toMatchObject({ type: 'double', nullable: true, unit: '°C' });
+    expect(column('delta_tm')!.description).toMatch(/treatment − vehicle/);
+    expect(column('temperatures_c')).toMatchObject({ type: 'double[]', unit: '°C' });
+    expect(column('adj_p_value')).toMatchObject({ nullable: true });
+    expect(column('p_value')).toBeUndefined(); // the tool reports no unadjusted p-value
+    expect(contract.qualityRules.map((r) => r.id)).toContain('adj_p_value_range');
+    expect(contract.joinKeys).toEqual(expect.arrayContaining(['experiment_version_id', 'compound_id']));
   });
 });
