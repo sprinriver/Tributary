@@ -631,7 +631,7 @@ Definition of done:
 - [x] `pnpm check` exits 0; `pnpm e2e PPI-04` passes; screenshot in artifacts/phase-45/; omics review
 
 ## Phase 46 — Thermal proteome profiling (TPP-TR) results
-Status: in progress
+Status: done (2026-11-15)
 Goal: Chemoproteomics teams load TPP-TR results and see which proteins a compound stabilises or destabilises.
 Features: TPP-01 … TPP-04
 In scope:
@@ -643,6 +643,6 @@ In scope:
   measured fold changes. No refitting and no recomputed statistics.
 - **Synthetic fixture:** `pnpm synth` writes a small TPP-TR result table in the real layout.
 Definition of done:
-- [ ] SOURCE.md written; tests fail first (golden, renamed quality column, broken file, missing temperatures)
-- [ ] Contract, migration, importer, charts, results section, synthetic fixture
-- [ ] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-46/; omics review
+- [x] SOURCE.md written; tests fail first (golden, renamed quality column, broken file, missing temperatures)
+- [x] Contract, migration, importer, charts, results section, synthetic fixture
+- [x] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-46/; omics review

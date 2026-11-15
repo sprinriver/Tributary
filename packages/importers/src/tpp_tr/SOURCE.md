@@ -45,17 +45,21 @@ Fitted model (`fctSigmoidTR`): y(T) = (1 − Pl) / (1 + exp(−(a / T − b))) +
 
 ## Not in the file
 - **Temperatures.** The result table has labels, not temperatures: they are in the user's config table.
-  `options.temperatures` maps each label to its temperature in °C, per experiment or for all experiments.
+  `options.temperatures` maps each label to its temperature in °C. One map applies to every experiment (the usual TPP-TR design);
+  a table whose experiments used different temperatures is not supported yet and a per-experiment map is refused.
+  Values outside 0–100 are refused (the stored `a`, `b` are only valid in °C).
 - **Which experiments are vehicle and treatment.** Read from the `<T>_vs_<V>` column names.
 - **Compound.** `options.compound_id` (as for curvecurator).
 
 ## Mapping (to the new dataset kind `thermal_shift`, one row per protein × comparison)
-- `feature_id` = `Protein_ID`; `protein_ids` split on ";" unless `options.feature_type = gene` (then `gene_names`).
+- `feature_id` = `Protein_ID`. `options.feature_type` is required: `gene` (→ `gene_names`) or `protein_group`
+  (→ `protein_ids`, split on ";"). It is never guessed; gene symbols are kept as written (case, species).
 - `comparison` = `<T> vs <V>`; `treatment_experiment`, `vehicle_experiment`.
 - `melt_point_treatment`, `melt_point_vehicle` (°C); `delta_tm` = `diff_meltP` (treatment − vehicle, °C).
 - `adj_p_value` = `pVal_adj`; `adj_method` = "BH (TPP robust z-test within slope bins)". No unadjusted p-value
   exists in the table, so `p_value` is not stored.
-- `min_slope`, `slope_*`, `plateau_*`, `r2_*`, `passed_filter`, `model_converged_*`.
+- `min_slope`, `slope_*`, `plateau_*`, `r2_*`, `passed_filter` (the column is read in either name order;
+  a warning is reported when the table has none).
 - `temperatures_c` and the fold-change vectors of both experiments (ordered by temperature), with
   `fold_change_normalised` = true when the columns carry the `norm_` prefix.
 - The two-replicate quality checks apply to the protein, not to one comparison: stored on each of its rows as
@@ -72,3 +76,11 @@ Fitted model (`fctSigmoidTR`): y(T) = (1 − Pl) / (1 + exp(−(a / T − b))) +
 - The first quality-check column is named with different thresholds in the code (0.1 / 0.2) and in the vignette
   text (0.05 / 0.1): the importer matches `min_pVals_less_*_and_max_pVals_less_*`.
 - NPARC results (`tpptrFTest`) are a different table and are out of scope here.
+
+## Not imported (recorded in the release's reshape transformation)
+- The vehicle-vs-vehicle difference (`diff_meltP_<V1>_vs_<V2>`), `inflPoint_*`, `model_converged_*`,
+  `sufficient_data_for_fit_*`, `protein_identified_in_*`, `qssm_*`, `qupm_*` and the four single replicate checks.
+- `Inf` / `NaN` cells (a degenerate fit) are read as null and counted in the `non_finite_values` warning.
+- Adjusted p-values exist only for proteins that passed the tool's filter, so the adjustment covers those proteins,
+  not all proteins of the table.
+- Experiment names that themselves contain `_vs_` are not supported.

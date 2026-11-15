@@ -224,7 +224,15 @@ export const ImporterInfoSchema = z.object({
   /** Kinds this importer can target (custom_tabular: any importable kind). */
   kinds: z.array(DatasetKindSchema),
   needs: z.array(
-    z.enum(['experiment_version', 'contrast', 'contrasts', 'mapping', 'source_release', 'doses']),
+    z.enum([
+      'experiment_version',
+      'contrast',
+      'contrasts',
+      'mapping',
+      'source_release',
+      'doses',
+      'temperatures',
+    ]),
   ),
 });
 export const ImporterListSchema = z

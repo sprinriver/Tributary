@@ -35,8 +35,8 @@
 - **Support:** a diagnostics bundle without secrets or personal data, so support needs no access to your account.
 
 ## Not included today
-- Thermal proteome profiling (TPP) views and PTM site-level data.
-- ELN connectors and STRING interaction networks.
+- PTM site-level data, and thermal profiling beyond TPP-TR result tables (no 2D-TPP or dose-range TPP yet).
+- ELN connectors.
 - An independent penetration test and SOC 2 report.
 
 Contact: (add your contact line)

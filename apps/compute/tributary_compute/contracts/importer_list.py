@@ -58,7 +58,17 @@ class Item(BaseModel):
     tool: str
     formats: list[str]
     kinds: list[DatasetKind]
-    needs: list[Literal["experiment_version", "contrast", "contrasts", "mapping", "source_release", "doses"]]
+    needs: list[
+        Literal[
+            "experiment_version",
+            "contrast",
+            "contrasts",
+            "mapping",
+            "source_release",
+            "doses",
+            "temperatures",
+        ]
+    ]
 
 
 class ImporterList(BaseModel):

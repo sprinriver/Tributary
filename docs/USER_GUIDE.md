@@ -301,6 +301,27 @@ A protein page has a **3D model** section.
   - **Unreadable structures:** registered SMILES that RDKit cannot read are listed under the results so the registry
     can be corrected.
 
+## Thermal proteome profiling (TPP-TR)
+Import the result table of a TPP-TR analysis (Bioconductor TPP, saved as tab-separated text) with the
+**TPP-TR result table** importer. The table does not carry three things, so the import dialog asks for them:
+- **Compound ID:** the compound of the treatment experiments.
+- **What Protein_ID holds:** gene symbols (TPP's default) or protein accessions. This is never guessed.
+- **Temperatures:** one line per label with its temperature in °C, as in your TPP config table. One table applies
+  to every experiment.
+
+The results page then has a **Thermal shift** section:
+- **ΔTm plot:** one panel per comparison (treatment vs vehicle), ΔTm against −log10 adjusted p.
+  - ΔTm = melting point of the treatment − vehicle. Positive means the protein is stabilised.
+  - Colours class each point within its own comparison (one replicate pair) at the thresholds you set.
+  - Diamonds are proteins that met all of the tool's replicate checks: its own hit call.
+- **Table:** melting points, ΔTm and adjusted p. "Not tested" means the comparison failed the tool's curve filter
+  or had no fit. The tool tests only proteins that passed its filter, so the adjustment covers those proteins.
+- **Melting curves:** the fold changes the tool reported, its melting points (dotted lines) and, where the table
+  has the fitted parameters, the fitted curve.
+
+Nothing is refitted or retested. Columns that are not imported (for example the vehicle-vs-vehicle difference and
+`model_converged`) are listed on the release, and values of `Inf` or `NaN` are read as empty and reported.
+
 ## Compound selectivity
 A compound page has a **Selectivity** section when a dose-response experiment you can read has curves for it
 (for example, from CurveCurator).

@@ -135,7 +135,12 @@ export function shapeMeltingCurve(rows: Row[], spec: ChartSpec, o: MeltingCurveO
     const s = i === 0 ? '' : String(i + 1);
     layout[`xaxis${s}`] = { title: { text: i === 0 ? 'temperature (°C)' : '' }, showgrid: spec.layout.gridX };
     layout[`yaxis${s}`] = {
-      title: { text: i === 0 ? 'fold change vs lowest temperature' : '' },
+      title: {
+        text:
+          i === 0
+            ? `${r.fold_change_normalised === true ? 'normalised ' : ''}fold change vs lowest temperature`
+            : '',
+      },
       showgrid: spec.layout.gridY,
     };
   });
@@ -186,6 +191,14 @@ export function shapeThermalShift(rows: Row[], spec: ChartSpec, o: ThermalShiftO
     return x === null || p === null || p <= 0 ? [] : [{ r, x, p, y: -Math.log10(p) }];
   });
   type Point = (typeof kept)[number];
+  // null: the tool did not compute its replicate checks (not a 2 + 2 design, or a curve without a fit).
+  const checks = (r: Row) =>
+    r.fulfills_all_requirements === true
+      ? 'yes'
+      : r.fulfills_all_requirements === false
+        ? 'no'
+        : 'not computed by the tool';
+  const noChecks = kept.length > 0 && kept.every((k) => checks(k.r) === 'not computed by the tool');
   const classOf = (k: Point) =>
     k.p > o.adj_p_max || Math.abs(k.x) < o.min_abs_delta_tm || k.x === 0
       ? 'not significant'
@@ -203,6 +216,7 @@ export function shapeThermalShift(rows: Row[], spec: ChartSpec, o: ThermalShiftO
   const annotations: Record<string, unknown>[] = [];
   const layout: Record<string, unknown> = {
     showlegend: true,
+    legend: { title: { text: 'per comparison (one replicate pair)' } },
     ...(many ? { grid: { rows: Math.ceil(panels.length / columns), columns, pattern: 'independent' } } : {}),
     ...(spec.title ? { title: { text: spec.title } } : {}),
   };
@@ -221,7 +235,7 @@ export function shapeThermalShift(rows: Row[], spec: ChartSpec, o: ThermalShiftO
         x: of.map((k) => k.x),
         y: of.map((k) => k.y),
         text: of.map((k) => toLabel(k.r[label])),
-        customdata: of.map((k) => [k.p, k.r.fulfills_all_requirements === true ? 'yes' : 'no']),
+        customdata: of.map((k) => [k.p, checks(k.r)]),
         hovertemplate:
           '%{text}<br>ΔTm %{x:.2f} °C<br>adjusted p %{customdata[0]:.3g}' +
           '<br>all of the tool’s replicate checks: %{customdata[1]}<extra></extra>',
@@ -301,7 +315,10 @@ export function shapeThermalShift(rows: Row[], spec: ChartSpec, o: ThermalShiftO
   const notes = [
     'ΔTm = melting point of the treatment − vehicle, as the tool reported it; positive: stabilised',
     `y = −log10 of the tool’s adjusted p; classed at adjusted p ≤ ${o.adj_p_max}${o.min_abs_delta_tm > 0 ? ` and |ΔTm| ≥ ${o.min_abs_delta_tm} °C` : ''}, per comparison`,
-    'diamonds: proteins that met all of the tool’s replicate checks',
+    'only proteins that passed the tool’s filter were tested, so the adjustment covers those proteins only',
+    noChecks
+      ? 'the tool’s replicate checks were not computed for this table (they need two treatment and two vehicle experiments)'
+      : 'diamonds: proteins that met all of the tool’s replicate checks',
     ...(dropped
       ? [
           `${dropped} row(s) without an adjusted p-value or ΔTm are not plotted (failed the tool’s curve filter, or no fit)`,

@@ -4,6 +4,9 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Thermal proteome profiling (TPP-01…04): import a TPP-TR result table (Bioconductor TPP) as a `thermal_shift`
+  dataset. The results page shows ΔTm against adjusted p per comparison, a table and melting curves. Melting
+  points, ΔTm and p-values are the tool's own; nothing is refitted. Migration 0029 adds the dataset kind.
 - Interaction networks (PPI-01…04): import STRING or in-house interactions (`pnpm run string:prepare` converts
   STRING's download files), then see on a results page which hits of a contrast interact, with a table and the
   source's attribution.

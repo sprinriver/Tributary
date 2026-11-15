@@ -1870,3 +1870,41 @@ Entry template:
   loaded by hand for the local e2e run. CI seeds a fresh database.
 - Known follow-up: `apps/api/src/charts/shape-more.test.ts` is over the 400-line limit (452) since Phase 41.
 - Dependencies added: none.
+
+## 2026-11-15 — Phase 46: Thermal proteome profiling (TPP-TR) — done
+- Built:
+  - **Format notes:** `packages/importers/src/tpp_tr/SOURCE.md` (Bioconductor TPP 3.40.2), awaiting the owner's
+    review.
+  - **Dataset kind:** `thermal_shift` (contract, migration 0029 for the kind check, regenerated clients), one row
+    per protein and treatment-vs-vehicle comparison.
+  - **Importer:** `tpp_tr`. Melting points, ΔTm (`diff_meltP`, treatment − vehicle) and adjusted p are the tool's
+    own values; NA stays null. Options: compound, feature type (required), one label → °C map.
+  - **Charts:** `melting_curve` and `thermal_shift` in the chart registry. The fitted curve is drawn only from
+    stored parameters.
+  - **Web:** a Thermal shift section on the results page (plot, table, melting curves) and TPP fields in the
+    import dialog.
+  - **Synthetic fixture:** `fixtures/tools/tpp/tr_results.tsv` from `pnpm synth`.
+- Science review (omics-reviewer): no wrong values found. Fixed:
+  - the filter column is read in either name order, and a table without one gives a warning;
+  - the feature type must be stated (TPP's `Protein_ID` is often a gene symbol), and is always recorded;
+  - a per-experiment temperature map and temperatures outside 0–100 °C are refused; SOURCE.md no longer claims
+    per-experiment maps;
+  - a protein whose replicate checks the tool did not compute reads "not computed by the tool", not "no";
+  - columns not imported are named on the release; `Inf`/`NaN` cells are counted in a warning;
+  - one row per feature and comparison is enforced; the legend says classes are per comparison; the y axis says
+    when fold changes are normalised.
+- Review points left open:
+  - whether TPP adjusts p-values over all tested proteins or within each slope bin was not checked against the
+    package source. The label says only what SOURCE.md supports;
+  - an adjusted p of exactly 0 fails the import under the (0, 1] rule, as for every other kind;
+  - experiments with different temperatures, and experiment names containing `_vs_`, are not supported.
+- Test amendments (disclosed, each in its own commit or named in the commit message):
+  - CON-03 chart-type count 16 → 18, for the two new chart types;
+  - this phase's own new tests: `method_version` default is "unknown", the wrong-kind error shape, the e2e chart
+    role (figure), typed index access, and one row lookup.
+- Process slip: I ran the typecheck once through `npx turbo`, which CLAUDE.md forbids. It changed nothing; later
+  runs used `pnpm check`.
+- Evidence: `pnpm check` ✓, `pnpm e2e "TPP-04"` ✓. Screenshot: `artifacts/phase-46/thermal-shift.png`.
+- Known follow-ups: `shape-more.test.ts` is still over 400 lines; the "Order" control shows raw option names
+  (as in the dose-response viewer).
+- Dependencies added: none.

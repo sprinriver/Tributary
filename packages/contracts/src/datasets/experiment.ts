@@ -214,7 +214,11 @@ export const thermalShift: DatasetContract = {
     col('method_version', 'text'),
   ],
   joinKeys: ['experiment_version_id', 'compound_id', 'protein_ids', 'gene_names'],
-  qualityRules: [pValueRule('adj_p_value'), enumRule('method', ['TPP'])],
+  qualityRules: [
+    uniqueRule('one_row_per_feature_comparison', ['experiment_version_id', 'comparison', 'feature_id']),
+    pValueRule('adj_p_value'),
+    enumRule('method', ['TPP']),
+  ],
 };
 
 export const qcMetrics: DatasetContract = {

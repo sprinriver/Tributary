@@ -44,7 +44,8 @@
                     "contrasts",
                     "mapping",
                     "source_release",
-                    "doses"
+                    "doses",
+                    "temperatures"
                   ]
                 }
               }

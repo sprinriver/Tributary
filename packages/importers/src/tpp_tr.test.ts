@@ -241,7 +241,12 @@ describe('TPP-01: tpp_tr', () => {
       ctx(),
     );
     expect(warnings(inf)).toContain('non_finite_values');
-    expect((await canonicalRows(conn, inf))[0]).toMatchObject({ melt_point_treatment: null });
+    const first = readFileSync(FIXTURE, 'utf8').split('\n')[1]!.split('\t')[0];
+    expect(
+      (await canonicalRows(conn, inf)).find(
+        (r) => r.feature_id === first && r.comparison === 'CPD5_1 vs Vehicle_1',
+      ),
+    ).toMatchObject({ melt_point_treatment: null });
   });
 
   it('TPP-02: thermal_shift allows one row per feature and comparison', async () => {
