@@ -60,7 +60,7 @@ Fitted model (`fctSigmoidTR`): y(T) = (1 − Pl) / (1 + exp(−(a / T − b))) +
   `fold_change_normalised` = true when the columns carry the `norm_` prefix.
 - The two-replicate quality checks apply to the protein, not to one comparison: stored on each of its rows as
   `fulfills_all_requirements` (null when the table has no such column).
-- `method` = "TPP", `method_version` from `options.tool_version` (the table does not carry it; "not recorded" if absent).
+- `method` = "TPP", `method_version` from `options.tool_version` (the table does not carry it; "unknown" if absent, the importers' shared default).
 
 ## Never done
 - No curve is refitted and no p-value recomputed. A fitted curve is drawn only when `a_<E>` and `b_<E>` are in the
