@@ -6,6 +6,7 @@ import {
   proteinQuant,
   qcMetrics,
   rnaseqCounts,
+  thermalShift,
 } from './experiment.ts';
 import { experimentVersionMeta, fileObjectMeta, pipelineRunMeta, sampleMeta } from './metadata.ts';
 import { compound, compoundProperty, idMapping, targetAnnotation } from './reference.ts';
@@ -18,6 +19,7 @@ export const DATASET_CONTRACTS: Readonly<Record<DatasetKind, DatasetContract>> =
   precursor_quant: precursorQuant,
   differential_abundance: differentialAbundance,
   dose_response: doseResponse,
+  thermal_shift: thermalShift,
   qc_metrics: qcMetrics,
   rnaseq_counts: rnaseqCounts,
   crispr_gene_summary: crisprGeneSummary,

@@ -6,6 +6,7 @@ export const DATASET_KINDS = [
   'precursor_quant',
   'differential_abundance',
   'dose_response',
+  'thermal_shift',
   'qc_metrics',
   'rnaseq_counts',
   'crispr_gene_summary',

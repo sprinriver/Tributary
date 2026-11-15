@@ -155,6 +155,68 @@ export const doseResponse: DatasetContract = {
   ],
 };
 
+// Thermal proteome profiling, temperature range (Phase 46). Definitions: packages/importers/src/tpp_tr/SOURCE.md
+// (Bioconductor TPP 3.40.2). Temperatures in °C, as the tool's config table gives them.
+const DEG = { unit: '°C' };
+export const thermalShift: DatasetContract = {
+  kind: 'thermal_shift',
+  version: '1.0.0',
+  category: 'experiment',
+  description:
+    'Thermal shifts per feature × comparison (treatment vs vehicle): melting points, ΔTm and the fold changes by temperature.',
+  columns: [
+    evId,
+    col('feature_id', 'text'),
+    col('protein_ids', 'text[]'),
+    col('gene_names', 'text[]'),
+    col('compound_id', 'text'),
+    col('comparison', 'text', { description: '"treatment experiment vs vehicle experiment"' }),
+    col('treatment_experiment', 'text'),
+    col('vehicle_experiment', 'text'),
+    col('temperatures_c', 'double[]', {
+      ...DEG,
+      description: 'Ascending; the fold changes follow this order',
+    }),
+    col('fc_treatment', 'double[]', { description: 'Fold change relative to the lowest temperature' }),
+    col('fc_vehicle', 'double[]', { description: 'Fold change relative to the lowest temperature' }),
+    col('fold_change_normalised', 'boolean', { description: 'The tool normalised the fold changes' }),
+    opt('melt_point_treatment', 'double', {
+      ...DEG,
+      description: 'Temperature where the fitted curve is 0.5',
+    }),
+    opt('melt_point_vehicle', 'double', { ...DEG, description: 'Temperature where the fitted curve is 0.5' }),
+    opt('delta_tm', 'double', {
+      ...DEG,
+      description: 'Melting point, treatment − vehicle (positive: stabilised)',
+    }),
+    opt('min_slope', 'double', { description: 'The smaller of the two slopes at the inflection points' }),
+    opt('slope_treatment', 'double'),
+    opt('slope_vehicle', 'double'),
+    opt('plateau_treatment', 'double'),
+    opt('plateau_vehicle', 'double'),
+    opt('r2_treatment', 'double'),
+    opt('r2_vehicle', 'double'),
+    opt('a_treatment', 'double', {
+      description: 'Fitted parameter a of y = (1 − Pl) / (1 + exp(−(a/T − b))) + Pl',
+    }),
+    opt('b_treatment', 'double'),
+    opt('a_vehicle', 'double'),
+    opt('b_vehicle', 'double'),
+    opt('adj_p_value', 'double', {
+      description: 'Adjusted p of the melting-point difference; null if not tested',
+    }),
+    col('adj_method', 'text'),
+    opt('passed_filter', 'boolean', { description: 'The comparison passed the tool’s curve-quality filter' }),
+    opt('fulfills_all_requirements', 'boolean', {
+      description: 'The protein met all of the tool’s replicate checks (the same on each of its rows)',
+    }),
+    col('method', 'text'),
+    col('method_version', 'text'),
+  ],
+  joinKeys: ['experiment_version_id', 'compound_id', 'protein_ids', 'gene_names'],
+  qualityRules: [pValueRule('adj_p_value'), enumRule('method', ['TPP'])],
+};
+
 export const qcMetrics: DatasetContract = {
   kind: 'qc_metrics',
   version: '1.1.0',

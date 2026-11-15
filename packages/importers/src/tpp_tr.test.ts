@@ -61,7 +61,7 @@ describe('TPP-01: tpp_tr', () => {
       fold_change_normalised: true,
       temperatures_c: TEMPERATURES,
       method: 'TPP',
-      method_version: 'not recorded',
+      method_version: 'unknown', // the importers' shared default when options.tool_version is absent
     });
     expect((tp53.fc_vehicle as number[])[0]).toBe(1); // relative to the lowest temperature
     expect(tp53.fc_vehicle as number[]).toHaveLength(10);
