@@ -10,6 +10,7 @@ import { useSamples } from '../registry/queries.ts';
 import { DoseResponseViewer } from './DoseResponseViewer.tsx';
 import { EnrichmentPanel } from './EnrichmentPanel.tsx';
 import { InteractionPanel } from './InteractionPanel.tsx';
+import { ThermalShiftSection } from './ThermalShiftSection.tsx';
 
 const firstAccession = (v: unknown) =>
   Array.isArray(v) ? String(v[0] ?? '') : String(v ?? '').split(';')[0]!;
@@ -99,6 +100,7 @@ function Results({ r }: { r: VersionResults }) {
   const pq = of('protein_quant')[0];
   const da = of('differential_abundance');
   const dr = of('dose_response');
+  const ts = of('thermal_shift');
   return (
     <div className="stack">
       <Methods text={r.methods} />
@@ -127,6 +129,9 @@ function Results({ r }: { r: VersionResults }) {
           <DoseResponseViewer source={{ releaseIds: [dr[0]!.id] }} />
         </section>
       )}
+      {ts.map((x) => (
+        <ThermalShiftSection key={x.id} release={x.id} />
+      ))}
       <section role="region" aria-label="Files" className="stack">
         <h2 style={{ margin: 0, fontSize: '1.1rem' }}>Files</h2>
         <ul>

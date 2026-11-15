@@ -26,13 +26,13 @@ test('TPP-04: results page — thermal shifts: ΔTm against adjusted p with a ta
   const section = page.getByRole('region', { name: 'Thermal shift' });
   await expect(section).toBeVisible({ timeout: 30_000 });
   await expect(section).toContainText('ΔTm = melting point of the treatment − vehicle');
-  await expect(section.getByRole('img', { name: /Thermal shift/ })).toBeVisible({ timeout: 30_000 });
+  await expect(section.getByRole('figure', { name: /Thermal shift/ })).toBeVisible({ timeout: 30_000 });
   const table = section.getByRole('table', { name: 'Thermal shifts' });
   const tp53 = table.getByRole('row', { name: /TP53.*CPD5_1 vs Vehicle_1/ });
   await expect(tp53).toContainText('6.09');
   await expect(tp53).toContainText('2.88e-3');
   // A comparison that failed the tool's filter has no p-value; the table says so instead of leaving a blank.
   await expect(table.getByRole('row', { name: /PTEN.*CPD5_1 vs Vehicle_1/ })).toContainText('not tested');
-  await expect(section.getByRole('img', { name: /Melting curves/ })).toBeVisible({ timeout: 30_000 });
+  await expect(section.getByRole('figure', { name: /Melting curves/ })).toBeVisible({ timeout: 30_000 });
   await page.screenshot({ path: `${SHOTS}/thermal-shift.png`, fullPage: true });
 });

@@ -52,14 +52,21 @@ export function shapeMeltingCurve(rows: Row[], spec: ChartSpec, o: MeltingCurveO
       : (p(x) ?? Infinity) - (p(y) ?? Infinity) || size(y) - size(x),
   );
   const shown = sorted.slice(0, o.max_curves);
-  const columns = Math.min(4, Math.max(1, Math.ceil(Math.sqrt(shown.length))));
+  const columns = Math.min(3, Math.max(1, Math.ceil(Math.sqrt(shown.length))));
   const data: Record<string, unknown>[] = [];
   const shapes: Record<string, unknown>[] = [];
   const annotations: Record<string, unknown>[] = [];
   const layout: Record<string, unknown> = {
-    grid: { rows: Math.max(1, Math.ceil(shown.length / columns)), columns, pattern: 'independent' },
+    // ygap: room for the two-line panel titles above and the axis title below each row.
+    grid: {
+      rows: Math.max(1, Math.ceil(shown.length / columns)),
+      columns,
+      pattern: 'independent',
+      ygap: 0.55,
+    },
     showlegend: true,
-    height: Math.max(320, 260 * Math.ceil(shown.length / columns)),
+    height: Math.max(360, 300 * Math.ceil(shown.length / columns)),
+    margin: { t: 60 },
     ...(spec.title ? { title: { text: spec.title } } : {}),
   };
   let unfitted = 0;
@@ -114,16 +121,15 @@ export function shapeMeltingCurve(rows: Row[], spec: ChartSpec, o: MeltingCurveO
     });
     const delta = toNumber(r.delta_tm);
     annotations.push({
-      text: [
-        toLabel(r[label]),
-        ...(panel ? [toLabel(r[panel])] : []),
-        delta === null ? 'no ΔTm' : `ΔTm ${signed(delta)} °C`,
-      ].join(' · '),
+      // Two lines, so that long comparison names do not run into the next panel.
+      text:
+        `${toLabel(r[label])} · ${delta === null ? 'no ΔTm' : `ΔTm ${signed(delta)} °C`}` +
+        (panel ? `<br>${toLabel(r[panel])}` : ''),
       showarrow: false,
       xref: `${refs.xaxis} domain`,
       yref: `${refs.yaxis} domain`,
       x: 0.5,
-      y: 1.12,
+      y: 1.2,
       font: { size: 11 },
     });
     const s = i === 0 ? '' : String(i + 1);

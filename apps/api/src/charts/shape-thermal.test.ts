@@ -97,8 +97,8 @@ describe('melting curves', () => {
     expect(lines).toHaveLength(9); // CDK2's treatment has no stored parameters: no curve is made up
     const first = lines[0] as { x: number[]; y: number[] };
     const at = first.x.findIndex((x) => Math.abs(x - 50) < 1e-9);
-    expect(first.y[at]).toBeCloseTo(0.5, 9); // vehicle: a/b = 50 °C
-    expect(first.y[0]).toBeGreaterThan(0.9);
+    expect(first.y[at]!).toBeCloseTo(0.5, 9); // vehicle: a/b = 50 °C
+    expect(first.y[0]!).toBeGreaterThan(0.9);
     const marks = (s.layout.shapes as Json[]).filter((m) => m.xref === 'x');
     expect(marks.map((m) => m.x0)).toEqual([50, 55]);
     expect(s.transformations.join(' ')).toMatch(/fitted curves drawn from the stored TPP parameters/);
