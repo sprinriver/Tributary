@@ -1,8 +1,8 @@
 """Demo MaxQuant site table (Phase 47): the layout of `Phospho (STY)Sites.txt`, invented values.
 
 Column names: packages/importers/src/maxquant_sites/SOURCE.md (MaxQuant documentation, "Output Tables" →
-"Site Table"). Sites, positions, probabilities and intensities are invented: the file exercises the importer and
-the views, not any biology. Sample names are the ONC-DIA-05 manifest's sample keys.
+"Site Table"). Sites, positions, probabilities and intensities are invented: the file exercises the importer
+and the views, not any biology. Sample names are the ONC-DIA-05 manifest's sample keys.
 """
 
 from pathlib import Path
@@ -88,9 +88,10 @@ def write_ptm_sites(out: Path, proteins: list[Protein], rng: np.random.Generator
             accs, genes, names = "REV__SYNP0099", "", ""
         elif flag == "contaminant":
             accs, genes, names = "CON__P02768", "ALB", "Serum albumin"
-        else:
-            assert p is not None
+        elif p is not None:
             accs, genes, names = p.accessions[0], p.genes[0], p.names[0]
+        else:
+            raise ValueError("a site without a protein must be a reverse or contaminant row")
         protein_ids, positions = accs, str(pos)
         if p is not None and p is proteins[SHARED[0]] and k == 0:
             other = proteins[SHARED[1]]
