@@ -221,6 +221,61 @@ export const thermalShift: DatasetContract = {
   ],
 };
 
+// Modification sites (Phase 47). Definitions: packages/importers/src/maxquant_sites/SOURCE.md (MaxQuant site table).
+export const ptmSiteQuant: DatasetContract = {
+  kind: 'ptm_site_quant',
+  version: '1.0.0',
+  category: 'experiment',
+  description:
+    'Modification-site intensities in long format: one row per site × sample × multiplicity, as the tool reported them.',
+  columns: [
+    evId,
+    col('sample_key', 'text'),
+    col('instrument_run', 'text'),
+    col('site_id', 'text', { description: '<protein>_<residue><position>, e.g. P31749_S473' }),
+    col('protein', 'text', {
+      description: 'The protein the site is reported for (the tool’s leading protein)',
+    }),
+    col('protein_ids', 'text[]'),
+    col('positions_in_proteins', 'text[]', {
+      description: 'The site’s position in each of protein_ids, same order',
+    }),
+    col('gene_names', 'text[]'),
+    col('modification', 'text', { description: 'As the tool names it, e.g. "Phospho (STY)"' }),
+    col('amino_acid', 'text'),
+    col('position', 'integer', { description: 'Position in `protein` (first residue = 1)' }),
+    opt('sequence_window', 'text'),
+    opt('multiplicity', 'integer', {
+      description:
+        'Modifications of this type on the peptides behind the intensity (1, 2, 3 = three or more); null = all together',
+    }),
+    opt('localization_prob', 'double', {
+      description: 'Best localisation probability of the site in the experiment',
+    }),
+    opt('localization_prob_sample', 'double', { description: 'Localisation probability in this sample' }),
+    opt('score_diff', 'double'),
+    opt('pep', 'double', { description: 'PEP of the best modified peptide with this site' }),
+    opt('intensity', 'double', { description: 'Linear scale; 0 = not quantified, as the tool writes it' }),
+    opt('log2_intensity', 'double'),
+    col('method', 'text'),
+    col('method_version', 'text'),
+  ],
+  joinKeys: ['experiment_version_id', 'sample_key', 'protein_ids', 'gene_names'],
+  qualityRules: [
+    probabilityRule('localization_prob'),
+    probabilityRule('localization_prob_sample'),
+    probabilityRule('pep'),
+    nonNegativeRule('intensity', 'Intensities are linear-scale abundances (SPEC §6.2)'),
+    uniqueRule('one_row_per_sample_site', [
+      'experiment_version_id',
+      'sample_key',
+      'instrument_run',
+      'site_id',
+      'multiplicity',
+    ]),
+  ],
+};
+
 export const qcMetrics: DatasetContract = {
   kind: 'qc_metrics',
   version: '1.1.0',
