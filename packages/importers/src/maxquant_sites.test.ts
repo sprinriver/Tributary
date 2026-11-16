@@ -34,7 +34,7 @@ const write = (name: string, text: string) => {
 };
 /** The fixture with each header passed through `header` and, optionally, each column dropped by `keep`. */
 const edited = (name: string, header: (h: string) => string, keep: (h: string) => boolean = () => true) => {
-  const [head, ...lines] = readFileSync(SITES, 'utf8').trim().split('\n');
+  const [head, ...lines] = readFileSync(SITES, 'utf8').replace(/\n$/, '').split('\n');
   const cols = head!.split('\t');
   const k = cols.map(keep);
   return write(
@@ -163,7 +163,7 @@ describe('PTM-01: maxquant_sites', { timeout: 30_000 }, () => {
   });
 
   it('PTM-01: maxquant_sites rejects a localisation probability outside [0, 1], naming the rule', async () => {
-    const [head, ...lines] = readFileSync(SITES, 'utf8').trim().split('\n');
+    const [head, ...lines] = readFileSync(SITES, 'utf8').replace(/\n$/, '').split('\n');
     const at = head!.split('\t').indexOf('Localization prob');
     const first = lines[0]!.split('\t');
     first[at] = '1.4';

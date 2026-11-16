@@ -10,6 +10,7 @@ describe('dataset contract registry', () => {
         'differential_abundance',
         'dose_response',
         'thermal_shift',
+        'ptm_site_quant',
         'qc_metrics',
         'rnaseq_counts',
         'crispr_gene_summary',
