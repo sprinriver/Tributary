@@ -17,7 +17,26 @@ SAMPLES = [f"ONC-DIA-05-S0{i}" for i in range(1, 7)]
 AMINO = "ACDEFGHIKLMNPQRSTVWY"
 N_PROTEINS = 14
 SITES_PER_PROTEIN = (1, 4)  # inclusive range
-SHARED = (0, 5)  # the first site of protein 0 is also on protein 5 (a site on two proteins)
+# Canonical sequence lengths (UniProt) of the real proteins used: invented sites fall inside the protein.
+# Residues are invented and not checked against the sequence. Synthetic proteins use 600.
+LENGTHS = {
+    "TP53": 393,
+    "EGFR": 1210,
+    "AKT1": 480,
+    "KRAS": 189,
+    "BRAF": 766,
+    "PTEN": 403,
+    "CDK1": 297,
+    "CDK2": 298,
+    "CDK4": 303,
+    "CDK6": 326,
+    "ERBB2": 1255,
+    "ABL1": 1130,
+    "SRC": 536,
+    "MAPK1": 360,
+}
+# A site on two proteins: AKT1 S473 is the conserved site AKT2 S474 (P31751), as on a shared peptide.
+SHARED = ("P31751", 474)
 
 
 def _window(rng: np.random.Generator, residue: str) -> str:
@@ -74,7 +93,8 @@ def write_ptm_sites(out: Path, proteins: list[Protein], rng: np.random.Generator
     sites: list[tuple[Protein | None, str, int, str]] = []  # protein, residue, position, flag
     for p in proteins[:N_PROTEINS]:
         n = int(rng.integers(SITES_PER_PROTEIN[0], SITES_PER_PROTEIN[1] + 1))
-        positions = sorted({int(x) for x in rng.integers(20, 900, size=n)})
+        length = LENGTHS.get(p.genes[0], 600)
+        positions = sorted({int(x) for x in rng.integers(2, length + 1, size=n)} - {473})
         for pos in positions:
             residue = str(rng.choice(["S", "S", "S", "T", "T", "Y"]))
             sites.append((p, residue, pos, ""))
@@ -93,10 +113,9 @@ def write_ptm_sites(out: Path, proteins: list[Protein], rng: np.random.Generator
         else:
             raise ValueError("a site without a protein must be a reverse or contaminant row")
         protein_ids, positions = accs, str(pos)
-        if p is not None and p is proteins[SHARED[0]] and k == 0:
-            other = proteins[SHARED[1]]
-            protein_ids, positions = f"{accs};{other.accessions[0]}", f"{pos};{pos - 37}"
-        # Localisation spread: most sites class I (> 0.75), some below; one exactly at the threshold.
+        if p is not None and p.genes[0] == "AKT1" and pos == 473:
+            protein_ids, positions = f"{accs};{SHARED[0]}", f"{pos};{SHARED[1]}"
+        # Localisation spread: most sites above 0.75, some below; one exactly at 0.75.
         loc = (
             0.75
             if k == 3
@@ -110,7 +129,8 @@ def write_ptm_sites(out: Path, proteins: list[Protein], rng: np.random.Generator
             m1 = float(rng.lognormal(18.0, 1.0)) if measured else 0.0
             m2 = float(rng.lognormal(16.0, 1.0)) if measured and k % 3 == 0 else 0.0
             per_int.append([m1, m2, 0.0])
-            per_loc.append(min(1.0, loc + float(rng.uniform(0.0, 0.05))) if measured else None)
+            # Per sample at most the table-wide value (MaxQuant's Localization prob is the best over samples).
+            per_loc.append(max(0.0, loc - float(rng.uniform(0.0, 0.05))) if measured else None)
         if k == 4:
             per_loc[2] = float("nan")  # MaxQuant writes NaN in some cells
         totals = [sum(x) for x in per_int]

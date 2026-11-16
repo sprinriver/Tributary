@@ -5,7 +5,7 @@ import { join, resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { canonicalRows, detectImporters, rowsHash, runImport, type ImportContext } from './index.ts';
 
-// MaxQuant site table (maxquant_sites/SOURCE.md). The synthetic fixture has 41 sites plus one reverse and one
+// MaxQuant site table (maxquant_sites/SOURCE.md). The synthetic fixture has 38 sites plus one reverse and one
 // contaminant row, six samples (the ONC-DIA-05 sample keys) and Intensity <sample>___1…3 columns.
 const FIXTURES = resolve(import.meta.dirname, '../../../fixtures');
 const SITES = join(FIXTURES, 'tools/maxquant/Phospho_STY_Sites.txt');
@@ -74,13 +74,13 @@ describe('PTM-01: maxquant_sites', { timeout: 30_000 }, () => {
     expect(severity(result, 'error')).toEqual([]);
     expect(severity(result, 'warn')).toContain('flagged_rows_removed');
     const rows = await canonicalRows(conn, result);
-    expect(rows).toHaveLength(41 * 6 * 3);
+    expect(rows).toHaveLength(38 * 6 * 3);
     expect(rowsHash(rows), 'maxquant_sites golden').toBe(GOLDEN.maxquant_sites);
     const s473 = rows.filter((r) => r.site_id === 'P31749_S473');
     expect(s473).toHaveLength(18);
     expect(s473[0]).toMatchObject({
       protein: 'P31749',
-      protein_ids: ['P31749'],
+      protein_ids: ['P31749', 'P31751'],
       gene_names: ['AKT1'],
       amino_acid: 'S',
       position: 473,
@@ -88,7 +88,7 @@ describe('PTM-01: maxquant_sites', { timeout: 30_000 }, () => {
       method: 'MaxQuant',
       method_version: 'unknown',
     });
-    expect(s473[0]!.localization_prob).toBeCloseTo(0.800479, 6);
+    expect(s473[0]!.localization_prob).toBeCloseTo(0.963397, 6);
     expect(String(s473[0]!.sequence_window)).toHaveLength(31);
     expect(String(s473[0]!.sequence_window)[15]).toBe('S');
     expect(new Set(s473.map((r) => r.multiplicity))).toEqual(new Set([1, 2, 3]));
@@ -103,9 +103,9 @@ describe('PTM-01: maxquant_sites', { timeout: 30_000 }, () => {
   it('PTM-01: maxquant_sites keeps a site on several proteins with each position, and zeros as reported', async () => {
     const rows = await canonicalRows(conn, await runImport(conn, 'maxquant_sites', SITES, ctx()));
     const shared = rows.find((r) => (r.protein_ids as string[]).length > 1)!;
-    expect(shared.protein_ids).toEqual(['P04637', 'P60484']);
-    expect(shared.positions_in_proteins).toEqual(['138', '101']);
-    expect(shared.site_id).toBe('P04637_T138');
+    expect(shared.protein_ids).toEqual(['P31749', 'P31751']);
+    expect(shared.positions_in_proteins).toEqual(['473', '474']);
+    expect(shared.site_id).toBe('P31749_S473');
     const zero = rows.find((r) => r.intensity === 0)!;
     expect(zero.log2_intensity).toBeNull();
     const nan = rows.filter((r) => r.localization_prob_sample === null && Number(r.intensity) > 0);
@@ -117,7 +117,7 @@ describe('PTM-01: maxquant_sites', { timeout: 30_000 }, () => {
       conn,
       await runImport(conn, 'maxquant_sites', SITES, ctx({ keep_flagged: true })),
     );
-    expect(kept).toHaveLength(43 * 6 * 3);
+    expect(kept).toHaveLength(40 * 6 * 3);
     const flat = await runImport(
       conn,
       'maxquant_sites',
@@ -130,7 +130,7 @@ describe('PTM-01: maxquant_sites', { timeout: 30_000 }, () => {
     );
     expect(severity(flat, 'error')).toEqual([]);
     const rows = await canonicalRows(conn, flat);
-    expect(rows).toHaveLength(41 * 6);
+    expect(rows).toHaveLength(38 * 6);
     expect(rows.every((r) => r.multiplicity === null)).toBe(true);
   });
 
@@ -174,5 +174,67 @@ describe('PTM-01: maxquant_sites', { timeout: 30_000 }, () => {
       ctx(),
     );
     expect(severity(result, 'error')).toContain('localization_prob_range');
+  });
+
+  // Science-review follow-ups (Phase 47).
+  it('PTM-01: maxquant_sites refuses a SILAC or TMT table even when it also has summed intensities', async () => {
+    const [head, ...lines] = readFileSync(SITES, 'utf8').replace(/\n$/, '').split('\n');
+    const withLight = [
+      `${head}\tIntensity L ONC-DIA-05-S01\tIntensity H ONC-DIA-05-S01`,
+      ...lines.map((l) => `${l}\t1\t2`),
+    ].join('\n');
+    await expect(
+      runImport(conn, 'maxquant_sites', write('silac-summed.tsv', withLight), ctx()),
+    ).rejects.toThrow(/labelled/);
+  });
+
+  it('PTM-01: maxquant_sites keeps the per-sample identification type and names every column it does not import', async () => {
+    const result = await runImport(conn, 'maxquant_sites', SITES, ctx());
+    const rows = await canonicalRows(conn, result);
+    expect(new Set(rows.map((r) => r.identification_type))).toEqual(new Set(['By MS/MS', null]));
+    const notImported = result.transformations.find((t) => t.step === 'not_imported')!.detail;
+    for (const column of [
+      'Score for localization',
+      'Number of Phospho (STY)',
+      'Delta score',
+      'Charge',
+      'Fasta headers',
+    ])
+      expect(notImported).toContain(column);
+    // The fixture keeps per-sample localisation at or below the table-wide value, as MaxQuant does.
+    for (const r of rows)
+      if (r.localization_prob_sample !== null)
+        expect(Number(r.localization_prob_sample)).toBeLessThanOrEqual(Number(r.localization_prob) + 1e-9);
+  });
+
+  it('PTM-01: maxquant_sites warns when the multiplicity intensities do not add up to the summed intensity', async () => {
+    expect(severity(await runImport(conn, 'maxquant_sites', SITES, ctx()), 'warn')).not.toContain(
+      'multiplicity_sum',
+    );
+    const [head, ...lines] = readFileSync(SITES, 'utf8').replace(/\n$/, '').split('\n');
+    const at = head!.split('\t').indexOf('Intensity ONC-DIA-05-S01___1');
+    const first = lines[0]!.split('\t');
+    first[at] = String(Number(first[at]) * 3 + 1000);
+    const broken = await runImport(
+      conn,
+      'maxquant_sites',
+      write('sum.tsv', [head, first.join('\t'), ...lines.slice(1)].join('\n')),
+      ctx(),
+    );
+    expect(severity(broken, 'warn')).toContain('multiplicity_sum');
+  });
+
+  it('PTM-01: maxquant_sites names a row whose position cannot be read', async () => {
+    const [head, ...lines] = readFileSync(SITES, 'utf8').replace(/\n$/, '').split('\n');
+    const at = head!.split('\t').indexOf('Position');
+    const first = lines[0]!.split('\t');
+    first[at] = 'n/a';
+    const result = await runImport(
+      conn,
+      'maxquant_sites',
+      write('pos.tsv', [head, first.join('\t'), ...lines.slice(1)].join('\n')),
+      ctx(),
+    );
+    expect(severity(result, 'error')).toContain('position_readable');
   });
 });

@@ -102,4 +102,19 @@ describe('dataset contract registry', () => {
       expect.arrayContaining(['experiment_version_id', 'sample_key', 'protein_ids', 'gene_names']),
     );
   });
+
+  it('PTM-02: ptm_site_quant keeps the identification type per sample; probability rules cite what they check', () => {
+    const contract = DATASET_CONTRACTS.ptm_site_quant;
+    expect(contract.columns.find((c) => c.name === 'identification_type')).toMatchObject({
+      type: 'text',
+      nullable: true,
+    });
+    for (const id of ['localization_prob_range', 'localization_prob_sample_range', 'pep_range']) {
+      const rule = contract.qualityRules.find((r) => r.id === id)!;
+      expect(rule.source, id).not.toMatch(/q-value/);
+    }
+    expect(contract.columns.find((c) => c.name === 'localization_prob')!.description).toMatch(
+      /over all samples/,
+    );
+  });
 });
