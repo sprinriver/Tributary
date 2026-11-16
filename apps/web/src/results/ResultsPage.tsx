@@ -10,6 +10,7 @@ import { useSamples } from '../registry/queries.ts';
 import { DoseResponseViewer } from './DoseResponseViewer.tsx';
 import { EnrichmentPanel } from './EnrichmentPanel.tsx';
 import { InteractionPanel } from './InteractionPanel.tsx';
+import { SiteSummarySection } from './SitesSection.tsx';
 import { ThermalShiftSection } from './ThermalShiftSection.tsx';
 
 const firstAccession = (v: unknown) =>
@@ -101,6 +102,7 @@ function Results({ r }: { r: VersionResults }) {
   const da = of('differential_abundance');
   const dr = of('dose_response');
   const ts = of('thermal_shift');
+  const sites = of('ptm_site_quant');
   return (
     <div className="stack">
       <Methods text={r.methods} />
@@ -129,6 +131,9 @@ function Results({ r }: { r: VersionResults }) {
           <DoseResponseViewer source={{ releaseIds: [dr[0]!.id] }} />
         </section>
       )}
+      {sites.map((x) => (
+        <SiteSummarySection key={x.id} release={x.id} />
+      ))}
       {ts.map((x) => (
         <ThermalShiftSection key={x.id} release={x.id} />
       ))}

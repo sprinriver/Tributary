@@ -1,4 +1,5 @@
 import { ProteinModelPanel } from '../structure/ProteinModelPanel.tsx';
+import { ProteinSitesSection } from './SitesSection.tsx';
 import { CompoundStructurePanel } from '../chem/Structure.tsx';
 import type { ChartSpec } from '@tributary/contracts';
 import { useQuery } from '@tanstack/react-query';
@@ -117,6 +118,7 @@ export function ProteinPage() {
       <Section title="3D model">
         <ProteinModelPanel accession={id} />
       </Section>
+      <ProteinSitesSection accession={id} />
       <Section title="Annotations">
         <Table
           label="Annotations"

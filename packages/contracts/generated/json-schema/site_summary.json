@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/SiteSummary",
+  "$defs": {
+    "SiteSummary": {
+      "type": "object",
+      "properties": {
+        "release_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "modification": {
+          "type": "string"
+        },
+        "loc_min": {
+          "type": "number"
+        },
+        "sites": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "meeting_threshold": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "per_sample": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sample_key": {
+                "type": "string"
+              },
+              "sites_quantified": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "sample_key",
+              "sites_quantified"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "top": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "site_id": {
+                "type": "string"
+              },
+              "gene_names": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "localization_prob": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "samples_quantified": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "site_id",
+              "gene_names",
+              "localization_prob",
+              "samples_quantified"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "release_id",
+        "modification",
+        "loc_min",
+        "sites",
+        "meeting_threshold",
+        "per_sample",
+        "top",
+        "notes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

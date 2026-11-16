@@ -1,0 +1,215 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ProteinSites",
+  "$defs": {
+    "ProteinSites": {
+      "type": "object",
+      "properties": {
+        "protein": {
+          "type": "string"
+        },
+        "loc_min": {
+          "type": "number"
+        },
+        "releases": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "release_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "dataset_name": {
+                "type": "string"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "experiment_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "experiment_name": {
+                "type": "string"
+              },
+              "experiment_date": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "program_code": {
+                "type": "string"
+              },
+              "method": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "samples": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "release_id",
+              "dataset_name",
+              "version_id",
+              "experiment_id",
+              "experiment_name",
+              "experiment_date",
+              "program_code",
+              "method",
+              "samples"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "sites": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "release_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "site_id": {
+                "type": "string"
+              },
+              "amino_acid": {
+                "type": "string"
+              },
+              "position": {
+                "anyOf": [
+                  {
+                    "type": "integer",
+                    "minimum": -9007199254740991,
+                    "maximum": 9007199254740991
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "modification": {
+                "type": "string"
+              },
+              "localization_prob": {
+                "type": [
+                  "number",
+                  "null"
+                ]
+              },
+              "meets_threshold": {
+                "type": "boolean"
+              },
+              "samples_quantified": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "samples_total": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "multiplicities": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "shared_with": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sequence_window": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "required": [
+              "release_id",
+              "site_id",
+              "amino_acid",
+              "position",
+              "modification",
+              "localization_prob",
+              "meets_threshold",
+              "samples_quantified",
+              "samples_total",
+              "multiplicities",
+              "shared_with",
+              "sequence_window"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "figure": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "propertyNames": {
+                      "type": "string"
+                    },
+                    "additionalProperties": {}
+                  }
+                },
+                "layout": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "required": [
+                "data",
+                "layout"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "protein",
+        "loc_min",
+        "releases",
+        "sites",
+        "figure",
+        "notes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

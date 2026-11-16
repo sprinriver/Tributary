@@ -5,6 +5,7 @@ import type { Database } from '@tributary/db';
 import type { ApiConfig } from '../config.ts';
 import { callQueryService } from '../datasets/query-client.ts';
 import { HttpError } from '../errors.ts';
+import { latestReleases } from '../datasets/latest-releases.ts';
 import { resolveSource } from '../query/resolve.ts';
 import type { CurveRow, Known, KnownRole } from './profile.ts';
 
@@ -61,59 +62,12 @@ async function firstCurve(deps: Deps, releaseId: string, compoundId: string) {
 }
 
 /** Readable dose-response datasets (latest published release of each, in latest published versions), newest first. */
-export async function doseResponseReleases(
+export const doseResponseReleases = (
   deps: Deps,
   readable: string[] | null,
   programId?: string,
-): Promise<(Omit<Experiment, 'method'> & { program_id: string })[]> {
-  if (readable?.length === 0) return [];
-  let q = deps.db
-    .selectFrom('dataset_release as r')
-    .innerJoin('dataset as d', 'd.id', 'r.dataset_id')
-    .innerJoin('experiment_version as v', 'v.id', 'd.experiment_version_id')
-    .innerJoin('experiment as e', 'e.id', 'v.experiment_id')
-    .innerJoin('program as p', 'p.id', 'e.program_id')
-    .select([
-      'r.id as release_id',
-      'd.name as dataset_name',
-      'v.id as version_id',
-      'e.id as experiment_id',
-      'e.name as experiment_name',
-      'v.experiment_date',
-      'p.code as program_code',
-      'd.program_id',
-      'r.published_at',
-      'e.created_at',
-    ])
-    .distinctOn('d.id')
-    .where('d.kind', '=', 'dose_response')
-    .where('r.status', '=', 'published')
-    .where('r.deleted_at', 'is', null)
-    .where('d.deleted_at', 'is', null)
-    .where('e.deleted_at', 'is', null)
-    .where('v.is_latest_published', '=', true);
-  if (readable) q = q.where('d.program_id', 'in', readable);
-  if (programId) q = q.where('d.program_id', '=', programId);
-  const releases = await q
-    .orderBy('d.id')
-    .orderBy('r.published_at', 'desc')
-    .orderBy('r.id', 'desc')
-    .execute();
-  // Newest first: experiment date, else creation.
-  const when = (r: (typeof releases)[number]) => iso(r.experiment_date) ?? iso(r.created_at) ?? '';
-  return releases
-    .sort((a, b) => when(b).localeCompare(when(a)) || b.release_id.localeCompare(a.release_id))
-    .map((r) => ({
-      version_id: r.version_id,
-      experiment_id: r.experiment_id,
-      experiment_name: r.experiment_name,
-      experiment_date: iso(r.experiment_date),
-      program_code: r.program_code,
-      release_id: r.release_id,
-      dataset_name: r.dataset_name,
-      program_id: r.program_id,
-    }));
-}
+): Promise<(Omit<Experiment, 'method'> & { program_id: string })[]> =>
+  latestReleases(deps.db, 'dose_response', readable, programId);
 
 /** The readable datasets that profile the compound (per release: one version can hold a dataset per compound). */
 export async function profilingExperiments(

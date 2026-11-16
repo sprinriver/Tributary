@@ -22,6 +22,7 @@ export * from './api/qc.ts';
 export * from './api/chem.ts';
 export * from './api/interactions.ts';
 export * from './api/selectivity.ts';
+export * from './api/ptm.ts';
 export * from './api/protein-model.ts';
 export * from './api/notifications.ts';
 export * from './api/email.ts';

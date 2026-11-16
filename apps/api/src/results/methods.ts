@@ -41,6 +41,7 @@ const KIND: Record<string, string> = {
   differential_abundance: 'differential abundance',
   dose_response: 'dose-response curves',
   thermal_shift: 'thermal shifts (melting points and ΔTm)',
+  ptm_site_quant: 'modification-site intensities',
   qc_metrics: 'QC metrics',
   rnaseq_counts: 'gene counts',
   crispr_gene_summary: 'CRISPR gene scores',

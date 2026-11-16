@@ -17,6 +17,7 @@ export function suggestImporter(name: string): string {
   if (n.includes('combined_protein')) return 'fragpipe_combined_protein';
   if (n.endsWith('.mzqc') || n.includes('mzqc')) return 'mzqc';
   if (n.includes('curves')) return 'curvecurator';
+  if (/sites\.txt$|sites\.tsv$/.test(n)) return 'maxquant_sites';
   if (/tpp|tr_results/.test(n)) return 'tpp_tr';
   if (n.includes('gene_summary')) return 'mageck_gene_summary';
   if (n.includes('precursors')) return 'alphadia_precursors';
