@@ -18,6 +18,7 @@ from tributary_compute.synth.interactions import write_interactions
 from tributary_compute.synth.io import write_json, write_tsv
 from tributary_compute.synth.manifests import COLUMNS, build_samples, contrasts
 from tributary_compute.synth.proteomics import dia_contrast, dose_series, tmt_contrast
+from tributary_compute.synth.ptm import write_ptm_sites
 from tributary_compute.synth.readme import README
 from tributary_compute.synth.reference import write_reference
 from tributary_compute.synth.structures import write_structures
@@ -81,6 +82,7 @@ def generate(out_dir: Path, seed: int = DEFAULT_SEED) -> dict[str, str]:
     write_interactions(out_dir / "reference", proteins, _rng(seed, "interactions"))
     write_tools(out_dir / "tools", proteins, lambda name: _rng(seed, name))
     write_tpp(out_dir / "tools", proteins, _rng(seed, "tools/tpp"))
+    write_ptm_sites(out_dir / "tools", proteins, _rng(seed, "tools/maxquant-sites"))
     write_structures(out_dir / "structures", _rng(seed, "structures"))
     (out_dir / "README.md").write_text(README.format(seed=seed), encoding="utf-8")
 

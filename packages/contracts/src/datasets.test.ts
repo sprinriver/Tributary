@@ -75,4 +75,30 @@ describe('dataset contract registry', () => {
     expect(contract.qualityRules.map((r) => r.id)).toContain('adj_p_value_range');
     expect(contract.joinKeys).toEqual(expect.arrayContaining(['experiment_version_id', 'compound_id']));
   });
+
+  it('PTM-02: ptm_site_quant holds one site × sample × multiplicity with the tool’s localisation probability', () => {
+    const contract = DATASET_CONTRACTS.ptm_site_quant;
+    expect(contract.category).toBe('experiment');
+    const column = (name: string) => contract.columns.find((c) => c.name === name);
+    expect(column('site_id')).toMatchObject({ type: 'text', nullable: false });
+    expect(column('site_id')!.description).toMatch(/<protein>_<residue><position>/);
+    expect(column('position')).toMatchObject({ type: 'integer', nullable: false });
+    expect(column('amino_acid')).toMatchObject({ type: 'text' });
+    expect(column('modification')).toMatchObject({ type: 'text', nullable: false });
+    expect(column('multiplicity')).toMatchObject({ type: 'integer', nullable: true });
+    expect(column('localization_prob')).toMatchObject({ type: 'double', nullable: true });
+    expect(column('intensity')).toMatchObject({ type: 'double', nullable: true });
+    expect(column('positions_in_proteins')).toMatchObject({ type: 'text[]' });
+    const rules = contract.qualityRules.map((r) => r.id);
+    expect(rules).toEqual(
+      expect.arrayContaining([
+        'localization_prob_range',
+        'intensity_non_negative',
+        'one_row_per_sample_site',
+      ]),
+    );
+    expect(contract.joinKeys).toEqual(
+      expect.arrayContaining(['experiment_version_id', 'sample_key', 'protein_ids', 'gene_names']),
+    );
+  });
 });

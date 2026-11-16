@@ -646,3 +646,27 @@ Definition of done:
 - [x] SOURCE.md written; tests fail first (golden, renamed quality column, broken file, missing temperatures)
 - [x] Contract, migration, importer, charts, results section, synthetic fixture
 - [x] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-46/; omics review
+
+## Phase 47 — PTM site-level data (phosphosites)
+Status: in progress
+Goal: Signalling and chemoproteomics teams load modification-site tables and see, per protein, which sites were
+measured, how confidently they were localised and in how many samples.
+Features: PTM-01 … PTM-04
+In scope:
+- **Format notes:** `packages/importers/src/maxquant_sites/SOURCE.md` (MaxQuant site table, from the Cox lab's
+  output-table documentation), awaiting the owner's review. DIA-NN's site report is not covered: its columns are
+  not publicly documented, so they are not guessed.
+- **Dataset kind:** `ptm_site_quant`, one row per site × sample × multiplicity (the number of modifications of that
+  type on the peptides behind the intensity). Intensities and localisation probabilities are the tool's own.
+- **Importer:** `maxquant_sites` for `<modification>Sites.txt` (e.g. `Phospho (STY)Sites.txt`); reverse and
+  contaminant rows are removed only when flagged, and counted; zeros kept as reported.
+- **API and views:** the sites of a protein across readable releases (`GET /v1/proteins/:id/sites`), with a site map
+  along the sequence and a table on the protein page; a site summary on the results page. A localisation threshold
+  (default 0.75, "class I" after Olsen et al. 2006) is a display choice and is stated.
+- **No statistics:** no site-level differential test, normalisation to protein level or occupancy is computed.
+- **Synthetic fixture:** `pnpm synth` writes a small site table in the MaxQuant layout.
+Definition of done:
+- [ ] SOURCE.md written; tests fail first (golden, multiplicity, flags, zeros, broken file)
+- [ ] Contract, migration, importer, API, protein-page section, results summary, synthetic fixture
+- [ ] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-47/; omics review
+
