@@ -33,7 +33,8 @@ beforeAll(async () => {
 });
 afterAll(() => conn.closeSync());
 
-describe('TPP-01: tpp_tr', () => {
+// Several tests run two to four imports each: CI runners take over 5 s (vitest's default) for them.
+describe('TPP-01: tpp_tr', { timeout: 30_000 }, () => {
   it('TPP-01: tpp_tr is detected from the header of a TPP-TR result table', async () => {
     expect(await detectImporters(conn, FIXTURE)).toContain('tpp_tr');
   });
