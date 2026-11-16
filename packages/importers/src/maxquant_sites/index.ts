@@ -50,7 +50,16 @@ export const maxquantSites: Importer = {
           : 'The table names no modification ("<modification> Probabilities" column); give options.modification, e.g. "Phospho (STY)".',
       );
 
-    // Quantities: Intensity <exp>___<j> (multiplicity j) when present, else Intensity <exp>. Labelled channels are not samples.
+    // Labelled tables (SILAC, TMT) also carry summed "Intensity <exp>" columns, which are not one sample's abundance.
+    const labelled = source.columns.filter(
+      (c) => LABELLED.test(c) || /^Ratio [HML]\//.test(c) || c.startsWith('Reporter intensity'),
+    );
+    if (labelled.length)
+      throw new ImportError(
+        'labelled_only',
+        `The table is from a labelled (SILAC or TMT) experiment (e.g. "${labelled[0]}"); only label-free site tables are imported: its summed intensities are not one sample's abundance.`,
+      );
+    // Quantities: Intensity <exp>___<j> (multiplicity j) when present, else Intensity <exp>.
     const split3 = source.columns
       .filter((c) => !LABELLED.test(c))
       .flatMap((c) => {
@@ -102,7 +111,46 @@ export const maxquantSites: Importer = {
           })
           .join(' ')} END`
       : 'NULL::DOUBLE';
+    const idType = exps.some((e) => has(`Identification type ${e}`))
+      ? `CASE q.exp ${exps
+          .map((e, i) => {
+            selectParams[`it${i}`] = e;
+            return `WHEN $it${i} THEN ${has(`Identification type ${e}`) ? na(at(`Identification type ${e}`), NA_TOKENS) : 'NULL'}`;
+          })
+          .join(' ')} END`
+      : 'NULL::VARCHAR';
     const intensity = num(na('long.value', NA_TOKENS), source.decimal);
+    // ___j intensities should add up to the summed "Intensity <exp>" (relative tolerance for rounding in the file).
+    const n = (c: string) => `coalesce(${num(na(ident(c), NA_TOKENS), source.decimal)}, 0)`;
+    const sumChecks = split3.length
+      ? exps
+          .filter((e) => has(`Intensity ${e}`))
+          .map((e) => {
+            const parts = split3.filter((q) => q.exp === e).map((q) => n(q.column));
+            return `abs(${parts.join(' + ')} - ${n(`Intensity ${e}`)}) > 1e-3 * greatest(abs(${n(`Intensity ${e}`)}), 1)`;
+          })
+      : [];
+    // Every column not read, named in the release (per-sample columns by family).
+    const used = new Set([
+      ...quant.map((q) => q.column),
+      ...flags,
+      ...exps.flatMap((e) => [`Localization prob ${e}`, `Identification type ${e}`]),
+      'Protein',
+      'Proteins',
+      'Positions within proteins',
+      'Gene names',
+      'Amino acid',
+      'Position',
+      'Sequence window',
+      'Localization prob',
+      'Score diff',
+      'PEP',
+    ]);
+    const family = (c: string) => {
+      const e = exps.find((x) => c.endsWith(` ${x}`) || c.includes(` ${x}___`));
+      return e ? c.replace(` ${e}`, ' <sample>') : c.replace(/___\d+$/, '___<j>');
+    };
+    const notImported = [...new Set(source.columns.filter((c) => !used.has(c)).map(family))];
 
     return {
       setup: [
@@ -136,6 +184,7 @@ export const maxquantSites: Importer = {
           q.mult AS multiplicity,
           ${value('Localization prob')} AS localization_prob,
           ${locSample} AS localization_prob_sample,
+          ${idType} AS identification_type,
           ${value('Score diff')} AS score_diff,
           ${value('PEP')} AS pep,
           ${intensity} AS intensity,
@@ -150,6 +199,26 @@ export const maxquantSites: Importer = {
       params: selectParams,
       rules: [
         ...matching.rules,
+        {
+          id: 'position_readable',
+          severity: 'error',
+          source: 'SOURCE.md: site_id = Protein + Amino acid + Position (an integer)',
+          sql: `SELECT ${ident('Protein')} || ' (Position "' || coalesce(${ident('Position')}, '') || '")' AS example FROM ${source.table} WHERE TRY_CAST(trim(${ident('Position')}) AS INTEGER) IS NULL`,
+          message: (count, ex) =>
+            `${count} row(s) have a Position that is not a whole number: ${ex.join(', ')}.`,
+        },
+        ...(sumChecks.length
+          ? [
+              {
+                id: 'multiplicity_sum',
+                severity: 'warn' as const,
+                source: 'SOURCE.md: Intensity <sample>___<j> are the parts of Intensity <sample>',
+                sql: `SELECT ${ident('Protein')} || '_' || ${ident('Amino acid')} || ${ident('Position')} AS example FROM ${source.table} WHERE ${sumChecks.join(' OR ')}`,
+                message: (count: number, ex: string[]) =>
+                  `${count} site row(s) whose multiplicity intensities do not add up to the summed intensity: ${ex.join(', ')}.`,
+              },
+            ]
+          : []),
         ...(!keep && flags.length
           ? [
               removedRowsRule(
@@ -201,8 +270,7 @@ export const maxquantSites: Importer = {
           : []),
         {
           step: 'not_imported',
-          detail:
-            'Labelled intensities and ratios, reporter intensities, occupancies, per-sample scores and cross-table identifiers',
+          detail: `Columns not imported: ${notImported.join(', ')}`,
         },
       ],
       naTokens: NA_TOKENS,

@@ -10,7 +10,16 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { readablePrograms, requirePrincipal } from '../auth/plugin.ts';
 import type { ApiConfig } from '../config.ts';
 import { HttpError, notFound, parse } from '../errors.ts';
-import { LOCALISATION_NOTE, QUANTIFIED_NOTE, proteinSites, siteFigure, siteSummary } from '../ptm/sites.ts';
+import {
+  ISOFORM_NOTE,
+  LOCALISATION_NOTE,
+  MAP_NOTE,
+  QUANTIFIED_NOTE,
+  plotted,
+  proteinSites,
+  siteFigure,
+  siteSummary,
+} from '../ptm/sites.ts';
 import { resolveSource } from '../query/resolve.ts';
 import { respond } from '../respond.ts';
 
@@ -36,12 +45,19 @@ export function registerPtmRoutes(
       loc_min: query.loc_min,
       releases,
       sites,
-      figure: siteFigure(sites, query.loc_min),
+      figure: siteFigure(sites, query.loc_min, releases),
       notes: sites.length
         ? [
             LOCALISATION_NOTE(query.loc_min),
-            'Localisation probability: the best for the site across the experiment, as the tool reported it.',
+            'Localisation probability: the best for the site over all samples in the table, as the tool reported it.',
             QUANTIFIED_NOTE,
+            MAP_NOTE,
+            ISOFORM_NOTE,
+            ...(sites.some((x) => !plotted(x))
+              ? [
+                  `${sites.filter((x) => !plotted(x)).length} site(s) are not on the map (no position on this protein or no localisation probability); they are in the table.`,
+                ]
+              : []),
             ...(shared
               ? [
                   `${shared} site(s) are also reported on other proteins (shared peptides): the position shown is this protein’s.`,

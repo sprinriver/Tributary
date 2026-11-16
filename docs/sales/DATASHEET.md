@@ -35,7 +35,8 @@
 - **Support:** a diagnostics bundle without secrets or personal data, so support needs no access to your account.
 
 ## Not included today
-- PTM site-level data, and thermal profiling beyond TPP-TR result tables (no 2D-TPP or dose-range TPP yet).
+- Site-level data beyond label-free MaxQuant site tables (no DIA-NN site reports, SILAC or TMT sites yet), and
+  thermal profiling beyond TPP-TR result tables (no 2D-TPP or dose-range TPP yet).
 - ELN connectors.
 - An independent penetration test and SOC 2 report.
 

@@ -121,7 +121,10 @@ export const pValueRule = (column: string): QualityRule => ({
   source: SCIENCE,
 });
 /** q-values / FDR in [0, 1]. */
-export const probabilityRule = (column: string): QualityRule => ({
+export const probabilityRule = (
+  column: string,
+  source = 'Definition of a q-value / false discovery rate',
+): QualityRule => ({
   id: `${column}_range`,
   kind: 'range',
   columns: [column],
@@ -130,7 +133,7 @@ export const probabilityRule = (column: string): QualityRule => ({
   max: 1,
   maxInclusive: true,
   severity: 'error',
-  source: 'Definition of a q-value / false discovery rate',
+  source,
 });
 export const nonNegativeRule = (column: string, source: string): QualityRule => ({
   id: `${column}_non_negative`,

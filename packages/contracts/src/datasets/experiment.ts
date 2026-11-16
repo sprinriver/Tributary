@@ -250,9 +250,14 @@ export const ptmSiteQuant: DatasetContract = {
         'Modifications of this type on the peptides behind the intensity (1, 2, 3 = three or more); null = all together',
     }),
     opt('localization_prob', 'double', {
-      description: 'Best localisation probability of the site in the experiment',
+      description:
+        'Best localisation probability of the site over all samples in the table (MaxQuant Localization prob)',
     }),
     opt('localization_prob_sample', 'double', { description: 'Localisation probability in this sample' }),
+    opt('identification_type', 'text', {
+      description:
+        'How the site was identified in this sample, as the tool wrote it (e.g. "By MS/MS", "By matching")',
+    }),
     opt('score_diff', 'double'),
     opt('pep', 'double', { description: 'PEP of the best modified peptide with this site' }),
     opt('intensity', 'double', { description: 'Linear scale; 0 = not quantified, as the tool writes it' }),
@@ -262,9 +267,15 @@ export const ptmSiteQuant: DatasetContract = {
   ],
   joinKeys: ['experiment_version_id', 'sample_key', 'protein_ids', 'gene_names'],
   qualityRules: [
-    probabilityRule('localization_prob'),
-    probabilityRule('localization_prob_sample'),
-    probabilityRule('pep'),
+    probabilityRule(
+      'localization_prob',
+      'A localisation probability lies in [0, 1] (maxquant_sites/SOURCE.md)',
+    ),
+    probabilityRule(
+      'localization_prob_sample',
+      'A localisation probability lies in [0, 1] (maxquant_sites/SOURCE.md)',
+    ),
+    probabilityRule('pep', 'A posterior error probability lies in [0, 1] (maxquant_sites/SOURCE.md)'),
     nonNegativeRule('intensity', 'Intensities are linear-scale abundances (SPEC §6.2)'),
     uniqueRule('one_row_per_sample_site', [
       'experiment_version_id',

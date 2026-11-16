@@ -163,6 +163,7 @@ export function SiteSummarySection({ release }: { release: string }) {
                   <tr>
                     <th scope="col">sample</th>
                     <th scope="col">sites quantified</th>
+                    <th scope="col">localised ≥ {s.loc_min} in the sample</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -170,6 +171,7 @@ export function SiteSummarySection({ release }: { release: string }) {
                     <tr key={p.sample_key}>
                       <td>{p.sample_key}</td>
                       <td>{p.sites_quantified}</td>
+                      <td>{p.sites_quantified_meeting_threshold}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -191,7 +193,7 @@ export function SiteSummarySection({ release }: { release: string }) {
                   {s.top.map((t) => (
                     <tr key={t.site_id}>
                       <td>
-                        <Link to="/proteins/$id" params={{ id: t.site_id.split('_')[0]! }}>
+                        <Link to="/proteins/$id" params={{ id: t.protein }}>
                           {t.site_id}
                         </Link>
                       </td>

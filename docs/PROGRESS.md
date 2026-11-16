@@ -1908,3 +1908,39 @@ Entry template:
 - Known follow-ups: `shape-more.test.ts` is still over 400 lines; the "Order" control shows raw option names
   (as in the dose-response viewer).
 - Dependencies added: none.
+
+## 2026-11-16 — Phase 47: PTM site-level data (phosphosites) — done
+- Before the phase: a product deck (`docs/pitch/Tributary-product-deck.pptx` and `.pdf`, 17 slides, screenshots of
+  the app on synthetic data); `shape-more.test.ts` split under 400 lines (tests moved verbatim); CI fix for
+  Phase 46 (TPP importer suite timeout 30 s; CI timed out at 5 s).
+- Built:
+  - **Format notes:** `packages/importers/src/maxquant_sites/SOURCE.md`, from the MaxQuant "Output Tables"
+    documentation (read through a web scrape; the page is not reachable from the build environment). Columns the
+    documentation leaves undescribed are marked. DIA-NN's site report is not covered: its columns are not documented.
+  - **Dataset kind:** `ptm_site_quant` (migration 0030), one row per site × sample × multiplicity.
+  - **Importer:** `maxquant_sites` (flags removed and counted, zeros kept, NaN → null, identification type kept,
+    every unimported column named, multiplicity-sum warning, unreadable positions named, labelled tables refused).
+  - **API:** `GET /v1/proteins/:id/sites`, `GET /v1/ptm-sites/summary`. The latest-release query is now shared with
+    selectivity (`apps/api/src/datasets/latest-releases.ts`).
+  - **Web:** protein-page Modification sites section (site map, table, threshold); results-page site summary;
+    import dialog suggests the importer for `*Sites.txt`.
+  - **Synthetic fixture:** `fixtures/tools/maxquant/Phospho_STY_Sites.txt` (38 sites within their proteins'
+    lengths; AKT1 S473 shared with AKT2 S474).
+- Science review (omics-reviewer): no wrong values. Fixed: labelled tables refused even with summed intensities;
+  per-sample counts at the threshold use the per-sample localisation; no paraphrased "class I" definition (the
+  note cites Olsen et al. 2006 and points to the paper); identification type imported and all unimported columns
+  named; probability rules cite their own source; fixture positions inside protein lengths, per-sample localisation
+  at most the table-wide value, a realistic shared site; site-map notes (not abundance, unplotted sites, experiment
+  in the hover, exact-accession matching); summary links by protein; numeric multiplicity order.
+- Open points: Olsen et al. 2006's full class I definition was not re-read; the "Sequence window" of shared sites is
+  kept as written; a sample named "L …", "M …" or "H …" would be read as a labelled channel.
+- Follow-up found: adding a column to an existing dataset kind makes older releases of that kind unreadable (the
+  query service reads every contract column from the Parquet files). No shipped kind changed here; a contract
+  versioning rule is needed before any shipped kind gains a column.
+- Test amendments (disclosed, each in its own commit): CON-03 kind list (+ptm_site_quant); this phase's own PTM
+  tests (fixture helper without trim(); expectations after the fixture was made realistic).
+- Process slips: I ran `npx eslint` once and `pnpm turbo run typecheck` once, which CLAUDE.md forbids; neither
+  changed anything.
+- Local note: the dev database was reset twice (docker volumes) for clean demo data and after the contract change.
+- Evidence: `pnpm check` ✓; `pnpm e2e "PTM-04|TPP-04|SEL-03|PPI-04"` ✓ (4 passed). Screenshots: `artifacts/phase-47/`.
+- Dependencies added: none (the deck was built with packages installed in a scratch folder, outside the repo).

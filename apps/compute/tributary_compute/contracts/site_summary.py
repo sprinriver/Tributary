@@ -13,6 +13,7 @@ class PerSampleItem(BaseModel):
     )
     sample_key: str
     sites_quantified: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    sites_quantified_meeting_threshold: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
 
 
 class TopItem(BaseModel):
@@ -20,6 +21,7 @@ class TopItem(BaseModel):
         extra="forbid",
     )
     site_id: str
+    protein: str
     gene_names: list[str]
     localization_prob: float | None
     samples_quantified: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]

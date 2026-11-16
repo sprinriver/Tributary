@@ -15,8 +15,6 @@ const MAX_ROWS = 500_000;
 type Deps = { db: Database; config: ApiConfig; fetch: typeof fetch };
 type Experiment = SelectivityResponse['experiments'][number];
 
-const iso = (v: unknown) => (v instanceof Date ? v.toISOString().slice(0, 10) : v == null ? null : String(v));
-
 async function query(deps: Deps, releaseIds: string[], compoundId: string, select: string[]) {
   const source = await resolveSource(deps.db, { releaseIds }, null);
   if (!source) return null;

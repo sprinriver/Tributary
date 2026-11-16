@@ -8,7 +8,9 @@ const LocMin = z.coerce
   .gt(0)
   .max(1)
   .default(0.75)
-  .describe('Localisation probability at which a site is marked as meeting the threshold (0.75: class I)');
+  .describe(
+    'Localisation probability from which a site is marked as meeting the threshold (a display choice)',
+  );
 
 export const ProteinSitesQuerySchema = z.strictObject({ loc_min: LocMin }).meta({ id: 'ProteinSitesQuery' });
 
@@ -37,7 +39,7 @@ export const ProteinSiteSchema = z.object({
   /** Position in this protein (for a site reported on another protein too, this protein's position). */
   position: z.int().nullable(),
   modification: z.string(),
-  /** Best localisation probability of the site in the experiment, as the tool reported it. */
+  /** Best localisation probability of the site over all samples in the table, as the tool reported it. */
   localization_prob: z.number().nullable(),
   meets_threshold: z.boolean(),
   /** Samples with an intensity above 0 at any multiplicity. */
@@ -74,11 +76,20 @@ export const SiteSummarySchema = z
     /** Distinct sites in the release. */
     sites: z.int(),
     meeting_threshold: z.int(),
-    per_sample: z.array(z.object({ sample_key: z.string(), sites_quantified: z.int() })),
+    per_sample: z.array(
+      z.object({
+        sample_key: z.string(),
+        /** Sites with an intensity above 0 in this sample, whatever their localisation. */
+        sites_quantified: z.int(),
+        /** Of those, sites whose localisation probability in this sample is at least loc_min. */
+        sites_quantified_meeting_threshold: z.int(),
+      }),
+    ),
     /** The most confidently localised sites (then by samples quantified), at most 25. */
     top: z.array(
       z.object({
         site_id: z.string(),
+        protein: z.string(),
         gene_names: z.array(z.string()),
         localization_prob: z.number().nullable(),
         samples_quantified: z.int(),

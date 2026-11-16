@@ -648,7 +648,7 @@ Definition of done:
 - [x] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-46/; omics review
 
 ## Phase 47 — PTM site-level data (phosphosites)
-Status: in progress
+Status: done (2026-11-16)
 Goal: Signalling and chemoproteomics teams load modification-site tables and see, per protein, which sites were
 measured, how confidently they were localised and in how many samples.
 Features: PTM-01 … PTM-04
@@ -666,7 +666,7 @@ In scope:
 - **No statistics:** no site-level differential test, normalisation to protein level or occupancy is computed.
 - **Synthetic fixture:** `pnpm synth` writes a small site table in the MaxQuant layout.
 Definition of done:
-- [ ] SOURCE.md written; tests fail first (golden, multiplicity, flags, zeros, broken file)
-- [ ] Contract, migration, importer, API, protein-page section, results summary, synthetic fixture
-- [ ] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-47/; omics review
+- [x] SOURCE.md written; tests fail first (golden, multiplicity, flags, zeros, broken file)
+- [x] Contract, migration, importer, API, protein-page section, results summary, synthetic fixture
+- [x] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-47/; omics review
 

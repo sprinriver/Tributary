@@ -4,6 +4,10 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Modification sites (PTM-01…04): import MaxQuant site tables (e.g. `Phospho (STY)Sites.txt`) as a
+  `ptm_site_quant` dataset (migration 0030). Protein pages show a site map and table of the protein's sites across
+  experiments; results pages summarise sites, sites per sample and the best-localised sites. The localisation
+  threshold is a stated display choice; labelled (SILAC, TMT) site tables are refused.
 - Thermal proteome profiling (TPP-01…04): import a TPP-TR result table (Bioconductor TPP) as a `thermal_shift`
   dataset. The results page shows ΔTm against adjusted p per comparison, a table and melting curves. Melting
   points, ΔTm and p-values are the tool's own; nothing is refitted. Migration 0029 adds the dataset kind.

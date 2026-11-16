@@ -20,7 +20,7 @@ class SiteSummaryQuery(BaseModel):
     loc_min: Annotated[
         float,
         Field(
-            description="Localisation probability at which a site is marked as meeting the threshold (0.75: class I)",
+            description="Localisation probability from which a site is marked as meeting the threshold (a display choice)",
             gt=0.0,
             le=1.0,
         ),

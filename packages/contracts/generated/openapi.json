@@ -24772,7 +24772,7 @@
         "properties": {
           "loc_min": {
             "default": 0.75,
-            "description": "Localisation probability at which a site is marked as meeting the threshold (0.75: class I)",
+            "description": "Localisation probability from which a site is marked as meeting the threshold (a display choice)",
             "type": "number",
             "exclusiveMinimum": 0,
             "maximum": 1
@@ -28682,11 +28682,17 @@
                   "type": "integer",
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991
+                },
+                "sites_quantified_meeting_threshold": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
                 }
               },
               "required": [
                 "sample_key",
-                "sites_quantified"
+                "sites_quantified",
+                "sites_quantified_meeting_threshold"
               ],
               "additionalProperties": false
             }
@@ -28697,6 +28703,9 @@
               "type": "object",
               "properties": {
                 "site_id": {
+                  "type": "string"
+                },
+                "protein": {
                   "type": "string"
                 },
                 "gene_names": {
@@ -28719,6 +28728,7 @@
               },
               "required": [
                 "site_id",
+                "protein",
                 "gene_names",
                 "localization_prob",
                 "samples_quantified"
@@ -28755,7 +28765,7 @@
           },
           "loc_min": {
             "default": 0.75,
-            "description": "Localisation probability at which a site is marked as meeting the threshold (0.75: class I)",
+            "description": "Localisation probability from which a site is marked as meeting the threshold (a display choice)",
             "type": "number",
             "exclusiveMinimum": 0,
             "maximum": 1

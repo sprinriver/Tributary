@@ -301,6 +301,20 @@ A protein page has a **3D model** section.
   - **Unreadable structures:** registered SMILES that RDKit cannot read are listed under the results so the registry
     can be corrected.
 
+## Modification sites (phosphosites)
+Import a label-free MaxQuant site table, e.g. `Phospho (STY)Sites.txt`, with the **MaxQuant site table** importer.
+Sample columns are matched to the sample sheet as for other MaxQuant tables; decoy and contaminant rows are removed
+and counted. SILAC and TMT site tables are refused.
+- **Protein page:** a **Modification sites** section lists the protein's sites in every experiment you can read:
+  residue and position, best localisation probability, samples quantified, multiplicities and other proteins the
+  site is reported on. The site map plots position against localisation probability (not abundance).
+- **Results page:** the number of sites, sites per sample (all, and localised at the threshold in that sample) and
+  the best-localised sites.
+- **Threshold:** "Localisation at least" (default 0.75) is a display choice. Sites below it stay in the tables,
+  marked "below".
+- Intensities are shown as counts of quantified samples only; nothing is normalised, imputed or compared, and
+  intensities of different multiplicities are never added.
+
 ## Thermal proteome profiling (TPP-TR)
 Import the result table of a TPP-TR analysis (Bioconductor TPP, saved as tab-separated text) with the
 **TPP-TR result table** importer. The table does not carry three things, so the import dialog asks for them:

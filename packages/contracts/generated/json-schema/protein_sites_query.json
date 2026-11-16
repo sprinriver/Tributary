@@ -7,7 +7,7 @@
       "properties": {
         "loc_min": {
           "default": 0.75,
-          "description": "Localisation probability at which a site is marked as meeting the threshold (0.75: class I)",
+          "description": "Localisation probability from which a site is marked as meeting the threshold (a display choice)",
           "type": "number",
           "exclusiveMinimum": 0,
           "maximum": 1

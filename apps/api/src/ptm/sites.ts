@@ -18,9 +18,12 @@ const MAX_ROWS = 500_000;
 const TOP = 25;
 
 export const LOCALISATION_NOTE = (locMin: number) =>
-  `${locMin} is a display threshold: sites at or above it are marked, sites below it are listed and marked, never dropped. Olsen et al. 2006 (Cell 127:635) call sites with a localisation probability above 0.75 "class I".`;
+  `${locMin} is a display threshold: sites at or above it are marked, sites below it are listed and marked, never dropped. 0.75 is a common choice, after the "class I" sites of Olsen et al. 2006 (Cell 127:635, doi:10.1016/j.cell.2006.09.026); see the paper for its full definition.`;
 export const QUANTIFIED_NOTE =
-  'Samples quantified: samples with an intensity above 0 at any multiplicity (MaxQuant writes 0 for a site it did not quantify). Intensities are not normalised or compared here.';
+  'Quantified: an intensity above 0 at any multiplicity (MaxQuant writes 0 for a site it did not quantify). Intensities of different multiplicities are different peptides (one, two, three or more modifications) and are never added or compared; intensities are not normalised or compared here.';
+export const ISOFORM_NOTE =
+  'Sites are matched on the exact accession: isoform accessions (e.g. P31749-2) have their own page.';
+export const MAP_NOTE = 'Site map: y is the localisation probability, not abundance.';
 
 const num = (v: unknown) => (v === null || v === undefined || v === '' ? null : Number(v));
 const list = (v: unknown) => (Array.isArray(v) ? v.map(String) : []);
@@ -94,18 +97,26 @@ export function sitesOfProtein(releaseId: string, accession: string, rows: Row[]
       samples_total: samples,
       multiplicities: [
         ...new Set(measured.map((r) => num(r.multiplicity)).filter((m): m is number => m !== null)),
-      ].sort(),
+      ].sort((a, b) => a - b),
       shared_with: ids.filter((id) => id !== accession),
       sequence_window: first.sequence_window == null ? null : String(first.sequence_window),
     };
   });
 }
 
+/** A site has a point on the map when it has a position on this protein and a localisation probability. */
+export const plotted = (x: Site) => x.position !== null && x.localization_prob !== null;
+
 /** Site map: position along the protein against localisation probability, threshold dashed. */
-export function siteFigure(sites: Site[], locMin: number): ProteinSites['figure'] {
+export function siteFigure(
+  sites: Site[],
+  locMin: number,
+  releases: ProteinSites['releases'],
+): ProteinSites['figure'] {
   if (!sites.length) return null;
+  const experiment = (id: string) => releases.find((r) => r.release_id === id)?.experiment_name ?? '';
   const trace = (meets: boolean) => {
-    const s = sites.filter((x) => x.meets_threshold === meets && x.position !== null);
+    const s = sites.filter((x) => x.meets_threshold === meets && plotted(x));
     return {
       type: 'scatter',
       mode: 'markers+text',
@@ -114,9 +125,9 @@ export function siteFigure(sites: Site[], locMin: number): ProteinSites['figure'
       y: s.map((x) => x.localization_prob),
       text: s.map((x) => `${x.amino_acid}${x.position}`),
       textposition: 'top center',
-      customdata: s.map((x) => [x.site_id, x.samples_quantified, x.samples_total]),
+      customdata: s.map((x) => [x.site_id, x.samples_quantified, x.samples_total, experiment(x.release_id)]),
       hovertemplate:
-        '%{customdata[0]}<br>localisation %{y:.3f}<br>quantified in %{customdata[1]} / %{customdata[2]} samples<extra></extra>',
+        '%{customdata[0]}<br>localisation %{y:.3f}<br>quantified in %{customdata[1]} / %{customdata[2]} samples<br>%{customdata[3]}<extra></extra>',
       marker: { size: 11, symbol: meets ? 'circle' : 'circle-open', color: meets ? '#0e7c86' : '#8c959f' },
     };
   };
@@ -184,15 +195,29 @@ export async function siteSummary(deps: Deps, releaseId: string, locMin: number)
   const rows = await rowsOf(
     deps,
     releaseId,
-    ['site_id', 'gene_names', 'modification', 'localization_prob', 'sample_key', 'intensity'],
+    [
+      'site_id',
+      'protein',
+      'gene_names',
+      'modification',
+      'localization_prob',
+      'localization_prob_sample',
+      'sample_key',
+      'intensity',
+    ],
     [],
   );
-  const sites = new Map<string, { genes: string[]; loc: number | null; samples: Set<string> }>();
-  const perSample = new Map<string, Set<string>>();
+  const sites = new Map<
+    string,
+    { protein: string; genes: string[]; loc: number | null; samples: Set<string> }
+  >();
+  // Per sample: sites quantified, and those localised at loc_min or better in that sample.
+  const perSample = new Map<string, { all: Set<string>; meeting: Set<string> }>();
   const mods = new Set<string>();
   for (const r of rows) {
     const id = String(r.site_id);
     const s = sites.get(id) ?? {
+      protein: String(r.protein),
       genes: list(r.gene_names),
       loc: num(r.localization_prob),
       samples: new Set(),
@@ -200,10 +225,12 @@ export async function siteSummary(deps: Deps, releaseId: string, locMin: number)
     sites.set(id, s);
     mods.add(String(r.modification));
     const sample = String(r.sample_key);
-    if (!perSample.has(sample)) perSample.set(sample, new Set());
+    if (!perSample.has(sample)) perSample.set(sample, { all: new Set(), meeting: new Set() });
     if ((num(r.intensity) ?? 0) > 0) {
       s.samples.add(sample);
-      perSample.get(sample)!.add(id);
+      perSample.get(sample)!.all.add(id);
+      const here = num(r.localization_prob_sample);
+      if (here !== null && here >= locMin) perSample.get(sample)!.meeting.add(id);
     }
   }
   const all = [...sites];
@@ -215,7 +242,11 @@ export async function siteSummary(deps: Deps, releaseId: string, locMin: number)
     meeting_threshold: all.filter(([, s]) => s.loc !== null && s.loc >= locMin).length,
     per_sample: [...perSample]
       .sort(([a], [b]) => a.localeCompare(b))
-      .map(([sample_key, ids]) => ({ sample_key, sites_quantified: ids.size })),
+      .map(([sample_key, ids]) => ({
+        sample_key,
+        sites_quantified: ids.all.size,
+        sites_quantified_meeting_threshold: ids.meeting.size,
+      })),
     top: all
       .sort(
         ([ai, a], [bi, b]) =>
@@ -224,10 +255,15 @@ export async function siteSummary(deps: Deps, releaseId: string, locMin: number)
       .slice(0, TOP)
       .map(([site_id, s]) => ({
         site_id,
+        protein: s.protein,
         gene_names: s.genes,
         localization_prob: s.loc,
         samples_quantified: s.samples.size,
       })),
-    notes: [LOCALISATION_NOTE(locMin), QUANTIFIED_NOTE],
+    notes: [
+      LOCALISATION_NOTE(locMin),
+      `Sites per sample meeting the threshold use the localisation probability in that sample (MaxQuant "Localization prob <sample>"); the site total uses the best over all samples.`,
+      QUANTIFIED_NOTE,
+    ],
   };
 }
