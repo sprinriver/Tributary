@@ -8,6 +8,8 @@ import { processRunOutputs } from './outputs.ts';
 import type { Runners } from './runner.ts';
 import { applyRunStatus, type StatusObservation } from './status.ts';
 import { notifyRunStatus } from '../webhooks/dispatch.ts';
+import { runFinished } from '../notifications/emit.ts';
+import { emailUser } from '../notifications/email.ts';
 
 export interface PipelineDeps {
   db: Database;
@@ -49,6 +51,24 @@ async function announce(
         experiment_version_id: row?.experiment_version_id ?? null,
       },
     );
+    if (TERMINAL_RUN_STATUSES.includes(status as never)) {
+      const actor = await serviceActor(deps.db, run.tenant_id, 'pipelines');
+      await runFinished(deps, actor, run.id, status);
+      // The person who launched the run hears about it by email.
+      const launched = await deps.db
+        .selectFrom('pipeline_run as r')
+        .innerJoin('experiment_version as v', 'v.id', 'r.experiment_version_id')
+        .innerJoin('experiment as e', 'e.id', 'v.experiment_id')
+        .select(['r.created_by', 'e.name', 'v.version_number'])
+        .where('r.id', '=', run.id)
+        .executeTakeFirst();
+      if (launched)
+        await emailUser(deps, actor, launched.created_by, 'run.finished', {
+          subject: `your pipeline run on ${launched.name} v${launched.version_number} ${status}`,
+          lines: [`The pipeline run you launched on ${launched.name} v${launched.version_number} ${status}.`],
+          path: `/runs/${run.id}`,
+        });
+    }
   } catch {
     // Deliveries record their own failures; a lookup failure here must not affect the run.
   }

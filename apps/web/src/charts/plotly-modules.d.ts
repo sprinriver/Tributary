@@ -8,6 +8,11 @@ declare module 'plotly.js/lib/core' {
       el: HTMLElement,
       options: { format: 'png' | 'svg'; filename: string; width?: number; height?: number },
     ): Promise<string>;
+    /** Image of a drawn figure as a data URL. */
+    toImage(
+      el: HTMLElement,
+      options: { format: 'png' | 'svg'; width?: number; height?: number },
+    ): Promise<string>;
   };
   export default Plotly;
 }
@@ -15,7 +20,7 @@ declare module 'plotly.js/lib/scatter' {
   const trace: unknown;
   export default trace;
 }
-declare module 'plotly.js/lib/scattergl' {
+declare module 'plotly.js/src/traces/scattergl/strict' {
   const trace: unknown;
   export default trace;
 }

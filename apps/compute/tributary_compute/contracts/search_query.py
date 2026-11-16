@@ -22,12 +22,12 @@ class ProgramId(RootModel[str]):
     root: Annotated[str, Field(max_length=200, min_length=1)]
 
 
-class ProgramId12Item(RootModel[str]):
+class ProgramId14Item(RootModel[str]):
     root: Annotated[str, Field(max_length=200, min_length=1)]
 
 
-class ProgramId12(RootModel[list[ProgramId12Item]]):
-    root: Annotated[list[ProgramId12Item], Field(max_length=20)]
+class ProgramId14(RootModel[list[ProgramId14Item]]):
+    root: Annotated[list[ProgramId14Item], Field(max_length=20)]
 
 
 class Species(RootModel[str]):
@@ -73,7 +73,7 @@ class SearchQuery(BaseModel):
     q: Annotated[str, Field(max_length=200, min_length=1)]
     type: Literal["experiment", "sample"] | None = None
     assay_type: AssayType | AssayType2 | None = None
-    program_id: ProgramId | ProgramId12 | None = None
+    program_id: ProgramId | ProgramId14 | None = None
     species: Species | Species1 | None = None
     compound: Compound | Compound3 | None = None
     status: Status | Status1 | None = None

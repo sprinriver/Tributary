@@ -4,13 +4,15 @@ import { boxViolin, histogramKde, lollipop, pieDonut } from './charts/distributi
 import { heatmap } from './charts/heatmap.ts';
 import { ma, pca, qcPanel } from './charts/omics.ts';
 import { doseResponse } from './charts/results.ts';
+import { meltingCurve, thermalShift } from './charts/thermal.ts';
 import { volcano } from './charts/volcano.ts';
 import { bar, bubble, line, scatter2d, scatter3d } from './charts/xy.ts';
 import { UuidV7Schema } from './common.ts';
 import type { ContractError } from './errors.ts';
 import { QuerySpecSchema } from './query.ts';
 
-/** The 12 v1 chart types (REFERENCE_V1 §7) plus MA plot, PCA, dose-response and QC panel (SPEC §7.2). */
+/** The 12 v1 chart types (REFERENCE_V1 §7) plus MA plot, PCA, dose-response and QC panel (SPEC §7.2), and the
+ * thermal proteome profiling charts (Phase 46). */
 export const CHART_TYPES = [
   'line',
   'bar',
@@ -28,6 +30,8 @@ export const CHART_TYPES = [
   'pca',
   'dose_response',
   'qc_panel',
+  'melting_curve',
+  'thermal_shift',
 ] as const;
 export const ChartTypeSchema = z.enum(CHART_TYPES);
 export type ChartType = z.infer<typeof ChartTypeSchema>;
@@ -64,6 +68,8 @@ export interface ChartDefinition {
   options: z.ZodType;
   /** Columns the chart always reads besides its encodings (e.g. fitted curve parameters of a dose_response). */
   requiresColumns?: string[];
+  /** Columns the chart also reads when the dataset has them (e.g. is_imputed for the QC panel). */
+  readIfPresent?: string[];
   /** Rules that need the encodings too (e.g. labelling hits needs a label column). */
   rules?: (spec: ChartSpec, options: unknown) => ContractError[];
   dataRules: {
@@ -95,6 +101,8 @@ export const CHART_REGISTRY: Partial<Record<ChartType, ChartDefinition>> = {
   pca,
   qc_panel: qcPanel,
   dose_response: doseResponse,
+  melting_curve: meltingCurve,
+  thermal_shift: thermalShift,
 };
 
 /** Option values with every default applied (what the form starts from). */

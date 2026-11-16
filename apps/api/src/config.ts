@@ -1,3 +1,4 @@
+import { resolve } from 'node:path';
 import { AI_PROVIDERS, type AiProvider } from '@tributary/contracts';
 import { databaseUrlFromEnv, DEFAULT_DATABASE_URL, DEV_TENANT_ID } from '@tributary/db';
 import type { AiConfig } from './ai/provider.ts';
@@ -29,7 +30,17 @@ export interface ApiConfig {
   queryInternalToken: string;
   /** EBI OLS4 or a self-hosted mirror (SPEC M2: configurable base URL). */
   olsUrl: string;
+  /** Protein 3D models: a directory of <accession>.cif (empty: none) and AlphaFold DB's base URL (empty: off). */
+  proteinModels: { dir: string; alphafoldUrl: string };
+  /** Hosts notification routes may post to besides Slack's and Teams' own (NOTIFY_EXTRA_HOSTS, comma-separated). */
+  notifyExtraHosts: string[];
+  /** Personal email (Phase 34): EMAIL_TRANSPORT ses | smtp | none (default none: emails are not queued). */
+  email: { transport: 'none' | 'ses' | 'smtp' | 'memory'; from: string; smtpUrl: string; sesRegion: string };
   sessionTtlHours: number;
+  /** Requests per minute per credential and per anonymous client address (Phase 44); perMinute 0 = off. */
+  rateLimit: { perMinute: number; anonymousPerMinute: number };
+  /** Proxy hops in front of the API (CloudFront + load balancer = 2), so the client address is the real one. */
+  trustProxyHops: number;
   groupRoleMap: GroupRoleMapping[];
   s3: S3Config;
   /** AI assistant (SPEC §11); `none`, the default, means no assistant. */
@@ -183,7 +194,29 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
       env.QUERY_URL ?? (env.QUERY_HOSTPORT ? `http://${env.QUERY_HOSTPORT}` : 'http://127.0.0.1:3100'),
     queryInternalToken: required('QUERY_INTERNAL_TOKEN', 'dev-only-internal-token'),
     olsUrl: env.OLS_URL ?? 'https://www.ebi.ac.uk/ols4',
+    email: {
+      transport: (['ses', 'smtp'] as const).find((t) => t === env.EMAIL_TRANSPORT) ?? 'none',
+      from: env.EMAIL_FROM ?? 'Tributary <no-reply@localhost>',
+      smtpUrl: env.SMTP_URL ?? '',
+      sesRegion: env.SES_REGION ?? env.AWS_REGION ?? 'us-east-1',
+    },
+    notifyExtraHosts: (env.NOTIFY_EXTRA_HOSTS ?? '')
+      .split(',')
+      .map((h) => h.trim().toLowerCase())
+      .filter(Boolean),
+    proteinModels: {
+      dir:
+        env.PROTEIN_MODELS_DIR ??
+        (production ? '' : resolve(import.meta.dirname, '../../../fixtures/structures')),
+      alphafoldUrl: env.ALPHAFOLD_URL ?? 'https://www.alphafold.ebi.ac.uk',
+    },
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 12),
+    // On in production; off elsewhere unless set (tests and local e2e send bursts from one address).
+    rateLimit: {
+      perMinute: Number(env.RATE_LIMIT_PER_MINUTE ?? (production ? 600 : 0)),
+      anonymousPerMinute: Number(env.RATE_LIMIT_ANON_PER_MINUTE ?? 120),
+    },
+    trustProxyHops: Number(env.TRUST_PROXY ?? 0),
     reauthMaxAgeSeconds: Number(env.REAUTH_MAX_AGE_SECONDS ?? 900),
     s3: {
       endpoint: env.S3_ENDPOINT ?? (production ? undefined : 'http://localhost:8333'),

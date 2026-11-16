@@ -419,7 +419,7 @@ dl.details dd {
 .alert {
   border: 1px solid var(--danger);
   background: var(--danger-bg);
-  color: var(--danger);
+  color: var(--danger-text); /* text on --danger-bg: #b91c1c is 5.9:1 (AA); --danger is 4.4:1 */
   border-radius: var(--r);
   padding: 8px 12px;
 }

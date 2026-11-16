@@ -15,6 +15,7 @@ import { CurationDialog } from './CurationDialog.tsx';
 import { EditToolbar, applyCuration, curationTargets as targetsOf } from './EditToolbar.tsx';
 import type { ParsedTable } from './parse-core.ts';
 import { parseInWorker } from './parse.ts';
+import { downloadXlsx, readXlsx } from './xlsx.ts';
 import { PlateView } from './PlateView.tsx';
 import { downloadVersionSdrf } from './sdrf.ts';
 import { validateRows } from './validation.ts';
@@ -254,7 +255,12 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
     <div className="stack">
       {!readOnly && (
         <EditToolbar
-          onUpload={(file) => void file.text().then(parseInWorker).then(setUpload, setError)}
+          onUpload={(file) =>
+            void (/\.xlsx$/i.test(file.name) ? readXlsx(file) : file.text().then(parseInWorker)).then(
+              setUpload,
+              setError,
+            )
+          }
           onPaste={() => setPasteOpen(true)}
           onAddRow={() => setRows((r) => [...r, newRow()])}
           onDeleteRow={() => {
@@ -274,6 +280,18 @@ export function ManifestEditor({ version, readOnly }: { version: VersionDetail; 
         </button>
         <button type="button" onClick={() => void downloadSdrf()}>
           Download SDRF
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            void downloadXlsx(
+              `samples-v${version.version_number}.xlsx`,
+              allKeys,
+              rows.map((r) => r.cells),
+            ).catch(setError)
+          }
+        >
+          Download Excel
         </button>
         {!readOnly && (
           <label className="button">

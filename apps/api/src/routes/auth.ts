@@ -4,7 +4,7 @@ import { upsertLoginUser } from '../auth/login-user.ts';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { writeAudit } from '../audit.ts';
 import type { OidcClient, LoginFlow } from '../auth/oidc.ts';
-import { requirePrincipal } from '../auth/plugin.ts';
+import { requirePrincipal, requireSystemAdmin } from '../auth/plugin.ts';
 import { loadPrincipal } from '../auth/principal.ts';
 import { createSession, revokeSession, SESSION_COOKIE } from '../auth/sessions.ts';
 import { createPersonalAccessToken, listTokens, revokePersonalAccessToken } from '../auth/tokens.ts';
@@ -136,6 +136,12 @@ export function registerAuthRoutes(
   app.post('/v1/auth/tokens', async (request, reply: FastifyReply) => {
     const principal = requirePrincipal(request);
     const body = parse(CreateTokenBodySchema, request.body);
+    // Provisioning tokens act for a system admin, on SCIM only, and never alongside API scopes.
+    if (body.scopes.includes('scim')) {
+      requireSystemAdmin(request);
+      if (body.scopes.length > 1)
+        throw new HttpError(400, 'scim_token_alone', 'A SCIM token has the scim scope only.', 'scopes');
+    }
     const created = await db.transaction().execute(async (trx) => {
       const token = await createPersonalAccessToken(trx as unknown as Database, principal.userId, {
         name: body.name,

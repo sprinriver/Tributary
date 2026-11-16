@@ -51,6 +51,8 @@ export function registerAuth(app: FastifyInstance, db: Database, config: ApiConf
           (await loadPrincipal(db, config, claim.u, { type: 'token', tokenId: 'mcp', scopes: claim.s })) ??
           null;
       if (!request.principal) throw unauthenticated();
+      if (!claim!.s.includes('read') && !claim!.s.includes('write'))
+        throw new HttpError(403, 'insufficient_scope', 'This access token is for SCIM provisioning only.');
       if (!isRead(request) && !claim!.s.includes('write'))
         throw new HttpError(403, 'insufficient_scope', 'This access token is read-only.');
     } else if (header?.startsWith('Bearer ')) {
@@ -64,6 +66,9 @@ export function registerAuth(app: FastifyInstance, db: Database, config: ApiConf
           })) ?? null;
       }
       if (!request.principal) throw unauthenticated();
+      // A provisioning-only token (scope 'scim') reads nothing here: /scim/v2 authenticates it itself.
+      if (!token?.scopes.includes('read') && !token?.scopes.includes('write'))
+        throw new HttpError(403, 'insufficient_scope', 'This access token is for SCIM provisioning only.');
       if (!isRead(request) && !token?.scopes.includes('write')) {
         throw new HttpError(403, 'insufficient_scope', 'This access token is read-only.');
       }

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/SelectivityQuery",
+  "$defs": {
+    "SelectivityQuery": {
+      "type": "object",
+      "properties": {
+        "release_id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "direction": {
+          "default": "both",
+          "type": "string",
+          "enum": [
+            "both",
+            "down",
+            "up"
+          ]
+        },
+        "pec50_min": {
+          "default": 6,
+          "type": "number",
+          "minimum": 3,
+          "maximum": 12
+        }
+      },
+      "required": [
+        "direction",
+        "pec50_min"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

@@ -20,6 +20,7 @@ import {
 } from './admin-settings.ts';
 import { ProgramRowSchema } from './registry.ts';
 import type { ApiRoute } from './route.ts';
+import { SupportBundleSchema } from './support.ts';
 
 /** Admin (SPEC M11). Part of API_ROUTES. */
 export const ADMIN_ROUTES = {
@@ -111,6 +112,13 @@ export const ADMIN_ROUTES = {
     body: PutGroupMappingsBodySchema,
     response: GroupMappingsSchema,
     reason: true,
+  },
+  getSupportBundle: {
+    method: 'get',
+    path: '/v1/admin/support-bundle',
+    summary:
+      'Support bundle: versions, migrations, health, configuration summary, recent failures (no secrets; audited)',
+    response: SupportBundleSchema,
   },
   getSystemHealth: {
     method: 'get',

@@ -141,3 +141,11 @@ export const CompareOptionSchema = z.object({
 export const CompareOptionsSchema = z
   .object({ items: z.array(CompareOptionSchema) })
   .meta({ id: 'CompareOptions' });
+
+/** Experiment reports (Phase 33): the browser builds the PDF or slides; the API records and audits the export. */
+export const ReportExportBodySchema = z
+  .strictObject({ format: z.enum(['pdf', 'pptx']) })
+  .meta({ id: 'ReportExportBody' });
+export const ReportExportSchema = z
+  .object({ format: z.enum(['pdf', 'pptx']), recorded_at: z.iso.datetime({ offset: true }) })
+  .meta({ id: 'ReportExport' });

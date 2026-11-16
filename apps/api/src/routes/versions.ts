@@ -8,6 +8,8 @@ import {
 } from '@tributary/contracts';
 import type { Database } from '@tributary/db';
 import type { SearchIndex } from '../search/index-service.ts';
+import type { ApiConfig } from '../config.ts';
+import { versionPublished } from '../notifications/emit.ts';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { changeReason, writeAudit } from '../audit.ts';
 import { inProgram } from '../auth/abilities.ts';
@@ -73,7 +75,12 @@ export async function publishBlockers(db: Database, version: LoadedVersion): Pro
   );
 }
 
-export function registerVersionRoutes(app: FastifyInstance, db: Database, index: SearchIndex): void {
+export function registerVersionRoutes(
+  app: FastifyInstance,
+  db: Database,
+  index: SearchIndex,
+  config?: ApiConfig,
+): void {
   app.get('/v1/versions/:id', async (request: IdParams) => {
     const detail = await versionDetail(db, request.params.id);
     authorize(request, 'read', 'ExperimentVersion', detail.program_id);
@@ -181,6 +188,14 @@ export function registerVersionRoutes(app: FastifyInstance, db: Database, index:
       await index.experiment(trx as unknown as Database, version.experiment_id, principal.userId);
     });
     index.afterCommit(principal.userId);
+    // Team channels hear about it (outbox; never fails the publish).
+    if (config)
+      await versionPublished(
+        { db, config },
+        { tenantId: principal.tenantId, userId: principal.userId },
+        version.id,
+        request.log,
+      );
     return respond(VersionDetailSchema, await versionDetail(db, version.id));
   });
 

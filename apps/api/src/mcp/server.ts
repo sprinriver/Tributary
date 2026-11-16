@@ -41,7 +41,10 @@ async function authenticate(deps: Deps, request: FastifyRequest): Promise<Caller
   const header = request.headers.authorization;
   if (!header?.startsWith('Bearer ')) return undefined;
   const token = header.slice('Bearer '.length).trim();
-  const pat = await findToken(deps.db, token);
+  const found = await findToken(deps.db, token);
+  // A provisioning-only token (scope 'scim', Phase 35) is not an MCP credential.
+  const pat = found && (found.scopes.includes('read') || found.scopes.includes('write')) ? found : undefined;
+  if (found && !pat) return undefined;
   const oauth = pat ? undefined : await oauthUser(deps, token);
   const userId = pat?.userId ?? oauth?.userId;
   if (!userId) return undefined;

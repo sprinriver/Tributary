@@ -4,6 +4,8 @@ import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { api } from '../api.ts';
 import { Dialog, ErrorMessage, Field } from '../components/ui.tsx';
+import { TppFields } from './TppFields.tsx';
+import { tppOptions, type TppDraft } from './tpp-options.ts';
 
 /** A default importer from the file name (the user can change it). */
 export function suggestImporter(name: string): string {
@@ -15,6 +17,8 @@ export function suggestImporter(name: string): string {
   if (n.includes('combined_protein')) return 'fragpipe_combined_protein';
   if (n.endsWith('.mzqc') || n.includes('mzqc')) return 'mzqc';
   if (n.includes('curves')) return 'curvecurator';
+  if (/sites\.txt$|sites\.tsv$/.test(n)) return 'maxquant_sites';
+  if (/tpp|tr_results/.test(n)) return 'tpp_tr';
   if (n.includes('gene_summary')) return 'mageck_gene_summary';
   if (n.includes('precursors')) return 'alphadia_precursors';
   if (n === 'pg.matrix.tsv') return 'alphadia_pg_matrix';
@@ -52,6 +56,7 @@ export function ImportDialog({
   const [presetId, setPresetId] = useState('');
   const [reference, setReference] = useState({ species: '', source: '', source_release: '' });
   const [curve, setCurve] = useState({ compound_id: '', doses: '', dose_scale: '1e-9', dose_unit: 'M' });
+  const [tpp, setTpp] = useState<TppDraft>({ compound_id: '', feature_type: '', temperatures: '' });
   const info = importers.data?.items.find((i) => i.key === importer);
   const needs = new Set(info?.needs ?? []);
 
@@ -65,6 +70,7 @@ export function ImportDialog({
           ...(needs.has('contrast') && contrastId ? { contrast_id: contrastId } : {}),
           ...(needs.has('mapping') && presetId ? { preset_id: presetId } : {}),
           ...(needs.has('source_release') ? { options: reference } : {}),
+          ...(needs.has('temperatures') ? { options: tppOptions(tpp) ?? {} } : {}),
           ...(needs.has('doses')
             ? {
                 options: {
@@ -87,6 +93,7 @@ export function ImportDialog({
     !!info &&
     (!needs.has('mapping') || !!presetId) &&
     (!needs.has('contrast') || !!contrastId) &&
+    (!needs.has('temperatures') || tppOptions(tpp) !== null) &&
     datasetName.trim() !== '';
 
   return (
@@ -199,6 +206,7 @@ export function ImportDialog({
             </Field>
           </>
         )}
+        {needs.has('temperatures') && <TppFields value={tpp} onChange={setTpp} />}
         <ErrorMessage error={start.error} />
         <div className="row">
           <button type="submit" className="primary" disabled={!ready || start.isPending}>

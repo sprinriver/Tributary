@@ -25,4 +25,4 @@ export function parseTable(text: string): ParsedTable {
 }
 
 export const delimiterName = (d: string) =>
-  ({ '\t': 'tab', ',': 'comma', ';': 'semicolon', '|': 'pipe' })[d] ?? d;
+  ({ '\t': 'tab', ',': 'comma', ';': 'semicolon', '|': 'pipe', xlsx: 'Excel workbook' })[d] ?? d;

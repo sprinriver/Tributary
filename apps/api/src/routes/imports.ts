@@ -31,6 +31,7 @@ function importerInfo(key: string): ImporterInfo {
   if (key === 'msstats_comparison') needs.push('contrasts');
   else if (i.kind === 'differential_abundance' && key !== 'custom_tabular') needs.push('contrast');
   if (key === 'curvecurator') needs.push('doses');
+  if (key === 'tpp_tr') needs.push('temperatures');
   if (key === 'reference_id_mapping') needs.push('source_release');
   return {
     key,

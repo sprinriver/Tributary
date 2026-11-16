@@ -71,12 +71,16 @@ export const OPTION_LABELS: Record<string, string> = {
   max_curves: 'Curves',
   show_fit: 'Fitted curves',
   log_dose: 'Log dose axis',
+  adj_p_max: 'Adjusted p at most',
+  passed_filter_only: 'Passed the tool’s filter only',
+  min_abs_delta_tm: 'Smallest |ΔTm| (°C)',
 };
 
 /** Same option name, different meaning per chart. */
 const OPTION_LABELS_BY_TYPE: Partial<Record<ChartType, Record<string, string>>> = {
   dendrogram: { orientation: 'Root position' },
   pca: { scale: 'Unit variance (scale)' },
+  melting_curve: { sort: 'Order' },
 };
 export const optionLabel = (type: ChartType, name: string) =>
   OPTION_LABELS_BY_TYPE[type]?.[name] ?? OPTION_LABELS[name] ?? name;

@@ -4,6 +4,8 @@ import type {
   DendrogramOptions,
   DoseResponseOptions,
   HeatmapOptions,
+  MeltingCurveOptions,
+  ThermalShiftOptions,
   VolcanoOptions,
 } from '@tributary/contracts';
 import type { Row } from './common.ts';
@@ -12,6 +14,7 @@ import { shapeDoseResponse } from './dose-shapes.ts';
 import { shapeBox, shapeHistogram, shapeLollipop, shapePie } from './dist-shapes.ts';
 import { shapeDendrogram, shapeHeatmap } from './figures.ts';
 import { shapeMa, shapePca, shapeQc } from './omics-shapes.ts';
+import { shapeMeltingCurve, shapeThermalShift } from './thermal-shapes.ts';
 import { shapeVolcano, type Shaped } from './volcano.ts';
 import { shapeBar, shapeBubble, shapeLine, shapeScatter } from './xy-shapes.ts';
 
@@ -56,6 +59,10 @@ export async function shapeChart(
       return shapeQc(rows, spec, options, compute);
     case 'dose_response':
       return shapeDoseResponse(rows, spec, options as DoseResponseOptions);
+    case 'melting_curve':
+      return shapeMeltingCurve(rows, spec, options as MeltingCurveOptions);
+    case 'thermal_shift':
+      return shapeThermalShift(rows, spec, options as ThermalShiftOptions);
     default:
       throw new Error(`No shaping for ${type}`);
   }

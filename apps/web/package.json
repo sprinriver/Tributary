@@ -17,11 +17,16 @@
     "@tributary/ui": "workspace:*",
     "ag-grid-community": "36.2.0",
     "ag-grid-react": "36.2.0",
+    "cytoscape": "3.34.0",
+    "molstar": "5.11.0",
     "papaparse": "5.7.0",
     "plotly.js": "4.1.2",
+    "pptxgenjs": "4.0.1",
     "react": "19.3.1",
     "react-dom": "19.3.1",
     "react-querybuilder": "8.25.0",
+    "read-excel-file": "9.3.5",
+    "write-excel-file": "4.1.1",
     "zod": "4.6.7"
   },
   "devDependencies": {

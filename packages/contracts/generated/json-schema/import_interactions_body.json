@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ImportInteractionsBody",
+  "$defs": {
+    "ImportInteractionsBody": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "source_release": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "species": {
+          "type": "string",
+          "pattern": "^NCBITaxon:\\d+$"
+        },
+        "id_type": {
+          "type": "string",
+          "enum": [
+            "gene_symbol",
+            "uniprot_accession"
+          ]
+        },
+        "licence": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "interactions": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60000000
+        }
+      },
+      "required": [
+        "name",
+        "source",
+        "source_release",
+        "species",
+        "id_type",
+        "interactions"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

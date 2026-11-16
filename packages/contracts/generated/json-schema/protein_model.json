@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ProteinModel",
+  "$defs": {
+    "ProteinModel": {
+      "type": "object",
+      "properties": {
+        "accession": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "local",
+            "alphafold_db"
+          ]
+        },
+        "source_label": {
+          "type": "string"
+        },
+        "entry_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model_path": {
+          "type": "string"
+        },
+        "predicted": {
+          "type": "boolean"
+        },
+        "confidence_metric": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "licence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "accession",
+        "source",
+        "source_label",
+        "entry_id",
+        "model_path",
+        "predicted",
+        "confidence_metric",
+        "licence",
+        "notes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

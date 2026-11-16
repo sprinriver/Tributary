@@ -35,7 +35,9 @@
             "ma",
             "pca",
             "dose_response",
-            "qc_panel"
+            "qc_panel",
+            "melting_curve",
+            "thermal_shift"
           ]
         },
         "title": {
@@ -344,6 +346,8 @@
         "precursor_quant",
         "differential_abundance",
         "dose_response",
+        "thermal_shift",
+        "ptm_site_quant",
         "qc_metrics",
         "rnaseq_counts",
         "crispr_gene_summary",
