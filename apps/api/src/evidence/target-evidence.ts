@@ -1,76 +1,204 @@
-// Target evidence of a compound (Phase 49, EVD-01): per protein, the most potent regulated dose-response curve, the
-// thermal shifts of the compound's TPP comparisons and the target annotation, within one program. Each line of
-// evidence is judged against its own stated threshold; nothing is weighted or combined.
-import { QueryResultSchema, type TargetEvidence } from '@tributary/contracts';
-import type { Database } from '@tributary/db';
-import type { ApiConfig } from '../config.ts';
-import { latestReleases, type LatestRelease } from '../datasets/latest-releases.ts';
-import { callQueryService } from '../datasets/query-client.ts';
-import { resolveSource } from '../query/resolve.ts';
+// Target evidence of a compound (Phase 49, EVD-01): per protein, within one program, the compound's dose-response
+// curves (tested / regulated / most potent), its TPP comparisons and its target annotation. Each line of evidence has
+// its own criterion; nothing is weighted or combined. Data reading is in ./read.ts.
+import type { TargetEvidence } from '@tributary/contracts';
 import { curvesOf, knownTargets, profilingExperiments } from '../selectivity/read.ts';
+import { geneMap, isHuman, speciesOf, thermalReleases, thermalRows, type Deps } from './read.ts';
 
-type Deps = { db: Database; config: ApiConfig; fetch: typeof fetch };
-type Row = Record<string, unknown>;
 type Protein = TargetEvidence['proteins'][number];
+type Dose = NonNullable<Protein['dose']>;
+type DoseItem = Dose['datasets'][number];
+type Thermal = NonNullable<Protein['thermal']>;
+type MatchedBy = DoseItem['matched_by'];
 type Source = TargetEvidence['sources']['dose_response'][number];
 
-const MAX_ROWS = 500_000;
 const num = (v: unknown) => (v === null || v === undefined || v === '' ? null : Number(v));
 const list = (v: unknown) => (Array.isArray(v) ? v.map(String).filter(Boolean) : []);
 /** UniProt accession without an isoform suffix, as target annotations key them. */
 const base = (a: string) => a.trim().replace(/-\d+$/, '');
+const CLASSED = ['up', 'down', 'not'];
 
-async function rows(
-  deps: Deps,
-  releaseIds: string[] | null,
-  kind: 'thermal_shift' | 'target_annotation',
-  programs: string[],
-  select: string[],
-  where: Row[],
-) {
-  const ref = releaseIds ? { releaseIds } : { kind, scope: {} };
-  const source = await resolveSource(deps.db, ref as never, programs);
-  if (!source || ('releases' in source && source.releases.length === 0)) return [];
-  const result = QueryResultSchema.parse(
-    await callQueryService(deps.fetch, deps.config, '/internal/query', {
-      spec: { source: ref, select, where: { combinator: 'and', rules: where } },
-      source,
-      joins: [],
-      all_rows: MAX_ROWS,
-    }),
-  );
-  return result.rows;
+interface Entry {
+  p: Protein;
+  doseByRelease: Map<string, DoseItem>;
+  /** The gene symbol came from a human (or unrecorded-species) experiment, so annotations by gene may apply. */
+  humanGene: boolean;
 }
 
-/** Gene symbol (upper case) → accession from the program's target-annotation datasets; ambiguous symbols are left out. */
-async function geneMap(
+export interface EvidenceCounts {
+  unclear: number;
+  regulatedWithoutPec50: number;
+  nonHumanSpecies: string[];
+}
+
+export async function targetEvidence(
   deps: Deps,
-  programId: string,
-): Promise<{ toAcc: Map<string, string>; toGene: Map<string, string> }> {
-  const found = await rows(
-    deps,
-    null,
-    'target_annotation',
-    [programId],
-    ['uniprot_accession', 'gene_symbol'],
-    [],
-  );
-  const byGene = new Map<string, Set<string>>();
-  const toGene = new Map<string, string>();
-  for (const r of found) {
-    const acc = r.uniprot_accession == null ? '' : base(String(r.uniprot_accession));
-    const gene = r.gene_symbol == null ? '' : String(r.gene_symbol).trim();
-    if (!acc || !gene) continue;
-    byGene.set(gene.toUpperCase(), new Set([...(byGene.get(gene.toUpperCase()) ?? []), acc]));
-    if (!toGene.has(acc)) toGene.set(acc, gene);
+  readable: string[] | null,
+  compoundId: string,
+  q: { program_id?: string | undefined; pec50_min: number; adj_p_max: number },
+): Promise<Omit<TargetEvidence, 'notes'> & { counts: EvidenceCounts }> {
+  const dose = await profilingExperiments(deps, readable, compoundId);
+  const thermal = await thermalReleases(deps, readable, compoundId);
+  const codes = new Map<string, string>();
+  for (const r of [...dose, ...thermal]) codes.set(r.program_id, r.program_code);
+  const programs = [...codes].map(([program_id, program_code]) => ({ program_id, program_code }));
+  const programId =
+    programs.find((p) => p.program_id === q.program_id)?.program_id ?? programs[0]?.program_id ?? null;
+  const counts: EvidenceCounts = { unclear: 0, regulatedWithoutPec50: 0, nonHumanSpecies: [] };
+  const result = {
+    compound_id: compoundId,
+    program_id: programId,
+    programs,
+    thresholds: { pec50_min: q.pec50_min, adj_p_max: q.adj_p_max },
+    sources: { dose_response: [] as Source[], thermal_shift: [] as Source[] },
+    proteins: [] as Protein[],
+    counts,
+  };
+  if (!programId) return result;
+
+  const known = await knownTargets(deps, [programId], compoundId);
+  const genes = await geneMap(deps, programId);
+  const entries = new Map<string, Entry>();
+  const entry = (accession: string | null, gene: string | null, humanGene: boolean): Entry => {
+    const key = accession ?? `gene:${gene}`;
+    let e = entries.get(key);
+    if (!e) {
+      e = {
+        p: {
+          key,
+          accession,
+          gene: (accession ? genes.toGene.get(accession) : null) ?? gene,
+          ambiguous_group: false,
+          annotation: null,
+          dose: null,
+          thermal: null,
+          lines: { dose: false, thermal: false, annotation: false },
+        },
+        doseByRelease: new Map(),
+        humanGene,
+      };
+      entries.set(key, e);
+    }
+    return e;
+  };
+
+  // Dose-response: one curve per protein and dataset; a protein group goes to its annotated member, else its first.
+  for (const d of dose.filter((x) => x.program_id === programId)) {
+    const curves = await curvesOf(deps, d.release_id, compoundId);
+    result.sources.dose_response.push({
+      ...src(d),
+      features: curves.length,
+      species: await speciesOf(deps, d.version_id),
+    });
+    for (const c of curves) {
+      if (!CLASSED.includes(c.regulation)) {
+        counts.unclear += 1;
+        continue;
+      }
+      const members = [
+        ...new Set((list(c.protein_ids).length ? list(c.protein_ids) : c.feature_id.split(';')).map(base)),
+      ];
+      const target = members.find((m) => known.accessions.has(m)) ?? members[0]!;
+      const e = entry(target, list(c.gene_names)[0] ?? null, false);
+      if (members.length > 1) e.p.ambiguous_group = true;
+      const item: DoseItem = {
+        release_id: d.release_id,
+        feature_id: c.feature_id,
+        pec50: c.pec50,
+        regulation: c.regulation,
+        fdr: c.fdr,
+        matched_by: 'accession',
+      };
+      const prev = e.doseByRelease.get(d.release_id);
+      const regulated = (x: DoseItem) => x.regulation !== 'not';
+      if (
+        !prev ||
+        (regulated(item) && (!regulated(prev) || (item.pec50 ?? -Infinity) > (prev.pec50 ?? -Infinity)))
+      )
+        e.doseByRelease.set(d.release_id, item);
+    }
   }
-  const toAcc = new Map(
-    [...byGene].filter(([, accs]) => accs.size === 1).map(([g, accs]) => [g, [...accs][0]!]),
-  );
-  return { toAcc, toGene };
+
+  // Thermal shifts: every comparison row of the compound. Gene symbols map to accessions only for human experiments.
+  const thermalRowsByKey = new Map<string, Thermal['rows']>();
+  for (const r of thermal.filter((x) => x.program_id === programId)) {
+    const species = await speciesOf(deps, r.version_id);
+    const human = isHuman(species);
+    if (!human && species) counts.nonHumanSpecies.push(species);
+    const rows = await thermalRows(deps, r.release_id, programId, compoundId);
+    result.sources.thermal_shift.push({
+      ...src(r),
+      features: new Set(rows.map((x) => String(x.feature_id))).size,
+      species,
+    });
+    for (const t of rows) {
+      const acc = list(t.protein_ids)[0];
+      const gene = list(t.gene_names)[0] ?? (acc ? null : String(t.feature_id));
+      const mapped = !acc && gene && human ? (genes.toAcc.get(gene.toUpperCase()) ?? null) : null;
+      const matched: MatchedBy = acc
+        ? 'accession'
+        : mapped
+          ? 'gene symbol via target annotations'
+          : 'gene symbol only';
+      const e = entry(acc ? base(acc) : mapped, gene, human);
+      if (!thermalRowsByKey.has(e.p.key)) thermalRowsByKey.set(e.p.key, []);
+      thermalRowsByKey.get(e.p.key)!.push({
+        release_id: r.release_id,
+        feature_id: String(t.feature_id),
+        comparison: String(t.comparison),
+        delta_tm: num(t.delta_tm),
+        adj_p_value: num(t.adj_p_value),
+        fulfills_all_requirements:
+          typeof t.fulfills_all_requirements === 'boolean' ? t.fulfills_all_requirements : null,
+        matched_by: matched,
+      });
+    }
+  }
+  for (const [acc] of known.accessions) entry(acc, null, false);
+
+  for (const e of entries.values()) {
+    const p = e.p;
+    // Annotation: by accession, else by gene symbol (human experiments only).
+    const byAcc = p.accession ? known.accessions.get(p.accession) : undefined;
+    const byGene =
+      !byAcc && !p.accession && e.humanGene && p.gene ? known.genes.get(p.gene.toUpperCase()) : undefined;
+    p.annotation = byAcc
+      ? { role: byAcc, matched_by: 'accession' }
+      : byGene
+        ? { role: byGene, matched_by: 'gene symbol only' }
+        : null;
+    if (e.doseByRelease.size) p.dose = doseSummary([...e.doseByRelease.values()], counts);
+    const rows = thermalRowsByKey.get(p.key);
+    if (rows?.length) p.thermal = thermalSummary(rows);
+    p.lines = {
+      dose: !!p.dose?.best && (p.dose.best.pec50 ?? -Infinity) >= q.pec50_min,
+      thermal: !!p.thermal && thermalLine(p.thermal, q.adj_p_max),
+      annotation: p.annotation !== null,
+    };
+  }
+  const measured = (p: Protein) => Number(p.lines.dose) + Number(p.lines.thermal);
+  const minP = (p: Protein) => Math.min(...(p.thermal?.rows ?? []).map((t) => t.adj_p_value ?? Infinity));
+  result.proteins = [...entries.values()]
+    .map((e) => e.p)
+    .filter((p) => measured(p) > 0 || p.lines.annotation)
+    .sort(
+      (a, b) =>
+        measured(b) - measured(a) ||
+        Number(b.lines.annotation) - Number(a.lines.annotation) ||
+        (b.dose?.best?.pec50 ?? -Infinity) - (a.dose?.best?.pec50 ?? -Infinity) ||
+        minP(a) - minP(b) ||
+        a.key.localeCompare(b.key),
+    );
+  return result;
 }
 
-const source = (r: LatestRelease | (Source & { program_id: string })): Source => ({
+const src = (r: {
+  release_id: string;
+  experiment_id: string;
+  version_id: string;
+  experiment_name: string;
+  dataset_name: string;
+}) => ({
   release_id: r.release_id,
   experiment_id: r.experiment_id,
   version_id: r.version_id,
@@ -78,137 +206,47 @@ const source = (r: LatestRelease | (Source & { program_id: string })): Source =>
   dataset_name: r.dataset_name,
 });
 
-export async function targetEvidence(
-  deps: Deps,
-  readable: string[] | null,
-  compoundId: string,
-  q: { program_id?: string | undefined; pec50_min: number; adj_p_max: number },
-): Promise<Omit<TargetEvidence, 'notes'>> {
-  // Data releases with this compound, by program.
-  const dose = (await profilingExperiments(deps, readable, compoundId)).map((e) => ({ ...e }));
-  const thermalReleases: LatestRelease[] = [];
-  for (const r of await latestReleases(deps.db, 'thermal_shift', readable)) {
-    const any = await rows(
-      deps,
-      [r.release_id],
-      'thermal_shift',
-      [r.program_id],
-      ['feature_id'],
-      [{ field: 'compound_id', operator: '=', value: compoundId }],
-    );
-    if (any.length) thermalReleases.push(r);
-  }
-  const programCodes = new Map<string, string>();
-  for (const r of [...dose, ...thermalReleases]) programCodes.set(r.program_id, r.program_code);
-  const programs = [...programCodes].map(([program_id, program_code]) => ({ program_id, program_code }));
-  const programId =
-    programs.find((p) => p.program_id === q.program_id)?.program_id ?? programs[0]?.program_id ?? null;
-  const empty = {
-    compound_id: compoundId,
-    program_id: programId,
-    programs,
-    thresholds: { pec50_min: q.pec50_min, adj_p_max: q.adj_p_max },
-    sources: { dose_response: [], thermal_shift: [] },
-    proteins: [],
-  };
-  if (!programId) return empty;
+function doseSummary(items: DoseItem[], counts: EvidenceCounts): Dose {
+  const regulated = items.filter((x) => x.regulation !== 'not');
+  counts.regulatedWithoutPec50 += regulated.filter((x) => x.pec50 === null).length;
+  const best = [...regulated].sort((a, b) => (b.pec50 ?? -Infinity) - (a.pec50 ?? -Infinity))[0] ?? null;
+  return { tested: items.length, regulated: regulated.length, best, datasets: items };
+}
 
-  const doseHere = dose.filter((d) => d.program_id === programId);
-  const thermalHere = thermalReleases.filter((r) => r.program_id === programId);
-  const known = await knownTargets(deps, [programId], compoundId);
-  const genes = await geneMap(deps, programId);
-  const byKey = new Map<string, Protein>();
-  const entry = (accession: string | null, gene: string | null): Protein => {
-    const g = gene ? gene.toUpperCase() : null;
-    const acc = accession ?? (g ? (genes.toAcc.get(g) ?? null) : null);
-    const key = acc ?? `gene:${g}`;
-    const existing = byKey.get(key);
-    if (existing) return existing;
-    const p: Protein = {
-      key,
-      accession: acc,
-      gene: (acc ? genes.toGene.get(acc) : null) ?? gene,
-      matched_by: accession ? 'accession' : acc ? 'gene symbol via target annotations' : 'gene symbol only',
-      annotation:
-        (acc ? known.accessions.get(acc) : undefined) ?? (g ? known.genes.get(g) : undefined) ?? null,
-      dose: null,
-      thermal: [],
-      lines: { dose: false, thermal: false, annotation: false },
-    };
-    byKey.set(key, p);
-    return p;
-  };
-
-  // Dose-response: the most potent regulated curve per protein (first accession of the group).
-  for (const d of doseHere)
-    for (const c of await curvesOf(deps, d.release_id, compoundId)) {
-      if (!['up', 'down'].includes(c.regulation)) continue;
-      const acc = list(c.protein_ids)[0] ?? c.feature_id.split(';')[0]!;
-      const p = entry(base(acc), list(c.gene_names)[0] ?? null);
-      if (!p.dose || (c.pec50 ?? -Infinity) > (p.dose.pec50 ?? -Infinity))
-        p.dose = {
-          release_id: d.release_id,
-          feature_id: c.feature_id,
-          pec50: c.pec50,
-          regulation: c.regulation,
-          fdr: c.fdr,
-        };
-    }
-  // Thermal shifts: every comparison of the compound.
-  for (const r of thermalHere)
-    for (const t of await rows(
-      deps,
-      [r.release_id],
-      'thermal_shift',
-      [programId],
-      [
-        'feature_id',
-        'protein_ids',
-        'gene_names',
-        'comparison',
-        'delta_tm',
-        'adj_p_value',
-        'fulfills_all_requirements',
-      ],
-      [{ field: 'compound_id', operator: '=', value: compoundId }],
-    )) {
-      const acc = list(t.protein_ids)[0];
-      const p = entry(acc ? base(acc) : null, list(t.gene_names)[0] ?? (acc ? null : String(t.feature_id)));
-      p.thermal.push({
-        release_id: r.release_id,
-        comparison: String(t.comparison),
-        delta_tm: num(t.delta_tm),
-        adj_p_value: num(t.adj_p_value),
-        fulfills_all_requirements:
-          typeof t.fulfills_all_requirements === 'boolean' ? t.fulfills_all_requirements : null,
-      });
-    }
-  // Annotated targets without data still count as a line of evidence.
-  for (const [acc] of known.accessions) entry(acc, null);
-
-  const proteins = [...byKey.values()]
-    .map((p) => ({
-      ...p,
-      lines: {
-        dose: p.dose !== null && (p.dose.pec50 ?? -Infinity) >= q.pec50_min,
-        thermal: p.thermal.some((t) => t.adj_p_value !== null && t.adj_p_value <= q.adj_p_max),
-        annotation: p.annotation !== null,
-      },
-    }))
-    .filter((p) => p.lines.dose || p.lines.thermal || p.lines.annotation)
-    .sort((a, b) => {
-      const n = (p: Protein) => Object.values(p.lines).filter(Boolean).length;
-      const minP = (p: Protein) => Math.min(...p.thermal.map((t) => t.adj_p_value ?? Infinity));
-      return (
-        n(b) - n(a) ||
-        (b.dose?.pec50 ?? -Infinity) - (a.dose?.pec50 ?? -Infinity) ||
-        minP(a) - minP(b) ||
-        a.key.localeCompare(b.key)
-      );
-    });
+function thermalSummary(rows: Thermal['rows']): Thermal {
+  const checks = rows.map((r) => r.fulfills_all_requirements).filter((x): x is boolean => x !== null);
+  const signs = new Set(
+    rows
+      .map((r) => r.delta_tm)
+      .filter((d): d is number => d !== null && d !== 0)
+      .map(Math.sign),
+  );
   return {
-    ...empty,
-    sources: { dose_response: doseHere.map(source), thermal_shift: thermalHere.map(source) },
-    proteins,
+    basis: checks.length ? 'tpp_requirements' : 'all_comparisons',
+    replicate_checks: !checks.length ? 'not computed' : checks.some(Boolean) ? 'met' : 'not met',
+    direction:
+      signs.size === 0
+        ? 'none'
+        : signs.size > 1
+          ? 'inconsistent'
+          : signs.has(1)
+            ? 'stabilised'
+            : 'destabilised',
+    rows,
   };
+}
+
+/** TPP's replicate checks when present; otherwise every comparison of a dataset passes, with one ΔTm sign. */
+function thermalLine(t: Thermal, adjPMax: number): boolean {
+  if (t.basis === 'tpp_requirements') return t.rows.some((r) => r.fulfills_all_requirements === true);
+  const byRelease = new Map<string, Thermal['rows']>();
+  for (const r of t.rows) byRelease.set(r.release_id, [...(byRelease.get(r.release_id) ?? []), r]);
+  return [...byRelease.values()].some((rows) => {
+    const signs = new Set(rows.map((r) => (r.delta_tm === null ? 0 : Math.sign(r.delta_tm))));
+    return (
+      rows.every((r) => r.adj_p_value !== null && r.adj_p_value <= adjPMax) &&
+      signs.size === 1 &&
+      !signs.has(0)
+    );
+  });
 }

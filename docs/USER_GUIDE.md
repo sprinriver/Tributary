@@ -336,6 +336,21 @@ The results page then has a **Thermal shift** section:
 Nothing is refitted or retested. Columns that are not imported (for example the vehicle-vs-vehicle difference and
 `model_converged`) are listed on the release, and values of `Inf` or `NaN` are read as empty and reported.
 
+## Target evidence
+A compound page has a **Target evidence** section when a dose-response or thermal profiling dataset you can read
+has data for the compound. It uses one program at a time, because compound IDs are unique within a program.
+- **One row per protein** with three lines of evidence, each with its own criterion:
+  - **Dose-response:** a curve the tool called regulated with pEC50 at or above the threshold. The row says in how
+    many datasets the protein was tested and regulated, and which experiment gave the most potent curve. "Tested,
+    not regulated" and "not measured" are shown differently.
+  - **Thermal shift:** TPP's replicate checks decide when the design has two treatment and two vehicle experiments;
+    otherwise every comparison of a dataset must pass the adjusted-p threshold with the same ΔTm sign. Each row shows
+    the direction (stabilised, destabilised or inconsistent).
+  - **Annotation:** primary target or off-target from the program's target-annotation datasets.
+- **No combined score:** proteins are ordered by measured lines, then annotation, then potency.
+- **Matching:** gene symbols (as TPP tables often use) are matched to accessions through the program's target
+  annotations, for human experiments only; each row says how its evidence was matched.
+
 ## Compound selectivity
 A compound page has a **Selectivity** section when a dose-response experiment you can read has curves for it
 (for example, from CurveCurator).

@@ -13,14 +13,29 @@ type Protein = TargetEvidence['proteins'][number];
 
 const mark = (yes: boolean) => (yes ? '+' : '—');
 
-function thermalText(p: Protein, adjPMax: number, name: (release: string) => string) {
-  return p.thermal.map((t) => {
+function thermalLines(p: Protein, name: (release: string) => string): string[] {
+  return (p.thermal?.rows ?? []).map((t) => {
     const dtm =
       t.delta_tm === null ? 'no ΔTm' : `ΔTm ${t.delta_tm > 0 ? '+' : ''}${t.delta_tm.toFixed(1)} °C`;
-    const p = t.adj_p_value === null ? 'not tested' : `adj. p ${t.adj_p_value.toExponential(1)}`;
-    const flag = t.adj_p_value !== null && t.adj_p_value <= adjPMax ? '' : ' (above threshold)';
-    return `${t.comparison} (${name(t.release_id)}): ${dtm}, ${p}${flag}${t.fulfills_all_requirements ? ', replicate checks met' : ''}`;
+    const p =
+      t.adj_p_value === null ? 'did not pass TPP filter (no p)' : `adj. p ${t.adj_p_value.toExponential(1)}`;
+    return `${t.comparison} (${name(t.release_id)}): ${dtm}, ${p}`;
   });
+}
+
+const CHECKS = {
+  met: 'TPP replicate checks met',
+  'not met': 'TPP replicate checks not met',
+  'not computed': 'TPP replicate checks not computed (not a 2 × 2 design)',
+} as const;
+
+function matchedBy(p: Protein): string {
+  const all = new Set([
+    ...(p.dose?.datasets ?? []).map((d) => d.matched_by),
+    ...(p.thermal?.rows ?? []).map((r) => r.matched_by),
+    ...(p.annotation ? [p.annotation.matched_by] : []),
+  ]);
+  return [...all].join('; ');
 }
 
 export function TargetEvidenceSection({ compoundId }: { compoundId: string }) {
@@ -86,7 +101,7 @@ export function TargetEvidenceSection({ compoundId }: { compoundId: string }) {
                   'protein',
                   'gene',
                   `dose-response (pEC50 ≥ ${e.thresholds.pec50_min}, EC50 ≤ ${ec50Label(e.thresholds.pec50_min)})`,
-                  `thermal shift (adj. p ≤ ${e.thresholds.adj_p_max})`,
+                  'thermal shift',
                   'annotation',
                   'matched by',
                 ].map((h) => (
@@ -111,23 +126,42 @@ export function TargetEvidenceSection({ compoundId }: { compoundId: string }) {
                   <td>{p.gene ?? ''}</td>
                   <td>
                     {mark(p.lines.dose)}{' '}
-                    {p.dose ? (
-                      <span className="hint">
-                        pEC50 {p.dose.pec50 === null ? '—' : p.dose.pec50.toFixed(2)}, {p.dose.regulation} (
-                        {name(p.dose.release_id)})
-                      </span>
-                    ) : null}
+                    <span className="hint">
+                      {!p.dose
+                        ? 'not measured'
+                        : p.dose.best
+                          ? `pEC50 ${p.dose.best.pec50 === null ? '— (no pEC50)' : p.dose.best.pec50.toFixed(2)}, ${p.dose.best.regulation} (${name(p.dose.best.release_id)}); regulated in ${p.dose.regulated} of ${p.dose.tested} dataset(s)`
+                          : `tested, not regulated (${p.dose.tested} dataset(s))`}
+                      {p.ambiguous_group && p.dose?.best ? `; from the group ${p.dose.best.feature_id}` : ''}
+                    </span>
                   </td>
                   <td>
                     {mark(p.lines.thermal)}{' '}
-                    {thermalText(p, e.thresholds.adj_p_max, name).map((line) => (
-                      <div key={line} className="hint">
-                        {line}
-                      </div>
-                    ))}
+                    {p.thermal ? (
+                      <>
+                        <span className="hint">
+                          {p.thermal.direction}; {CHECKS[p.thermal.replicate_checks]}
+                          {p.thermal.basis === 'all_comparisons'
+                            ? `; every comparison at adj. p ≤ ${e.thresholds.adj_p_max} with one sign`
+                            : ''}
+                        </span>
+                        {thermalLines(p, name).map((line) => (
+                          <div key={line} className="hint">
+                            {line}
+                          </div>
+                        ))}
+                      </>
+                    ) : (
+                      <span className="hint">not measured</span>
+                    )}
                   </td>
-                  <td>{p.annotation ? `+ ${ANNOTATION[p.annotation]}` : '—'}</td>
-                  <td className="hint">{p.matched_by}</td>
+                  <td>
+                    {p.annotation ? `+ ${ANNOTATION[p.annotation.role]}` : '—'}
+                    {p.annotation && !p.dose && !p.thermal ? (
+                      <div className="hint">annotated; not measured here</div>
+                    ) : null}
+                  </td>
+                  <td className="hint">{matchedBy(p)}</td>
                 </tr>
               ))}
             </tbody>

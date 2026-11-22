@@ -61,6 +61,8 @@ class DoseResponseItem(BaseModel):
     ]
     experiment_name: str
     dataset_name: str
+    features: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    species: str | None
 
 
 class ThermalShiftItem(BaseModel):
@@ -87,6 +89,8 @@ class ThermalShiftItem(BaseModel):
     ]
     experiment_name: str
     dataset_name: str
+    features: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    species: str | None
 
 
 class Sources(BaseModel):
@@ -97,7 +101,15 @@ class Sources(BaseModel):
     thermal_shift: list[ThermalShiftItem]
 
 
-class Dose(BaseModel):
+class Annotation(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    role: Literal["primary_target", "off_target"]
+    matched_by: Literal["accession", "gene symbol via target annotations", "gene symbol only"]
+
+
+class Best(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -111,9 +123,10 @@ class Dose(BaseModel):
     pec50: float | None
     regulation: str
     fdr: float | None
+    matched_by: Literal["accession", "gene symbol via target annotations", "gene symbol only"]
 
 
-class ThermalItem(BaseModel):
+class Dataset(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
@@ -123,10 +136,49 @@ class ThermalItem(BaseModel):
             pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
         ),
     ]
+    feature_id: str
+    pec50: float | None
+    regulation: str
+    fdr: float | None
+    matched_by: Literal["accession", "gene symbol via target annotations", "gene symbol only"]
+
+
+class Dose(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    tested: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    regulated: Annotated[int, Field(ge=-9007199254740991, le=9007199254740991)]
+    best: Best | None
+    datasets: list[Dataset]
+
+
+class Row(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    release_id: Annotated[
+        UUID,
+        Field(
+            pattern="^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        ),
+    ]
+    feature_id: str
     comparison: str
     delta_tm: float | None
     adj_p_value: float | None
     fulfills_all_requirements: bool | None
+    matched_by: Literal["accession", "gene symbol via target annotations", "gene symbol only"]
+
+
+class Thermal(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+    )
+    basis: Literal["tpp_requirements", "all_comparisons"]
+    replicate_checks: Literal["met", "not met", "not computed"]
+    direction: Literal["stabilised", "destabilised", "inconsistent", "none"]
+    rows: list[Row]
 
 
 class Lines(BaseModel):
@@ -145,10 +197,10 @@ class Protein(BaseModel):
     key: str
     accession: str | None
     gene: str | None
-    matched_by: Literal["accession", "gene symbol via target annotations", "gene symbol only"]
-    annotation: Literal["primary_target", "off_target"] | None
+    ambiguous_group: bool
+    annotation: Annotation | None
     dose: Dose | None
-    thermal: list[ThermalItem]
+    thermal: Thermal | None
     lines: Lines
 
 

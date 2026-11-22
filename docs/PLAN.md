@@ -688,7 +688,7 @@ Definition of done:
 - [x] `pnpm check` exits 0
 
 ## Phase 49 — Target evidence for a compound
-Status: in progress
+Status: done (2026-11-22)
 Goal: For a compound, line up per protein the independent evidence a chemoproteomics team weighs: potency from
 dose-response, thermal stabilisation from TPP, and annotated targets.
 Features: EVD-01 … EVD-02
@@ -701,5 +701,5 @@ In scope:
 - **No combined score:** proteins are ordered by the number of lines of evidence, then potency; nothing is weighted.
 - **Web:** a Target evidence section on the compound page with the table and its caveats.
 Definition of done:
-- [ ] Tests fail first; API, web section; e2e with screenshot in artifacts/phase-49/; omics review; `pnpm check`
+- [x] Tests fail first; API, web section; e2e with screenshot in artifacts/phase-49/; omics review; `pnpm check`
 

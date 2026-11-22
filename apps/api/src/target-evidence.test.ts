@@ -36,7 +36,7 @@ const groupCurves = () =>
     /^P07437\t/m,
     'P99999;P04637\t',
   );
-/** The TPP table without TPP's replicate checks, with EGFR's second comparison at ΔTm −1.0 and adjusted p 0.4. */
+/** The TPP table without TPP's replicate checks, with KRAS's second comparison at ΔTm +1.0 and adjusted p 0.4. */
 function tppWithoutChecks() {
   const [head, ...lines] = readFileSync(join(FIXTURES, 'tools/tpp/tr_results.tsv'), 'utf8')
     .replace(/\n$/, '')
@@ -48,7 +48,7 @@ function tppWithoutChecks() {
   );
   const edit = (l: string) => {
     const cells = l.split('\t');
-    if (cells[0] === 'EGFR') [cells[diff!], cells[p!]] = ['-1.0', '0.4'];
+    if (cells[0] === 'KRAS') [cells[diff!], cells[p!]] = ['1.0', '0.4'];
     return cells.filter((_, i) => i !== drop).join('\t');
   };
   return [cols.filter((_, i) => i !== drop).join('\t'), ...lines.map(edit)].join('\n') + '\n';
@@ -84,7 +84,7 @@ describe('compound target evidence API', () => {
       file: '../../reference/target_annotations.tsv',
       importer: 'reference_target_annotation',
     });
-    // EVF: a TPP table without TPP's replicate checks (not a 2 × 2 design), where EGFR's second comparison is
+    // EVF: a TPP table without TPP's replicate checks (not a 2 × 2 design), where KRAS's second comparison is
     // opposite in sign and not significant; and curves where the regulated TUBB row is a protein group whose second
     // member is TP53, CPD-000001's annotated primary target.
     evf = await t.program('EVF');
@@ -204,8 +204,9 @@ describe('compound target evidence API', () => {
   it('EVD-01: without TPP replicate checks every comparison must pass with the same sign; groups go to the annotated member', async () => {
     const body = (await get('/v1/compounds/CPD-000001/target-evidence', evfToken)).json() as Json;
     expect(body.program_id).toBe(evf);
-    expect(find(body, 'EGFR')).toMatchObject({
-      lines: { thermal: false },
+    // KRAS stays listed (an annotated off-target) but its thermal line fails: signs differ, one p above 0.05.
+    expect(find(body, 'KRAS')).toMatchObject({
+      lines: { thermal: false, annotation: true },
       thermal: { basis: 'all_comparisons', replicate_checks: 'not computed', direction: 'inconsistent' },
     });
     expect(find(body, 'AKT1')).toMatchObject({

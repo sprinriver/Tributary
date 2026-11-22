@@ -29471,6 +29471,17 @@
                     },
                     "dataset_name": {
                       "type": "string"
+                    },
+                    "features": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "species": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     }
                   },
                   "required": [
@@ -29478,7 +29489,9 @@
                     "experiment_id",
                     "version_id",
                     "experiment_name",
-                    "dataset_name"
+                    "dataset_name",
+                    "features",
+                    "species"
                   ],
                   "additionalProperties": false
                 }
@@ -29508,6 +29521,17 @@
                     },
                     "dataset_name": {
                       "type": "string"
+                    },
+                    "features": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "species": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
                     }
                   },
                   "required": [
@@ -29515,7 +29539,9 @@
                     "experiment_id",
                     "version_id",
                     "experiment_name",
-                    "dataset_name"
+                    "dataset_name",
+                    "features",
+                    "species"
                   ],
                   "additionalProperties": false
                 }
@@ -29547,22 +29573,35 @@
                     "null"
                   ]
                 },
-                "matched_by": {
-                  "type": "string",
-                  "enum": [
-                    "accession",
-                    "gene symbol via target annotations",
-                    "gene symbol only"
-                  ]
+                "ambiguous_group": {
+                  "type": "boolean"
                 },
                 "annotation": {
                   "anyOf": [
                     {
-                      "type": "string",
-                      "enum": [
-                        "primary_target",
-                        "off_target"
-                      ]
+                      "type": "object",
+                      "properties": {
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "primary_target",
+                            "off_target"
+                          ]
+                        },
+                        "matched_by": {
+                          "type": "string",
+                          "enum": [
+                            "accession",
+                            "gene symbol via target annotations",
+                            "gene symbol only"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "role",
+                        "matched_by"
+                      ],
+                      "additionalProperties": false
                     },
                     {
                       "type": "null"
@@ -29574,36 +29613,122 @@
                     {
                       "type": "object",
                       "properties": {
-                        "release_id": {
-                          "type": "string",
-                          "format": "uuid",
-                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        "tested": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
                         },
-                        "feature_id": {
-                          "type": "string"
+                        "regulated": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
                         },
-                        "pec50": {
-                          "type": [
-                            "number",
-                            "null"
+                        "best": {
+                          "anyOf": [
+                            {
+                              "type": "object",
+                              "properties": {
+                                "release_id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "feature_id": {
+                                  "type": "string"
+                                },
+                                "pec50": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "regulation": {
+                                  "type": "string"
+                                },
+                                "fdr": {
+                                  "type": [
+                                    "number",
+                                    "null"
+                                  ]
+                                },
+                                "matched_by": {
+                                  "type": "string",
+                                  "enum": [
+                                    "accession",
+                                    "gene symbol via target annotations",
+                                    "gene symbol only"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "release_id",
+                                "feature_id",
+                                "pec50",
+                                "regulation",
+                                "fdr",
+                                "matched_by"
+                              ],
+                              "additionalProperties": false
+                            },
+                            {
+                              "type": "null"
+                            }
                           ]
                         },
-                        "regulation": {
-                          "type": "string"
-                        },
-                        "fdr": {
-                          "type": [
-                            "number",
-                            "null"
-                          ]
+                        "datasets": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "release_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "feature_id": {
+                                "type": "string"
+                              },
+                              "pec50": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "regulation": {
+                                "type": "string"
+                              },
+                              "fdr": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "matched_by": {
+                                "type": "string",
+                                "enum": [
+                                  "accession",
+                                  "gene symbol via target annotations",
+                                  "gene symbol only"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "release_id",
+                              "feature_id",
+                              "pec50",
+                              "regulation",
+                              "fdr",
+                              "matched_by"
+                            ],
+                            "additionalProperties": false
+                          }
                         }
                       },
                       "required": [
-                        "release_id",
-                        "feature_id",
-                        "pec50",
-                        "regulation",
-                        "fdr"
+                        "tested",
+                        "regulated",
+                        "best",
+                        "datasets"
                       ],
                       "additionalProperties": false
                     },
@@ -29613,46 +29738,102 @@
                   ]
                 },
                 "thermal": {
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "release_id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  "anyOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "basis": {
+                          "type": "string",
+                          "enum": [
+                            "tpp_requirements",
+                            "all_comparisons"
+                          ]
+                        },
+                        "replicate_checks": {
+                          "type": "string",
+                          "enum": [
+                            "met",
+                            "not met",
+                            "not computed"
+                          ]
+                        },
+                        "direction": {
+                          "type": "string",
+                          "enum": [
+                            "stabilised",
+                            "destabilised",
+                            "inconsistent",
+                            "none"
+                          ]
+                        },
+                        "rows": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "release_id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              },
+                              "feature_id": {
+                                "type": "string"
+                              },
+                              "comparison": {
+                                "type": "string"
+                              },
+                              "delta_tm": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "adj_p_value": {
+                                "type": [
+                                  "number",
+                                  "null"
+                                ]
+                              },
+                              "fulfills_all_requirements": {
+                                "type": [
+                                  "boolean",
+                                  "null"
+                                ]
+                              },
+                              "matched_by": {
+                                "type": "string",
+                                "enum": [
+                                  "accession",
+                                  "gene symbol via target annotations",
+                                  "gene symbol only"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "release_id",
+                              "feature_id",
+                              "comparison",
+                              "delta_tm",
+                              "adj_p_value",
+                              "fulfills_all_requirements",
+                              "matched_by"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
                       },
-                      "comparison": {
-                        "type": "string"
-                      },
-                      "delta_tm": {
-                        "type": [
-                          "number",
-                          "null"
-                        ]
-                      },
-                      "adj_p_value": {
-                        "type": [
-                          "number",
-                          "null"
-                        ]
-                      },
-                      "fulfills_all_requirements": {
-                        "type": [
-                          "boolean",
-                          "null"
-                        ]
-                      }
+                      "required": [
+                        "basis",
+                        "replicate_checks",
+                        "direction",
+                        "rows"
+                      ],
+                      "additionalProperties": false
                     },
-                    "required": [
-                      "release_id",
-                      "comparison",
-                      "delta_tm",
-                      "adj_p_value",
-                      "fulfills_all_requirements"
-                    ],
-                    "additionalProperties": false
-                  }
+                    {
+                      "type": "null"
+                    }
+                  ]
                 },
                 "lines": {
                   "type": "object",
@@ -29679,7 +29860,7 @@
                 "key",
                 "accession",
                 "gene",
-                "matched_by",
+                "ambiguous_group",
                 "annotation",
                 "dose",
                 "thermal",

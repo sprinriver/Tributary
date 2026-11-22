@@ -20,6 +20,22 @@ const Source = z.object({
   version_id: z.uuid(),
   experiment_name: z.string(),
   dataset_name: z.string(),
+  /** Features of the compound in this dataset (curves, or TPP proteins): the denominator of each line. */
+  features: z.int(),
+  /** The experiment's species (NCBITaxon id), when recorded. */
+  species: z.string().nullable(),
+});
+
+const MatchedBy = z.enum(['accession', 'gene symbol via target annotations', 'gene symbol only']);
+
+const DoseItem = z.object({
+  release_id: z.uuid(),
+  /** The curve's feature as the tool wrote it (a protein group keeps all its accessions). */
+  feature_id: z.string(),
+  pec50: z.number().nullable(),
+  regulation: z.string(),
+  fdr: z.number().nullable(),
+  matched_by: MatchedBy,
 });
 
 export const TargetEvidenceSchema = z
@@ -36,30 +52,47 @@ export const TargetEvidenceSchema = z
         key: z.string(),
         accession: z.string().nullable(),
         gene: z.string().nullable(),
-        /** How the evidence rows were matched to this protein. */
-        matched_by: z.enum(['accession', 'gene symbol via target annotations', 'gene symbol only']),
-        annotation: z.enum(['primary_target', 'off_target']).nullable(),
-        /** The most potent regulated curve of the compound for this protein, if any. */
+        /** Evidence came from a protein group of several accessions and was attached to this member. */
+        ambiguous_group: z.boolean(),
+        annotation: z
+          .object({ role: z.enum(['primary_target', 'off_target']), matched_by: MatchedBy })
+          .nullable(),
+        /** null: the protein has no curve for the compound (not measured). */
         dose: z
           .object({
-            release_id: z.uuid(),
-            feature_id: z.string(),
-            pec50: z.number().nullable(),
-            regulation: z.string(),
-            fdr: z.number().nullable(),
+            /** Datasets where the tool classed the protein's curve (up, down or not). */
+            tested: z.int(),
+            /** Datasets where it called the curve regulated (up or down). */
+            regulated: z.int(),
+            /** The most potent regulated curve, if any. */
+            best: DoseItem.nullable(),
+            /** One curve per dataset (the regulated one if any). */
+            datasets: z.array(DoseItem),
           })
           .nullable(),
-        /** Every TPP comparison of the compound for this protein. */
-        thermal: z.array(
-          z.object({
-            release_id: z.uuid(),
-            comparison: z.string(),
-            delta_tm: z.number().nullable(),
-            adj_p_value: z.number().nullable(),
-            fulfills_all_requirements: z.boolean().nullable(),
-          }),
-        ),
-        /** Which lines of evidence meet their threshold. */
+        /** null: the protein is not in a TPP table of the compound. */
+        thermal: z
+          .object({
+            /** tpp_requirements: TPP's own replicate checks decide; all_comparisons: every comparison of a dataset
+             * at the adjusted-p threshold with one ΔTm sign (used when the checks are not available). */
+            basis: z.enum(['tpp_requirements', 'all_comparisons']),
+            replicate_checks: z.enum(['met', 'not met', 'not computed']),
+            direction: z.enum(['stabilised', 'destabilised', 'inconsistent', 'none']),
+            rows: z.array(
+              z.object({
+                release_id: z.uuid(),
+                feature_id: z.string(),
+                comparison: z.string(),
+                delta_tm: z.number().nullable(),
+                /** null: the comparison did not pass TPP's curve filter (no p-value). */
+                adj_p_value: z.number().nullable(),
+                fulfills_all_requirements: z.boolean().nullable(),
+                matched_by: MatchedBy,
+              }),
+            ),
+          })
+          .nullable(),
+        /** Which lines of evidence meet their criterion. */
         lines: z.object({ dose: z.boolean(), thermal: z.boolean(), annotation: z.boolean() }),
       }),
     ),

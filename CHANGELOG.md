@@ -4,6 +4,9 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Target evidence (EVD-01…02): the compound page lines up, per protein, the compound's dose-response curves (tested,
+  regulated, most potent), its TPP thermal shifts (TPP's replicate checks decide when available) and target
+  annotations, within one program. No combined score.
 - Safe contract evolution (CON-04…05, ADR 0032): releases written under an older contract version stay readable
   (columns added later read as empty); contracts change only additively, recorded in
   `packages/contracts/contracts.lock.json` (`pnpm run contracts:lock`).

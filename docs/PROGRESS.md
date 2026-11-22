@@ -1957,3 +1957,21 @@ Entry template:
 - History in the lock starts with today's versions; earlier versions were not recorded.
 - Test amendments: none.
 - Evidence: `pnpm check` ✓ (see the commit). Dependencies added: none.
+
+## 2026-11-22 — Phase 49: Target evidence for a compound — done
+- Built: `GET /v1/compounds/:id/target-evidence` (`apps/api/src/evidence/`) and a Target evidence section on the
+  compound page. Within one program, per protein: dose-response summary (tested / regulated / most potent, by
+  experiment), TPP thermal evidence (replicate checks, direction, every comparison) and annotation. No combined score.
+- Science review (omics-reviewer): no wrong values. Fixed before finishing: TPP's replicate checks decide the thermal
+  line when present (else every comparison with one sign); "tested, not regulated" vs "not measured"; regulated k of n
+  datasets; protein groups attached to the annotated member and named; matching recorded per evidence item;
+  gene symbols matched only for human (or unrecorded-species) experiments; ordering by measured lines first;
+  denominators per dataset; truncation refused; "did not pass TPP filter" for a missing p; counts of unclassified
+  curves and regulated curves without pEC50.
+- Not done from the review: mapping through `id_mapping` datasets with species (the annotations record no species;
+  matching is limited to human experiments instead); isoform marking on merged curves.
+- Test amendments (disclosed, own commit and named in the implementation commit): this phase's EVD-01 tests were
+  rewritten for the revised evidence model; the inconsistent-sign case moved from EGFR to KRAS (EGFR, with no line
+  met, is rightly not listed).
+- Evidence: `pnpm check` ✓, `pnpm e2e EVD-02` ✓. Screenshot: `artifacts/phase-49/target-evidence.png`.
+- Dependencies added: none.
