@@ -1,10 +1,16 @@
 // Compound target evidence (Phase 49, EVD-01). Read-only: nothing is stored or audited.
-import { TargetEvidenceQuerySchema, TargetEvidenceSchema } from '@tributary/contracts';
+import {
+  EvidenceMatrixQuerySchema,
+  EvidenceMatrixSchema,
+  TargetEvidenceQuerySchema,
+  TargetEvidenceSchema,
+} from '@tributary/contracts';
 import type { Database } from '@tributary/db';
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { readablePrograms, requirePrincipal } from '../auth/plugin.ts';
 import type { ApiConfig } from '../config.ts';
 import { parse } from '../errors.ts';
+import { evidenceMatrix } from '../evidence/matrix.ts';
 import { targetEvidence } from '../evidence/target-evidence.ts';
 import { respond } from '../respond.ts';
 
@@ -63,6 +69,33 @@ export function registerEvidenceRoutes(
                   `${counts.regulatedWithoutPec50} regulated curve(s) have no pEC50 and cannot meet the threshold.`,
                 ]
               : []),
+          ]
+        : [],
+    });
+  });
+
+  app.get('/v1/target-evidence/matrix', async (request) => {
+    const query = parse(EvidenceMatrixQuerySchema, request.query);
+    const principal = requirePrincipal(request);
+    const { skipped, ...m } = await evidenceMatrix(deps, readablePrograms(principal), query);
+    return respond(EvidenceMatrixSchema, {
+      ...m,
+      notes: m.program_id
+        ? [
+            'No combined score: each cell shows the compound page’s lines of evidence for that compound and protein, each against its own criterion (dose-response: regulated with pEC50 at the threshold; thermal shift: TPP’s replicate checks, else every comparison at the adjusted-p threshold with one sign). Annotations are prior knowledge, not a measurement.',
+            'Rows: proteins with a measured line (dose-response or thermal shift) for at least one compound, the most compounds first. Only this program’s data and annotations are used: compound IDs are unique within a program.',
+            'A blank cell means no line met its criterion or the compound was not measured on that protein; open the compound page to tell which.',
+            ...(m.truncated.proteins
+              ? [
+                  `Showing the first ${query.max_proteins} proteins; ${m.truncated.proteins} more have a measured line.`,
+                ]
+              : []),
+            ...(m.truncated.compounds
+              ? [
+                  `Showing the first ${query.max_compounds} compounds by ID; ${m.truncated.compounds} more have data.`,
+                ]
+              : []),
+            ...(skipped.length ? [`Not read: ${skipped.join('; ')}.`] : []),
           ]
         : [],
     });

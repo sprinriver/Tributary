@@ -78,6 +78,25 @@ export const thermalRows = (deps: Deps, releaseId: string, programId: string, co
     [{ field: 'compound_id', operator: '=', value: compoundId }],
   );
 
+/** Every TPP row of a release, with its compound (for the matrix). */
+export const allThermalRows = (deps: Deps, releaseId: string, programId: string) =>
+  rows(
+    deps,
+    { releaseIds: [releaseId] },
+    [programId],
+    [
+      'compound_id',
+      'feature_id',
+      'protein_ids',
+      'gene_names',
+      'comparison',
+      'delta_tm',
+      'adj_p_value',
+      'fulfills_all_requirements',
+    ],
+    [],
+  );
+
 /**
  * Gene symbol (upper case) → accession, and accession → gene symbol, from the program's target-annotation datasets.
  * The annotations record no species: callers use the map for human experiments only. Ambiguous symbols are left out.

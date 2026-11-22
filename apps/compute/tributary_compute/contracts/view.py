@@ -52,7 +52,7 @@ class SourceRef21(BaseModel):
     releaseIds: Annotated[list[ReleaseId], Field(min_length=1)]
 
 
-class ProgramId18(RootModel[UUID]):
+class ProgramId19(RootModel[UUID]):
     root: Annotated[
         UUID,
         Field(
@@ -74,7 +74,7 @@ class Scope(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    programIds: list[ProgramId18] | None = None
+    programIds: list[ProgramId19] | None = None
     experimentVersionIds: list[ExperimentVersionId] | None = None
     latestPublishedOnly: bool | None = None
 

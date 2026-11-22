@@ -28,6 +28,7 @@ export const NAV_GROUPS: { label: string; items: NavItem[] }[] = [
       { to: '/qc', label: 'QC', icon: 'compare' },
       { to: '/compounds/search', label: 'Structures', icon: 'search' },
       { to: '/selectivity', label: 'Selectivity', icon: 'compare' },
+      { to: '/target-evidence', label: 'Target evidence', icon: 'compare' },
       { to: '/search', label: 'Search', icon: 'search' },
     ],
   },

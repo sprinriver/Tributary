@@ -4,6 +4,8 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Target evidence matrix (EVD-03…04): Analysis → Target evidence shows, for one program, which compounds have which
+  lines of evidence on which proteins, with the compound page's rules. No combined score.
 - Assistant and MCP science tools (AI-06): `get_target_evidence`, `get_compound_selectivity` and
   `get_protein_sites` answer from the pages, with the user's permissions, the pages' notes and a link.
 - Target evidence (EVD-01…02): the compound page lines up, per protein, the compound's dose-response curves (tested,

@@ -100,3 +100,48 @@ export const TargetEvidenceSchema = z
   })
   .meta({ id: 'TargetEvidence' });
 export type TargetEvidence = z.infer<typeof TargetEvidenceSchema>;
+
+// Compound × protein evidence matrix (Phase 51, EVD-03): the compound page's lines for every compound of a program.
+export const EvidenceMatrixQuerySchema = z
+  .strictObject({
+    program_id: z.uuid().optional(),
+    pec50_min: z.coerce.number().min(3).max(12).default(6),
+    adj_p_max: z.coerce.number().gt(0).max(1).default(0.05),
+    max_proteins: z.coerce.number().int().min(1).max(500).default(200),
+    max_compounds: z.coerce.number().int().min(1).max(100).default(50),
+  })
+  .meta({ id: 'EvidenceMatrixQuery' });
+
+export const EvidenceMatrixSchema = z
+  .object({
+    program_id: z.uuid().nullable(),
+    programs: z.array(z.object({ program_id: z.uuid(), program_code: z.string() })),
+    thresholds: z.object({ pec50_min: z.number(), adj_p_max: z.number() }),
+    compounds: z.array(
+      z.object({ compound_id: z.string(), dose_datasets: z.int(), thermal_datasets: z.int() }),
+    ),
+    proteins: z.array(
+      z.object({
+        key: z.string(),
+        accession: z.string().nullable(),
+        gene: z.string().nullable(),
+        /** Compounds with a measured line (dose-response or thermal shift) on this protein. */
+        measured_compounds: z.int(),
+        cells: z.record(
+          z.string(),
+          z.object({
+            dose: z.boolean(),
+            thermal: z.boolean(),
+            annotation: z.enum(['primary_target', 'off_target']).nullable(),
+            /** Best pEC50 of a regulated curve, if any (whether or not it meets the threshold). */
+            pec50: z.number().nullable(),
+            direction: z.enum(['stabilised', 'destabilised', 'inconsistent', 'none']).nullable(),
+          }),
+        ),
+      }),
+    ),
+    truncated: z.object({ compounds: z.int(), proteins: z.int() }),
+    notes: z.array(z.string()),
+  })
+  .meta({ id: 'EvidenceMatrix' });
+export type EvidenceMatrix = z.infer<typeof EvidenceMatrixSchema>;

@@ -351,6 +351,13 @@ has data for the compound. It uses one program at a time, because compound IDs a
 - **Matching:** gene symbols (as TPP tables often use) are matched to accessions through the program's target
   annotations, for human experiments only; each row says how its evidence was matched.
 
+### Across compounds
+**Analysis → Target evidence** shows the same lines for every compound of a program as a matrix: proteins as rows
+(those with a measured line for at least one compound), compounds as columns. A cell shows **D** with the best pEC50
+when the dose-response line is met, **T↑/T↓/T↕** when the thermal line is met (stabilised, destabilised,
+inconsistent), and **★/○** for an annotated primary target or off-target. A blank cell means no line met its
+criterion or no measurement; the compound page tells which.
+
 ## Compound selectivity
 A compound page has a **Selectivity** section when a dose-response experiment you can read has curves for it
 (for example, from CurveCurator).

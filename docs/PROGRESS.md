@@ -1983,3 +1983,15 @@ Entry template:
   The stub model routes such questions to them (demo and tests).
 - Test amendments: none. Evidence: `pnpm run test:api "AI-0|MCP-0"` (30 passed); `pnpm check` ✓.
 - Dependencies added: none.
+
+## 2026-11-22 — Phase 51: Compound × protein evidence matrix — done
+- Refactor first (own commit, no behaviour change): the target-evidence rules moved into a pure builder
+  (`apps/api/src/evidence/build.ts`), shared by the compound page and the matrix.
+- Built: `GET /v1/target-evidence/matrix` (`apps/api/src/evidence/matrix.ts`; each dataset read once for all its
+  compounds) and Analysis → Target evidence (`apps/web/src/results/EvidenceMatrixPage.tsx`): cells with the lines,
+  best pEC50, thermal direction and annotation; at most 50 compounds and 200 proteins, the cut stated.
+- No separate science review: the cells apply the Phase 49 rules (reviewed) unchanged; the page states that a blank
+  cell does not distinguish "not met" from "not measured".
+- Test amendments: none (the e2e test's second upload uses its own file name, as one version takes one file per
+  name). Evidence: `pnpm run test:api EVD-03` ✓, `pnpm e2e "EVD-04|OPS-09"` ✓, `pnpm check` ✓.
+- Dependencies added: none.

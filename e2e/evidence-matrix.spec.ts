@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { CURVE_OPTIONS, publishedExperiment } from './data.ts';
 import { signIn, uniqueName } from './helpers.ts';
 
@@ -12,7 +14,9 @@ test('EVD-04: Analysis → Target evidence shows the compound × protein matrix 
   await publishedExperiment(page, uniqueName('MTX'), [
     { file: 'experiments/ONC-DIA-01/curves.txt', importer: 'curvecurator', options: CURVE_OPTIONS },
     {
-      file: 'experiments/ONC-DIA-01/curves.txt',
+      // The same curves under another file name: one file per upload in a version.
+      file: 'cpd-000002-curves.txt',
+      buffer: readFileSync(resolve(import.meta.dirname, '../fixtures/experiments/ONC-DIA-01/curves.txt')),
       importer: 'curvecurator',
       dataset: 'CPD-000002 curves',
       options: { ...CURVE_OPTIONS, compound_id: 'CPD-000002' },

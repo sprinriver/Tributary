@@ -28,6 +28,7 @@ import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
 import { CompoundSearchPage, type CompoundSearchSearch } from './chem/CompoundSearchPage.tsx';
 import { QcPage, type QcSearch } from './qc/QcPage.tsx';
+import { EvidenceMatrixPage } from './results/EvidenceMatrixPage.tsx';
 import { SelectivityPage, type SelectivitySearch } from './results/SelectivityPage.tsx';
 import { TriagePage, type TriageSearch } from './triage/TriagePage.tsx';
 
@@ -187,6 +188,11 @@ const selectivityRoute = createRoute({
     ...(search.dir === 'down' || search.dir === 'up' ? { dir: search.dir } : {}),
   }),
 });
+const evidenceMatrixRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/target-evidence',
+  component: EvidenceMatrixPage,
+});
 const triageRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/triage',
@@ -270,6 +276,7 @@ export const router = createRouter({
     triageRoute,
     qcRoute,
     selectivityRoute,
+    evidenceMatrixRoute,
     viewsRoute,
     releaseRoute,
     runRoute,

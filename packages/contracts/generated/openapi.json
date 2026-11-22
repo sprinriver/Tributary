@@ -11559,6 +11559,85 @@
         }
       }
     },
+    "/v1/target-evidence/matrix": {
+      "get": {
+        "operationId": "getEvidenceMatrix",
+        "summary": "Compound × protein evidence for one program: the compound page lines per cell; no combined score",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EvidenceMatrix"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/triage": {
       "get": {
         "operationId": "listTriage",
@@ -18909,6 +18988,261 @@
           "method",
           "adj_method",
           "compute_version"
+        ],
+        "additionalProperties": false
+      },
+      "EvidenceMatrix": {
+        "type": "object",
+        "properties": {
+          "program_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "programs": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "program_id": {
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
+                "program_code": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "program_id",
+                "program_code"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "thresholds": {
+            "type": "object",
+            "properties": {
+              "pec50_min": {
+                "type": "number"
+              },
+              "adj_p_max": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "pec50_min",
+              "adj_p_max"
+            ],
+            "additionalProperties": false
+          },
+          "compounds": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "compound_id": {
+                  "type": "string"
+                },
+                "dose_datasets": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "thermal_datasets": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "compound_id",
+                "dose_datasets",
+                "thermal_datasets"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "proteins": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string"
+                },
+                "accession": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "gene": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "measured_compounds": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "cells": {
+                  "type": "object",
+                  "propertyNames": {
+                    "type": "string"
+                  },
+                  "additionalProperties": {
+                    "type": "object",
+                    "properties": {
+                      "dose": {
+                        "type": "boolean"
+                      },
+                      "thermal": {
+                        "type": "boolean"
+                      },
+                      "annotation": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "primary_target",
+                              "off_target"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      },
+                      "pec50": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "direction": {
+                        "anyOf": [
+                          {
+                            "type": "string",
+                            "enum": [
+                              "stabilised",
+                              "destabilised",
+                              "inconsistent",
+                              "none"
+                            ]
+                          },
+                          {
+                            "type": "null"
+                          }
+                        ]
+                      }
+                    },
+                    "required": [
+                      "dose",
+                      "thermal",
+                      "annotation",
+                      "pec50",
+                      "direction"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "key",
+                "accession",
+                "gene",
+                "measured_compounds",
+                "cells"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "truncated": {
+            "type": "object",
+            "properties": {
+              "compounds": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "proteins": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "compounds",
+              "proteins"
+            ],
+            "additionalProperties": false
+          },
+          "notes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "program_id",
+          "programs",
+          "thresholds",
+          "compounds",
+          "proteins",
+          "truncated",
+          "notes"
+        ],
+        "additionalProperties": false
+      },
+      "EvidenceMatrixQuery": {
+        "type": "object",
+        "properties": {
+          "program_id": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "pec50_min": {
+            "default": 6,
+            "type": "number",
+            "minimum": 3,
+            "maximum": 12
+          },
+          "adj_p_max": {
+            "default": 0.05,
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 1
+          },
+          "max_proteins": {
+            "default": 200,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 500
+          },
+          "max_compounds": {
+            "default": 50,
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "pec50_min",
+          "adj_p_max",
+          "max_proteins",
+          "max_compounds"
         ],
         "additionalProperties": false
       },

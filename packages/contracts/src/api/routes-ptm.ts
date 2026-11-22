@@ -1,4 +1,9 @@
-import { TargetEvidenceQuerySchema, TargetEvidenceSchema } from './evidence.ts';
+import {
+  EvidenceMatrixQuerySchema,
+  EvidenceMatrixSchema,
+  TargetEvidenceQuerySchema,
+  TargetEvidenceSchema,
+} from './evidence.ts';
 import {
   ProteinSitesQuerySchema,
   ProteinSitesSchema,
@@ -30,5 +35,13 @@ export const PTM_ROUTES = {
       'Per protein, the dose-response, thermal-shift and annotation evidence for a compound within one program',
     query: TargetEvidenceQuerySchema,
     response: TargetEvidenceSchema,
+  },
+  getEvidenceMatrix: {
+    method: 'get',
+    path: '/v1/target-evidence/matrix',
+    summary:
+      'Compound × protein evidence for one program: the compound page lines per cell; no combined score',
+    query: EvidenceMatrixQuerySchema,
+    response: EvidenceMatrixSchema,
   },
 } as const satisfies Record<string, ApiRoute>;
