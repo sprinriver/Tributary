@@ -68,7 +68,10 @@ function sourceSelect(
   }
   params[param] = listValue(input.files);
   types[param] = LIST(VARCHAR);
-  const cols = input.contract.columns.map((c) => q(c.name));
+  // A release written under an older, additive contract version lacks the newer nullable columns (ADR 0032).
+  const cols = input.contract.columns.map((c) =>
+    input.missing?.includes(c.name) ? `CAST(NULL AS ${DUCKDB_TYPE[c.type]}) AS ${q(c.name)}` : q(c.name),
+  );
   return `SELECT ${[...cols, 'filename AS __file', 'file_row_number AS __row'].join(', ')}
     FROM read_parquet($${param}, union_by_name = true, filename = true, file_row_number = true)`;
 }

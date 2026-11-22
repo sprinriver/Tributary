@@ -1944,3 +1944,16 @@ Entry template:
 - Local note: the dev database was reset twice (docker volumes) for clean demo data and after the contract change.
 - Evidence: `pnpm check` ✓; `pnpm e2e "PTM-04|TPP-04|SEL-03|PPI-04"` ✓ (4 passed). Screenshots: `artifacts/phase-47/`.
 - Dependencies added: none (the deck was built with packages installed in a scratch folder, outside the repo).
+
+## 2026-11-22 — Phase 48: Safe contract evolution — done
+- Why: in Phase 47 a column added to a dataset contract made the releases imported before it unreadable (the query
+  service read every contract column from the Parquet files). `qc_metrics` and `sample` had already moved to 1.1.0.
+- Built:
+  - **Query service:** before compiling, it reads the release files' column names; a nullable contract column none of
+    the files has reads as null, and a missing required column is refused (409 `release_schema_outdated`).
+  - **Contract lock:** `packages/contracts/contracts.lock.json` records every contract version
+    (`pnpm run contracts:lock`); a test fails on a change without a new version or a non-additive new version.
+  - **ADR 0032**; a line in `packages/contracts/CLAUDE.md`.
+- History in the lock starts with today's versions; earlier versions were not recorded.
+- Test amendments: none.
+- Evidence: `pnpm check` ✓ (see the commit). Dependencies added: none.

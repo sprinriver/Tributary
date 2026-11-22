@@ -32,6 +32,7 @@
     "db:migrate": "node packages/db/scripts/migrate.ts",
     "db:seed": "node packages/db/scripts/seed.ts",
     "gen": "node packages/contracts/scripts/gen.ts && node packages/db/scripts/gen-types.ts && pnpm run gen:python",
+    "contracts:lock": "node packages/contracts/scripts/lock.ts",
     "synth": "cd apps/compute && uv run --locked python -m tributary_compute.synth",
     "compute:sync": "cd apps/compute && uv sync",
     "bootstrap": "pnpm install --frozen-lockfile && cd apps/compute && uv sync --frozen",

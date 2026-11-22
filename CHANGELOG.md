@@ -4,6 +4,9 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Safe contract evolution (CON-04…05, ADR 0032): releases written under an older contract version stay readable
+  (columns added later read as empty); contracts change only additively, recorded in
+  `packages/contracts/contracts.lock.json` (`pnpm run contracts:lock`).
 - Modification sites (PTM-01…04): import MaxQuant site tables (e.g. `Phospho (STY)Sites.txt`) as a
   `ptm_site_quant` dataset (migration 0030). Protein pages show a site map and table of the protein's sites across
   experiments; results pages summarise sites, sites per sample and the best-localised sites. The localisation

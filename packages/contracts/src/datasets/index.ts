@@ -14,6 +14,7 @@ import { compound, compoundProperty, idMapping, targetAnnotation } from './refer
 import type { DatasetContract, DatasetKind } from './types.ts';
 
 export * from './types.ts';
+export * from './evolution.ts';
 
 export const DATASET_CONTRACTS: Readonly<Record<DatasetKind, DatasetContract>> = {
   protein_quant: proteinQuant,
