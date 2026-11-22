@@ -670,3 +670,20 @@ Definition of done:
 - [x] Contract, migration, importer, API, protein-page section, results summary, synthetic fixture
 - [x] `pnpm check` exits 0; e2e passes; screenshot in artifacts/phase-47/; omics review
 
+## Phase 48 — Safe contract evolution
+Status: in progress
+Goal: A dataset contract can gain columns without making the releases customers already have unreadable.
+Features: CON-04 … CON-05
+In scope:
+- **Reading older releases:** the query service compares each release file's columns with the contract. A nullable
+  contract column the file lacks reads as null; a missing required column is refused (409
+  `release_schema_outdated`), naming the column. Found in Phase 47 (`ptm_site_quant` gained a column).
+- **Additive changes only:** `packages/contracts/contracts.lock.json` records every version of every contract
+  (`pnpm run contracts:lock`). A test fails when a contract changes without a new version, or when a new version
+  removes, retypes or makes required an existing column, or adds a required one.
+- **ADR 0032** records the rule. History starts at today's versions (earlier versions were not recorded).
+Definition of done:
+- [ ] Tests fail first (old file with missing nullable columns, missing required column, lock rules)
+- [ ] Query service, lock file and script, ADR, docs
+- [ ] `pnpm check` exits 0
+
