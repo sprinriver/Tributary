@@ -1,0 +1,324 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/TargetEvidence",
+  "$defs": {
+    "TargetEvidence": {
+      "type": "object",
+      "properties": {
+        "compound_id": {
+          "type": "string"
+        },
+        "program_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "programs": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "program_id": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+              },
+              "program_code": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "program_id",
+              "program_code"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "thresholds": {
+          "type": "object",
+          "properties": {
+            "pec50_min": {
+              "type": "number"
+            },
+            "adj_p_max": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "pec50_min",
+            "adj_p_max"
+          ],
+          "additionalProperties": false
+        },
+        "sources": {
+          "type": "object",
+          "properties": {
+            "dose_response": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "release_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "experiment_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "experiment_name": {
+                    "type": "string"
+                  },
+                  "dataset_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "release_id",
+                  "experiment_id",
+                  "version_id",
+                  "experiment_name",
+                  "dataset_name"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "thermal_shift": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "release_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "experiment_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "version_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "experiment_name": {
+                    "type": "string"
+                  },
+                  "dataset_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "release_id",
+                  "experiment_id",
+                  "version_id",
+                  "experiment_name",
+                  "dataset_name"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "dose_response",
+            "thermal_shift"
+          ],
+          "additionalProperties": false
+        },
+        "proteins": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "key": {
+                "type": "string"
+              },
+              "accession": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "gene": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "matched_by": {
+                "type": "string",
+                "enum": [
+                  "accession",
+                  "gene symbol via target annotations",
+                  "gene symbol only"
+                ]
+              },
+              "annotation": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "enum": [
+                      "primary_target",
+                      "off_target"
+                    ]
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "dose": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "release_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "feature_id": {
+                        "type": "string"
+                      },
+                      "pec50": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      },
+                      "regulation": {
+                        "type": "string"
+                      },
+                      "fdr": {
+                        "type": [
+                          "number",
+                          "null"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "release_id",
+                      "feature_id",
+                      "pec50",
+                      "regulation",
+                      "fdr"
+                    ],
+                    "additionalProperties": false
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "thermal": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "release_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "comparison": {
+                      "type": "string"
+                    },
+                    "delta_tm": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "adj_p_value": {
+                      "type": [
+                        "number",
+                        "null"
+                      ]
+                    },
+                    "fulfills_all_requirements": {
+                      "type": [
+                        "boolean",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "release_id",
+                    "comparison",
+                    "delta_tm",
+                    "adj_p_value",
+                    "fulfills_all_requirements"
+                  ],
+                  "additionalProperties": false
+                }
+              },
+              "lines": {
+                "type": "object",
+                "properties": {
+                  "dose": {
+                    "type": "boolean"
+                  },
+                  "thermal": {
+                    "type": "boolean"
+                  },
+                  "annotation": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "dose",
+                  "thermal",
+                  "annotation"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "required": [
+              "key",
+              "accession",
+              "gene",
+              "matched_by",
+              "annotation",
+              "dose",
+              "thermal",
+              "lines"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "notes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "compound_id",
+        "program_id",
+        "programs",
+        "thresholds",
+        "sources",
+        "proteins",
+        "notes"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

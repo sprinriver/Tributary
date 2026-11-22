@@ -31,5 +31,6 @@ test('EVD-02: compound page — target evidence from dose-response and thermal p
   const table = section.getByRole('table', { name: 'Target evidence' });
   await expect(table.getByRole('row', { name: /TP53/ }).first()).toContainText('primary target');
   await expect(table.getByRole('row', { name: /AKT1/ }).first()).toContainText('+');
+  await page.addStyleTag({ content: '.topbar { position: static !important; }' }); // not over the capture
   await section.screenshot({ path: `${SHOTS}/target-evidence.png` });
 });

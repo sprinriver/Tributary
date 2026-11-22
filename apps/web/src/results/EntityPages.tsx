@@ -1,5 +1,6 @@
 import { ProteinModelPanel } from '../structure/ProteinModelPanel.tsx';
 import { ProteinSitesSection } from './SitesSection.tsx';
+import { TargetEvidenceSection } from './TargetEvidenceSection.tsx';
 import { CompoundStructurePanel } from '../chem/Structure.tsx';
 import type { ChartSpec } from '@tributary/contracts';
 import { useQuery } from '@tanstack/react-query';
@@ -221,6 +222,7 @@ export function CompoundPage() {
             />
           </Section>
           <SelectivitySection compoundId={id} />
+          <TargetEvidenceSection compoundId={id} />
           <Section title="Omics results">
             <Table
               label="Contrasts"
