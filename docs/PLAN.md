@@ -716,3 +716,17 @@ In scope:
 Definition of done:
 - [x] Tests fail first; tools; stub routing; `pnpm check`
 
+## Phase 51 — Compound × protein evidence matrix
+Status: in progress
+Goal: Compare a compound series: for one program, which compounds have which lines of evidence on which proteins.
+Features: EVD-03 … EVD-04
+In scope:
+- **API:** `GET /v1/target-evidence/matrix`: the compounds of one program with dose-response or TPP data, and the
+  proteins with a measured line for at least one of them; each cell carries the same lines as the compound page
+  (Phase 49 rules, shared builder), the best pEC50, the thermal direction and the annotation. At most 50 compounds
+  and 200 proteins, with the cut stated.
+- **Web:** Analysis → Target evidence: the matrix with a legend, links to each compound's page, and the caveats.
+- **No combined score**, as on the compound page.
+Definition of done:
+- [ ] Tests fail first; API; page; e2e with screenshot in artifacts/phase-51/; `pnpm check`
+
