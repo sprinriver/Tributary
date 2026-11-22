@@ -687,3 +687,19 @@ Definition of done:
 - [x] Query service, lock file and script, ADR, docs
 - [x] `pnpm check` exits 0
 
+## Phase 49 — Target evidence for a compound
+Status: in progress
+Goal: For a compound, line up per protein the independent evidence a chemoproteomics team weighs: potency from
+dose-response, thermal stabilisation from TPP, and annotated targets.
+Features: EVD-01 … EVD-02
+In scope:
+- **API:** `GET /v1/compounds/:id/target-evidence`, within one program (compound IDs are unique within a program):
+  per protein, the most potent regulated dose-response curve, the thermal shifts of the compound's TPP comparisons,
+  and the annotation (primary target or off-target). Each line of evidence is shown against a stated threshold
+  (pEC50, adjusted p). Gene symbols and accessions are matched through the program's target-annotation datasets,
+  and the match is shown.
+- **No combined score:** proteins are ordered by the number of lines of evidence, then potency; nothing is weighted.
+- **Web:** a Target evidence section on the compound page with the table and its caveats.
+Definition of done:
+- [ ] Tests fail first; API, web section; e2e with screenshot in artifacts/phase-49/; omics review; `pnpm check`
+
