@@ -119,4 +119,19 @@ describe('science tools for the assistant and MCP', () => {
     expect(sites.notes.join(' ')).toMatch(/display threshold/);
     expect((await call(outsider, 'get_protein_sites', { accession: 'P31749' })).json.sites).toEqual([]);
   });
+
+  it('AI-06: the assistant (stub model) answers a target question with the evidence tool and its caveat', async () => {
+    const conv = (
+      await t.call(token, { method: 'POST', url: '/v1/ai/conversations', payload: {} })
+    ).json() as Json;
+    const res = await t.call(token, {
+      method: 'POST',
+      url: `/v1/ai/conversations/${conv.id}/messages`,
+      payload: { text: 'Which targets does CPD-000001 engage?' },
+    });
+    expect(res.statusCode, res.body).toBe(200);
+    const text = JSON.stringify(res.json());
+    expect(text).toContain('get_target_evidence');
+    expect(text).toMatch(/no combined score/i);
+  });
 });

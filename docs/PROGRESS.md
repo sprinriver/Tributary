@@ -1975,3 +1975,11 @@ Entry template:
   met, is rightly not listed).
 - Evidence: `pnpm check` ✓, `pnpm e2e EVD-02` ✓. Screenshot: `artifacts/phase-49/target-evidence.png`.
 - Dependencies added: none.
+
+## 2026-11-22 — Phase 50: Science tools for the assistant and MCP — done
+- Built: read-only tools `get_target_evidence`, `get_compound_selectivity` and `get_protein_sites`
+  (`apps/api/src/ai/tools-science.ts`) in the shared registry, so the in-app assistant and MCP clients both get them.
+  They call the API as the user, return at most 25 items with the page's notes and a link, and compute nothing.
+  The stub model routes such questions to them (demo and tests).
+- Test amendments: none. Evidence: `pnpm run test:api "AI-0|MCP-0"` (30 passed); `pnpm check` ✓.
+- Dependencies added: none.

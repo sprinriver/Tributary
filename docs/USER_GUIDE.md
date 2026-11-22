@@ -393,6 +393,9 @@ for example "Find experiments with HEK293" or "Show the significant hits of cont
 - **Visible tool calls:** the assistant answers through the same tools and permissions as you, and shows each
   call it made.
 - **Open in Explorer:** a data question becomes a validated query you can open there.
+- **Science questions:** "Which targets does CPD-000001 engage?", "How selective is CPD-000001?" and "Which sites of
+  P31749 were measured?" are answered from the Target evidence, Selectivity and Modification sites pages, with their
+  notes and a link to the page. The same tools are available to MCP clients.
 - **Changes need approval:** the assistant never changes data by itself. A proposed change waits for you to
   **Approve**, then runs as you and is audited.
 

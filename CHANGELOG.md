@@ -4,6 +4,8 @@ All notable changes. Format: [Keep a Changelog](https://keepachangelog.com/en/1.
 [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
+- Assistant and MCP science tools (AI-06): `get_target_evidence`, `get_compound_selectivity` and
+  `get_protein_sites` answer from the pages, with the user's permissions, the pages' notes and a link.
 - Target evidence (EVD-01…02): the compound page lines up, per protein, the compound's dose-response curves (tested,
   regulated, most potent), its TPP thermal shifts (TPP's replicate checks decide when available) and target
   annotations, within one program. No combined score.

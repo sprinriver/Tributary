@@ -704,7 +704,7 @@ Definition of done:
 - [x] Tests fail first; API, web section; e2e with screenshot in artifacts/phase-49/; omics review; `pnpm check`
 
 ## Phase 50 — Science tools for the assistant and MCP
-Status: in progress
+Status: done (2026-11-22)
 Goal: The assistant and MCP clients (Claude Desktop, IDEs) answer "what does this compound engage?", "how selective
 is it?" and "which sites of this protein were measured?" with the same governed numbers and caveats as the pages.
 Features: AI-06
@@ -714,5 +714,5 @@ In scope:
   notes and a link to the page, and never compute anything themselves.
 - The stub model routes such questions to them (for the demo and e2e).
 Definition of done:
-- [ ] Tests fail first; tools; stub routing; `pnpm check`
+- [x] Tests fail first; tools; stub routing; `pnpm check`
 
