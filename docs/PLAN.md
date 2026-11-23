@@ -732,7 +732,7 @@ Definition of done:
 
 
 ## Phase 52 — Role-aware screens
-Status: in progress
+Status: done (2026-11-23)
 Goal: The screens match what each role may do. The API already refuses (AUTH-02, admin routes); the business demo of
 role management showed a contributor reaching admin pages and a viewer seeing create buttons.
 Features: AUTH-03
@@ -742,4 +742,4 @@ In scope:
   on rows of programs they cannot write in. One pure helper decides write and admin rights from `/v1/auth/me`.
 - No API change: the server checks stay the source of truth.
 Definition of done:
-- [ ] Tests fail first; helper; pages; e2e with screenshots in artifacts/phase-52/; `pnpm check`
+- [x] Tests fail first; helper; pages; e2e with screenshots in artifacts/phase-52/; `pnpm check`

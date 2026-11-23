@@ -1,6 +1,7 @@
 import { Link, Outlet } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useMe } from '../auth.ts';
+import { isSystemAdmin } from '../roles.ts';
 import { AssistantPanel } from '../assistant/AssistantPanel.tsx';
 import { SearchPalette } from '../search/SearchPalette.tsx';
 import { DemoBanner } from '../shell/DemoBanner.tsx';
@@ -65,6 +66,27 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
     );
   }
   return <>{children}</>;
+}
+
+/** Admin pages (AUTH-03): only system admins see them; others get Access denied before any admin data is requested. */
+export function RequireSystemAdmin({ children }: { children: React.ReactNode }) {
+  return (
+    <RequireAuth>
+      <SystemAdminGate>{children}</SystemAdminGate>
+    </RequireAuth>
+  );
+}
+
+function SystemAdminGate({ children }: { children: React.ReactNode }) {
+  const me = useMe();
+  if (isSystemAdmin(me.data?.roles)) return <>{children}</>;
+  return (
+    <main style={{ padding: 24 }}>
+      <h1>Access denied</h1>
+      <p>This page is for system administrators. Ask one if you need a change made here.</p>
+      <Link to="/">Back to home</Link>
+    </main>
+  );
 }
 
 export function ForbiddenPage() {

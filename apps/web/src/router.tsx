@@ -1,6 +1,6 @@
 import { ViewsPage } from './explorer/ViewsPage.tsx';
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
-import { ForbiddenPage, Layout } from './components/Layout.tsx';
+import { ForbiddenPage, Layout, RequireSystemAdmin } from './components/Layout.tsx';
 import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
 import { ExplorerPage, type ExplorerSearch } from './explorer/ExplorerPage.tsx';
 import { ComparePage } from './results/ComparePage.tsx';
@@ -148,7 +148,7 @@ const runRoute = createRoute({ getParentRoute: () => rootRoute, path: '/runs/$id
 const adminPipelinesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/pipelines',
-  component: AdminPipelinesPage,
+  component: adminOnly(AdminPipelinesPage),
 });
 const searchRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -224,15 +224,23 @@ const lineageRoute = createRoute({
 const templatesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/templates',
-  component: TemplatesPage,
+  component: adminOnly(TemplatesPage),
 });
 const settingsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/settings/notifications',
   component: NotificationSettingsPage,
 });
+/** Wraps an admin page so only system admins render it (AUTH-03). */
+function adminOnly(Page: () => React.ReactNode) {
+  return () => (
+    <RequireSystemAdmin>
+      <Page />
+    </RequireSystemAdmin>
+  );
+}
 const adminPage = (path: string, component: () => React.ReactNode) =>
-  createRoute({ getParentRoute: () => rootRoute, path, component });
+  createRoute({ getParentRoute: () => rootRoute, path, component: adminOnly(component) });
 const adminRoutes = [
   adminPage('/admin/programs', ProgramsPage),
   adminPage('/admin/lists', ListsPage),
@@ -245,7 +253,7 @@ const adminRoutes = [
 const auditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/audit',
-  component: AuditPage,
+  component: adminOnly(AuditPage),
   validateSearch: (search: Record<string, unknown>): AuditSearch =>
     Object.fromEntries(
       ['action', 'entity_type', 'entity_id', 'from', 'to']

@@ -1995,3 +1995,20 @@ Entry template:
 - Test amendments: none (the e2e test's second upload uses its own file name, as one version takes one file per
   name). Evidence: `pnpm run test:api EVD-03` ✓, `pnpm e2e "EVD-04|OPS-09"` ✓, `pnpm check` ✓.
 - Dependencies added: none.
+
+## 2026-11-23 — OPS-10: Docker web build context — done
+- `.dockerignore` excluded all of `infra/terraform`, but the web build reads the CSP policy from
+  `infra/terraform/modules/cloudfront/csp.json`; local builds of the deploy images failed with ENOENT. Terraform stays
+  excluded except that file; `scripts/dockerignore.test.mjs` guards it. Evidence: web stage of
+  `deploy/huggingface/Dockerfile` builds; `pnpm check` ✓.
+
+## 2026-11-23 — Phase 52: Role-aware screens — done
+- Found while preparing the business demo of role management: a contributor could open admin pages (empty forms;
+  the API already refused the data) and a viewer saw "New experiment" and "Create version".
+- Built: `apps/web/src/roles.ts` (`isSystemAdmin`, `canWriteIn`); every `/admin/*` route renders through
+  `RequireSystemAdmin`, which shows Access denied before any admin request; the experiments list hides create
+  actions the user's role does not allow. No API change.
+- Test amendments: none. Evidence: `pnpm run test:web AUTH-03` (3 passed), `pnpm e2e AUTH-03` (3 passed), related
+  e2e (ADM, AUD, REG, SCIM, USE, SUP, PIPE-06, A11Y, NOTIF) passed except ADM-03, whose AI-provider assertion needs
+  the stub provider that a hand-started dev server does not set (unrelated); `pnpm check` ✓.
+- Dependencies added: none.
