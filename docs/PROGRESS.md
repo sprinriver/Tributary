@@ -2008,7 +2008,8 @@ Entry template:
 - Built: `apps/web/src/roles.ts` (`isSystemAdmin`, `canWriteIn`); every `/admin/*` route renders through
   `RequireSystemAdmin`, which shows Access denied before any admin request; the experiments list hides create
   actions the user's role does not allow. No API change.
-- Test amendments: none. Evidence: `pnpm run test:web AUTH-03` (3 passed), `pnpm e2e AUTH-03` (3 passed), related
+- Test amendments (disclosed, own commit 287f3eb): the AUTH-03 viewer test now filters the experiments list by name;
+  on CI other specs push the seeded experiment past the first page. Assertions unchanged. Evidence: `pnpm run test:web AUTH-03` (3 passed), `pnpm e2e AUTH-03` (3 passed), related
   e2e (ADM, AUD, REG, SCIM, USE, SUP, PIPE-06, A11Y, NOTIF) passed except ADM-03, whose AI-provider assertion needs
   the stub provider that a hand-started dev server does not set (unrelated); `pnpm check` ✓.
 - Dependencies added: none.
