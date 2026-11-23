@@ -730,3 +730,16 @@ In scope:
 Definition of done:
 - [x] Tests fail first; API; page; e2e with screenshot in artifacts/phase-51/; `pnpm check`
 
+
+## Phase 52 — Role-aware screens
+Status: in progress
+Goal: The screens match what each role may do. The API already refuses (AUTH-02, admin routes); the business demo of
+role management showed a contributor reaching admin pages and a viewer seeing create buttons.
+Features: AUTH-03
+In scope:
+- **Web:** every `/admin/*` page shows "Access denied" to anyone who is not a system admin, before any admin data is
+  requested; the experiments list hides "New experiment" from users who can write in no program and "Create version"
+  on rows of programs they cannot write in. One pure helper decides write and admin rights from `/v1/auth/me`.
+- No API change: the server checks stay the source of truth.
+Definition of done:
+- [ ] Tests fail first; helper; pages; e2e with screenshots in artifacts/phase-52/; `pnpm check`
