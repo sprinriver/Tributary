@@ -35,7 +35,8 @@ test('AUTH-03: a viewer sees no New experiment or Create version on the experime
   browser,
 }) => {
   await signIn(page, 'viewer');
-  await page.goto('/experiments');
+  // Filter by name: other specs add experiments, so the seeded one need not be on the first page.
+  await page.goto('/experiments?name=ONC-DIA-05');
   await expect(page.getByRole('row', { name: /ONC-DIA-05/ })).toBeVisible();
   await expect(page.getByRole('link', { name: 'New experiment' })).toHaveCount(0);
   await expect(page.getByRole('button', { name: 'Create version' })).toHaveCount(0);
@@ -44,7 +45,7 @@ test('AUTH-03: a viewer sees no New experiment or Create version on the experime
   const ctx = await browser.newContext({ baseURL: 'http://localhost:5173' });
   const scientist = await ctx.newPage();
   await signIn(scientist, 'scientist');
-  await scientist.goto('/experiments');
+  await scientist.goto('/experiments?name=ONC-DIA-05');
   await expect(scientist.getByRole('row', { name: /ONC-DIA-05/ })).toBeVisible();
   await expect(scientist.getByRole('link', { name: 'New experiment' })).toBeVisible();
   await expect(
