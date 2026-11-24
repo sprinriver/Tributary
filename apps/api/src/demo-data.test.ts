@@ -44,7 +44,11 @@ describe('one-command demo data loader', () => {
       .innerJoin('experiment_version as v', 'v.experiment_id', 'e.id')
       .select(['e.name', 'v.version_number', 'v.status'])
       .where('v.is_latest_published', '=', true)
-      .where('e.name', 'in', ['ONC-DIA-05: contrast in MCF-7', 'ONC-DIA-01: dose series in HeLa', 'IMM-DIA-06: contrast in K-562'])
+      .where('e.name', 'in', [
+        'ONC-DIA-05: contrast in MCF-7',
+        'ONC-DIA-01: dose series in HeLa',
+        'IMM-DIA-06: contrast in K-562',
+      ])
       .orderBy('e.name')
       .execute();
 
@@ -65,7 +69,9 @@ describe('one-command demo data loader', () => {
 
   it('DEMO-01: loads every demo dataset as a published release on a new published version', async () => {
     const result = await loadDemoData(deps(contributor));
-    expect(result.map((r) => [r.dataset, r.status])).toEqual(DEMO_DATASETS.map((d) => [d.dataset, 'created']));
+    expect(result.map((r) => [r.dataset, r.status])).toEqual(
+      DEMO_DATASETS.map((d) => [d.dataset, 'created']),
+    );
     expect(await published()).toEqual([
       { name: 'IMM-DIA-06 differential abundance', row_count: 157, importer: 'limma_toptable' },
       { name: 'ONC-DIA-01 dose response', row_count: 157, importer: 'curvecurator' },
@@ -77,13 +83,15 @@ describe('one-command demo data loader', () => {
       { name: 'ONC-DIA-01: dose series in HeLa', version_number: 2, status: 'published' },
       { name: 'ONC-DIA-05: contrast in MCF-7', version_number: 2, status: 'published' },
     ]);
-    const reasons = await t.db
+    // 4 releases + 3 experiment versions, each audited with the loader's reason (the seed's own rows excluded).
+    const audited = await t.db
       .selectFrom('audit_log')
-      .select('reason')
+      .select('action')
       .where('action', 'in', ['release.publish', 'experiment_version.publish'])
+      .where('reason', 'like', 'Demo data%')
       .execute();
-    expect(reasons.length).toBe(7);
-    expect(reasons.every((r) => r.reason?.startsWith('Demo data'))).toBe(true);
+    expect(audited.filter((r) => r.action === 'release.publish').length).toBe(4);
+    expect(audited.filter((r) => r.action === 'experiment_version.publish').length).toBe(3);
   });
 
   it('DEMO-01: differential releases carry the experiment contrast (numerator vs denominator)', async () => {

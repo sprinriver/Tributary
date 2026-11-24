@@ -16,6 +16,7 @@
     "test:api": "node scripts/vitest-pattern.mjs apps/api",
     "eval:ai": "node scripts/vitest-pattern.mjs apps/api AI-05",
     "dev:token": "node apps/api/scripts/dev-token.ts",
+    "demo:data": "node apps/api/scripts/demo-data.ts",
     "infra:validate": "sh infra/terraform/validate.sh",
     "ops:rehearse-restore": "sh scripts/ops/rehearse-restore.sh",
     "test:query": "node scripts/vitest-pattern.mjs apps/query",

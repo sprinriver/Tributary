@@ -36,3 +36,6 @@ __pycache__/
 deploy/backups/
 *.tfvars
 !*.tfvars.example
+
+# Playwright MCP browser session output (snapshots, console logs)
+.playwright-mcp/
