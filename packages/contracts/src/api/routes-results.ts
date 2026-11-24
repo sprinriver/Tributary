@@ -5,6 +5,8 @@ import {
   CompareResultSchema,
   CompoundPageSchema,
   ProteinPageSchema,
+  ReportExportBodySchema,
+  ReportExportSchema,
   VersionResultsSchema,
 } from './results.ts';
 
@@ -15,6 +17,14 @@ export const RESULT_ROUTES = {
     path: '/v1/versions/{id}/results',
     summary: 'Results of a version: releases, contrasts, run, files and methods paragraph',
     response: VersionResultsSchema,
+  },
+  recordReportExport: {
+    method: 'post',
+    path: '/v1/versions/{id}/report-exports',
+    summary: 'Record (and audit) a PDF or PowerPoint export of the version report',
+    body: ReportExportBodySchema,
+    response: ReportExportSchema,
+    status: 201,
   },
   getCompound: {
     method: 'get',

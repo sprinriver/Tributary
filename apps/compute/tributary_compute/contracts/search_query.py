@@ -22,12 +22,12 @@ class ProgramId(RootModel[str]):
     root: Annotated[str, Field(max_length=200, min_length=1)]
 
 
-class ProgramId12Item(RootModel[str]):
+class ProgramId15Item(RootModel[str]):
     root: Annotated[str, Field(max_length=200, min_length=1)]
 
 
-class ProgramId12(RootModel[list[ProgramId12Item]]):
-    root: Annotated[list[ProgramId12Item], Field(max_length=20)]
+class ProgramId15(RootModel[list[ProgramId15Item]]):
+    root: Annotated[list[ProgramId15Item], Field(max_length=20)]
 
 
 class Species(RootModel[str]):
@@ -46,12 +46,12 @@ class Compound(RootModel[str]):
     root: Annotated[str, Field(max_length=200, min_length=1)]
 
 
-class Compound3Item(RootModel[str]):
+class Compound4Item(RootModel[str]):
     root: Annotated[str, Field(max_length=200, min_length=1)]
 
 
-class Compound3(RootModel[list[Compound3Item]]):
-    root: Annotated[list[Compound3Item], Field(max_length=20)]
+class Compound4(RootModel[list[Compound4Item]]):
+    root: Annotated[list[Compound4Item], Field(max_length=20)]
 
 
 class Status(RootModel[str]):
@@ -73,9 +73,9 @@ class SearchQuery(BaseModel):
     q: Annotated[str, Field(max_length=200, min_length=1)]
     type: Literal["experiment", "sample"] | None = None
     assay_type: AssayType | AssayType2 | None = None
-    program_id: ProgramId | ProgramId12 | None = None
+    program_id: ProgramId | ProgramId15 | None = None
     species: Species | Species1 | None = None
-    compound: Compound | Compound3 | None = None
+    compound: Compound | Compound4 | None = None
     status: Status | Status1 | None = None
     limit: Annotated[int | None, Field(ge=1, le=50)] = None
     cursor: Annotated[str | None, Field(max_length=200)] = None

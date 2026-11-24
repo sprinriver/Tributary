@@ -107,6 +107,117 @@ Search updates as things change. After a bulk load or a restore, rebuild it with
   that user's approval.
 - **Audited:** every tool call is in the audit log.
 
+## Gene sets for pathway enrichment
+- **Import:** a system admin imports gene-set collections with `POST /api/v1/gene-set-collections` and a change
+  reason.
+- **What to send:**
+  - `name`;
+  - `source` and `source_release` (for example `Reactome` and `94`);
+  - `species` (an NCBITaxon CURIE);
+  - `id_type` (`gene_symbol` or `uniprot_accession`);
+  - the GMT text, one set per line: `id<TAB>description<TAB>member…`.
+- **Licences:**
+  - Reactome publishes GMT files (CC0).
+  - GO sets (CC BY 4.0) can be exported to GMT with common tools.
+  - MSigDB's licence restricts use, so check yours before importing it.
+- **Collections never change:** import a newer source release as a new collection. Every import is audited.
+- **Demo:** the demo data includes "Demo modules (synthetic)", 20 invented modules.
+
+## Interaction networks (STRING)
+- **Import:** a system admin imports interaction collections with `POST /api/v1/interaction-collections` and a
+  change reason.
+- **What to send:**
+  - `name`;
+  - `source` and `source_release` (for example `STRING` and `v12.0, combined score ≥ 0.7`);
+  - `species` (an NCBITaxon CURIE);
+  - `id_type` (`gene_symbol` or `uniprot_accession`);
+  - `licence` (for STRING: `CC BY 4.0`);
+  - `interactions`: one pair per line, `a<TAB>b<TAB>score`, with the score a whole number from 0 to 1000.
+- **From STRING:**
+  1. Download `<taxon>.protein.links.v12.0.txt.gz` and `<taxon>.protein.info.v12.0.txt.gz` for your species from
+     stringdb-downloads.org (human is taxon 9606).
+  2. Run `pnpm run string:prepare <links file> <info file> 700 > string.tsv`. The number is the lowest combined
+     score kept: 400 is medium, 700 high and 900 highest confidence. Human at 700 gives about 237,000 pairs in a
+     4 MB file.
+  3. Send the file's text as `interactions`.
+- **Licence:** STRING data is CC BY 4.0, which allows commercial use with attribution. The licence you record is
+  shown with every network.
+- **Collections never change:** import a newer source release as a new collection. Every import is audited.
+- **Demo:** the demo data includes "Demo interactions (synthetic)", 2,000 invented pairs.
+
+## Getting help: the support bundle
+**Admin → Health → Download support bundle** saves one JSON file to send to support. It contains:
+- versions;
+- database migrations;
+- the health checks;
+- which features are switched on (never their secrets);
+- record counts;
+- the last week's failures (pipeline runs, Slack/Teams and email deliveries, rejected imports).
+
+It contains no passwords, tokens, keys or webhook URLs, and no names or email addresses. Each download is recorded
+in the audit log.
+
+## Usage
+**Admin → Usage** counts what happened, from the audit log and the registry, for the last 4 to 52 weeks:
+- active people;
+- experiments created;
+- versions and releases published;
+- imports;
+- pipeline runs;
+- exports;
+- assistant tool calls;
+- triage actions.
+
+It also shows each program's totals and last activity, and each person's last activity and actions in the last
+30 days. "What each number counts" gives the exact definitions. **Download CSV** saves the weekly table; the
+download is audited. Nothing is tracked for this page and nothing leaves your account.
+
+## SCIM provisioning (Okta, Entra ID)
+1. In **Admin → Access → SCIM provisioning**, note the SCIM endpoint (`…/api/scim/v2`) and press **Create SCIM
+   token**. Copy the token: it is shown once. It acts as you, for SCIM only.
+2. In your IdP's provisioning settings, set the tenant URL to the endpoint, set the secret token to the token, and
+   test the connection.
+3. Assign users and groups to the app.
+   - **Roles:** groups get roles through the group mappings above, exactly like groups from sign-in.
+   - **Deactivating** a user in the IdP removes their access at once (all sessions and tokens).
+   - **Reactivating** restores it.
+4. **First sign-in:** a provisioned user's first sign-in links to the provisioned account by email.
+
+Revoke the token from the same panel if it leaks. Every SCIM change is in the audit log.
+
+## Team notifications (Slack and Teams)
+**Admin → Notifications** posts events to chat channels. The events are pipeline run finished, experiment version
+published, dataset release published and triage decision.
+1. **Get a webhook URL from the chat service.**
+   - **Slack:** add an *Incoming Webhook* to the channel.
+   - **Teams:** add a channel webhook, or a *Workflows* flow that posts to a channel when a webhook request is
+     received.
+2. **Add a channel.** Enter the name, service and URL, choose all programs or one, and pick the events.
+   - The URL is a secret. It is never shown again, and audit records keep only its host.
+   - URLs must use https and point at Slack's or Teams' own hosts. To allow another host (for example a proxy), set
+     `NOTIFY_EXTRA_HOSTS`.
+3. **Send a test** to check the channel. Each channel lists its last deliveries.
+   - **Retries:** a failed delivery is retried four times over about 8 minutes, then marked failed.
+   - **Pause:** pausing a channel stops new messages without losing its settings.
+
+Messages carry names, statuses, the person who acted, a triage reason, and a link back to Tributary. They never
+include data values, but they do leave your AWS account, so choose channels your organisation approves.
+
+## Personal email
+People can receive email about their own items:
+- a new hit for something they watch;
+- a triage item assigned to them;
+- their pipeline run finishing.
+
+Each person chooses under their name → **Email notifications**. To turn email on, set:
+- `EMAIL_TRANSPORT=ses`: Amazon SES in `SES_REGION` (default `AWS_REGION`). Give the API's role
+  `ses:SendEmail` and verify the sender domain in SES.
+- `EMAIL_TRANSPORT=smtp` with `SMTP_URL` (for example `smtps://user:pass@smtp.example.org:465`).
+- `EMAIL_FROM`: the sender, for example `Tributary <no-reply@your-domain>`.
+
+Without `EMAIL_TRANSPORT` nothing is queued. Emails contain names and links, never data values. They are retried
+like channel messages.
+
 ## Onboarding legacy data
 Historical data on a shared drive or another bucket can be registered in bulk (API only for now).
 

@@ -86,6 +86,8 @@ class DatasetKind(
             "precursor_quant",
             "differential_abundance",
             "dose_response",
+            "thermal_shift",
+            "ptm_site_quant",
             "qc_metrics",
             "rnaseq_counts",
             "crispr_gene_summary",
@@ -105,6 +107,8 @@ class DatasetKind(
         "precursor_quant",
         "differential_abundance",
         "dose_response",
+        "thermal_shift",
+        "ptm_site_quant",
         "qc_metrics",
         "rnaseq_counts",
         "crispr_gene_summary",
@@ -283,6 +287,8 @@ class ChartSpec(BaseModel):
         "pca",
         "dose_response",
         "qc_panel",
+        "melting_curve",
+        "thermal_shift",
     ]
     title: str | None = None
     data: QuerySpec | Data

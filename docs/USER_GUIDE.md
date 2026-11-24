@@ -74,6 +74,17 @@ The **Samples** tab is a spreadsheet of one row per sample.
 ![Manifest problems](../artifacts/phase-6/problems.png)
 ![Plate layout](../artifacts/phase-6/plate.png)
 
+### Excel sample sheets
+- **Upload:** **Upload file** accepts `.xlsx` as well as CSV and TSV. Tributary reads the sheet named "samples", or
+  else the first sheet, and says which one it read.
+- **Check before applying:** the preview lists anything to check first:
+  - **Dates:** cells Excel stored as dates are converted to ISO dates and flagged. Excel turns names such as SEPT1
+    into dates.
+  - **Columns:** duplicate column names and columns without a header are reported.
+  - **Numbers** are kept exactly as Excel stored them.
+- **Download Excel** saves the manifest as `.xlsx`, with every cell as text so Excel cannot change IDs or gene
+  names when you reopen it.
+
 ## Publish a version
 - **Publishing:** **Publish version** freezes the version: its details, samples and contrasts can never change.
   Every publish asks for a **Reason**. If you signed in a while ago, you are asked to confirm your identity first.
@@ -160,6 +171,222 @@ Below the results, the **Chart** panel plots the current query.
 ![Results](../artifacts/phase-16/results-page.png)
 ![Compare](../artifacts/phase-16/compare.png)
 
+## Pathway enrichment
+On an experiment's **Results** page, **Pathway enrichment** asks which gene sets (GO, Reactome or your team's own) are
+over-represented among a contrast's hits.
+1. **Choose:**
+   - the **gene sets**;
+   - the **direction** (up, down or both);
+   - the **hit thresholds** (adjusted p from the source tool, |log2 FC|);
+   - the **set sizes**;
+   - the **universe:** every tested identifier, or only those that are in a gene set.
+2. **Run enrichment.**
+3. **Read the results:**
+   - **The dot plot:** −log10 of the gene set's adjusted p. The dashed line is a term FDR of 0.05. Dot size is the
+     number of hits in the set, and colour is the fold enrichment.
+   - **The table:** hits in each set, fold enrichment, p and adjusted p.
+   - **What was counted, and how:** untested features left out, protein groups with several genes, species.
+
+The test is one-sided hypergeometric over-representation with Benjamini–Hochberg adjustment across the sets tested.
+
+![Pathway enrichment](../artifacts/phase-24/enrichment.png)
+
+### Reports for meetings
+From a results page, open **Report (PDF or PowerPoint)**. It has these parts:
+- **Methods.**
+- **QC** (when the version has protein quantities): IDs per run, completeness, CV and log2 intensity distributions.
+- **Contrasts:** for each contrast, how many proteins pass the display thresholds (up and down), the volcano and the
+  top 10 hits.
+- **Pathway enrichment** (optional):
+  - Pick the gene sets and press **Add to report**.
+  - Enrichment runs for every contrast with the report's display thresholds as the hit definition.
+  - The report states the collection, the hit definition and the method, and lists the top 10 sets by p-value.
+  - Until you add it, this part is not printed.
+- **Dose-response** (when the version has curves):
+  - curves per regulation class, as the source tool classed them;
+  - the curves figure;
+  - the top regulated curves by FDR, then pEC50.
+- **Data and files** used.
+
+**Print / save as PDF** prints the page without the app's menus or the controls. **Download PowerPoint** builds a
+slide for each of these parts. Both are recorded in the audit log.
+
+### Gene–concept network
+After an enrichment run, the **gene–concept network** links the top 8 gene sets (dark squares) to their hit genes
+(circles).
+- **Gene colour:** a gene's colour is its log2 fold change: blue is down and red is up, at full colour from ±3.
+- **Grey genes:** a grey gene with a dashed edge is a hit in more than one feature, for example several protein
+  groups. The table gives its count and whether the signs agree. No single value is shown for it.
+- **Shared genes:** genes linked to several sets are the ones those pathways share.
+- **Table:** the table under the network lists the same links.
+
+### Interaction network of hits
+On a results page, **Interaction network** shows which hits of a contrast are paired in a collection your
+administrator imported (for example STRING). A pair is a known or predicted association. In STRING that means a
+functional link, which is not necessarily physical binding.
+- **Controls:** choose the collection, which hits count (up, down or both) and the minimum score, then **Show
+  network**. For STRING, 400 is medium, 700 high and 900 highest confidence.
+- **Network:** each node is a hit gene, coloured by its log2 fold change. A thicker line is a higher score. The
+  table lists the same pairs.
+- **What it is not:** the links come from the collection, not from your experiment. No statistic tests whether the
+  hits interact more than expected by chance.
+- **Counts:** the panel says how many hits the collection knows and how many have a partner among the hits.
+
+## Triage board
+**Triage** in the sidebar is each program's list of proteins and compounds it is deciding on.
+1. **Add an item:** on a protein or compound page, choose the program in **Triage** and click **Add to triage**. If
+   it is already on that program's board, you get the existing item.
+2. **Decide:** on the board, click a card. Pick a **Decision** (new, advance, watch, drop), give a **Reason** and click
+   **Save decision**. A decision without a reason is not accepted.
+3. **Collaborate:**
+   - **Assign to me** makes you the owner.
+   - Comments are kept in order.
+   - **Evidence** shows the release rows attached to the item (log2 FC and adjusted p for proteins).
+4. **History:** every change is in the item's history and in the audit log. The board filters by program and kind.
+
+Columns are lists of buttons, so the whole board works with the keyboard and screen readers. There is no drag and
+drop.
+
+![Triage board](../artifacts/phase-25/triage-board.png)
+
+## Watchlists and alerts
+- **Watch:** on a protein or compound page, click **Watch**. Click **Watching ✓ — stop** to stop.
+- **Alerts:** when a release is published that you can read and that has a hit for something you watch, the
+  **Alerts** menu in the top bar shows it. This covers releases from pipelines too.
+  - A hit is adjusted p ≤ 0.05 and |log2 FC| ≥ 1; for compounds, presence in a dose-response release.
+  - Each alert gives the experiment, contrast, log2 FC and adjusted p, and links to the results.
+- **Mark read:** open an alert, or use **Mark all read**.
+- **Privacy:** watches and alerts are yours alone. You only hear about programs you can read.
+
+![Alerts](../artifacts/phase-26/alerts.png)
+
+## Cross-experiment QC
+**QC** in the sidebar shows the latest published protein quantities of up to 20 experiments you can read.
+- **Identifications per run:** experiments are shown oldest first. A run is one sample × instrument run.
+  - An ID is a protein group with an intensity above 0 (or a log2 intensity) that the source tool did not mark as
+    imputed.
+  - There is no q-value filter: IDs are as the tool reported them.
+- **Flagged runs:** a run whose IDs fall below half its experiment's median is marked with a red cross. It is
+  left out of the PCA.
+- **PCA of runs:** the PCA uses the protein groups quantified in every unflagged run (log2, centred, not scaled).
+  Colour it by experiment, plate, condition or date. If runs group by plate or date rather than condition, look
+  for a batch effect.
+  - If experiments report different normalisations, the page says so: the components may then separate tools,
+    not batches.
+- **Table and list:** the table lists every run. The list below it says exactly what was counted and what was
+  left out.
+
+## 3D protein models
+A protein page has a **3D model** section.
+- **Where the model comes from:** the section says whether a model exists and where it comes from: your
+  organisation's model directory, or AlphaFold DB.
+- **Viewing it:** press **Show 3D model** to open it in Mol*. Rotate with the mouse, zoom with the wheel, and use
+  the expand button for full screen.
+- **Colours:** the model is coloured by **pLDDT**, the model's own per-residue confidence: very high (> 90),
+  confident (70–90), low (50–70) and very low (≤ 50).
+- **Predicted models:** these are predictions, not experimental structures. Read low-confidence regions with care.
+- **AlphaFold DB data** is CC BY 4.0: cite it when you reuse a picture.
+
+## Compound structures
+- **Compound pages:** a compound page shows its structure, canonical SMILES, a computed InChIKey and descriptors.
+  - **Descriptors:** average and exact MW, Crippen logP, TPSA (N and O), Lipinski donors and acceptors (NH+OH,
+    N+O), RDKit's donor and acceptor counts, rotatable bonds and rings.
+  - **Salts:** a salt or mixture is flagged, and its descriptors cover the whole registered structure.
+  - **Batches:** if batches register different structures, the page says so. You can switch batch.
+- **Structures page:** search by substructure or by similarity.
+  - **Substructure:** type a SMARTS (atoms as written: `C` is aliphatic, `c` aromatic), or choose SMILES to read
+    the query as a molecule (Kekulé rings are aromatised). The first match is highlighted.
+  - **Similarity:** type a SMILES and a Tanimoto threshold. The fingerprint is Morgan (radius 2, 2048 bits).
+  - **Stereochemistry:** both searches ignore it, so enantiomers match and score 1.
+  - **Unreadable structures:** registered SMILES that RDKit cannot read are listed under the results so the registry
+    can be corrected.
+
+## Modification sites (phosphosites)
+Import a label-free MaxQuant site table, e.g. `Phospho (STY)Sites.txt`, with the **MaxQuant site table** importer.
+Sample columns are matched to the sample sheet as for other MaxQuant tables; decoy and contaminant rows are removed
+and counted. SILAC and TMT site tables are refused.
+- **Protein page:** a **Modification sites** section lists the protein's sites in every experiment you can read:
+  residue and position, best localisation probability, samples quantified, multiplicities and other proteins the
+  site is reported on. The site map plots position against localisation probability (not abundance).
+- **Results page:** the number of sites, sites per sample (all, and localised at the threshold in that sample) and
+  the best-localised sites.
+- **Threshold:** "Localisation at least" (default 0.75) is a display choice. Sites below it stay in the tables,
+  marked "below".
+- Intensities are shown as counts of quantified samples only; nothing is normalised, imputed or compared, and
+  intensities of different multiplicities are never added.
+
+## Thermal proteome profiling (TPP-TR)
+Import the result table of a TPP-TR analysis (Bioconductor TPP, saved as tab-separated text) with the
+**TPP-TR result table** importer. The table does not carry three things, so the import dialog asks for them:
+- **Compound ID:** the compound of the treatment experiments.
+- **What Protein_ID holds:** gene symbols (TPP's default) or protein accessions. This is never guessed.
+- **Temperatures:** one line per label with its temperature in °C, as in your TPP config table. One table applies
+  to every experiment.
+
+The results page then has a **Thermal shift** section:
+- **ΔTm plot:** one panel per comparison (treatment vs vehicle), ΔTm against −log10 adjusted p.
+  - ΔTm = melting point of the treatment − vehicle. Positive means the protein is stabilised.
+  - Colours class each point within its own comparison (one replicate pair) at the thresholds you set.
+  - Diamonds are proteins that met all of the tool's replicate checks: its own hit call.
+- **Table:** melting points, ΔTm and adjusted p. "Not tested" means the comparison failed the tool's curve filter
+  or had no fit. The tool tests only proteins that passed its filter, so the adjustment covers those proteins.
+- **Melting curves:** the fold changes the tool reported, its melting points (dotted lines) and, where the table
+  has the fitted parameters, the fitted curve.
+
+Nothing is refitted or retested. Columns that are not imported (for example the vehicle-vs-vehicle difference and
+`model_converged`) are listed on the release, and values of `Inf` or `NaN` are read as empty and reported.
+
+## Target evidence
+A compound page has a **Target evidence** section when a dose-response or thermal profiling dataset you can read
+has data for the compound. It uses one program at a time, because compound IDs are unique within a program.
+- **One row per protein** with three lines of evidence, each with its own criterion:
+  - **Dose-response:** a curve the tool called regulated with pEC50 at or above the threshold. The row says in how
+    many datasets the protein was tested and regulated, and which experiment gave the most potent curve. "Tested,
+    not regulated" and "not measured" are shown differently.
+  - **Thermal shift:** TPP's replicate checks decide when the design has two treatment and two vehicle experiments;
+    otherwise every comparison of a dataset must pass the adjusted-p threshold with the same ΔTm sign. Each row shows
+    the direction (stabilised, destabilised or inconsistent).
+  - **Annotation:** primary target or off-target from the program's target-annotation datasets.
+- **No combined score:** proteins are ordered by measured lines, then annotation, then potency.
+- **Matching:** gene symbols (as TPP tables often use) are matched to accessions through the program's target
+  annotations, for human experiments only; each row says how its evidence was matched.
+
+### Across compounds
+**Analysis → Target evidence** shows the same lines for every compound of a program as a matrix: proteins as rows
+(those with a measured line for at least one compound), compounds as columns. A cell shows **D** with the best pEC50
+when the dose-response line is met, **T↑/T↓/T↕** when the thermal line is met (stabilised, destabilised,
+inconsistent), and **★/○** for an annotated primary target or off-target. A blank cell means no line met its
+criterion or no measurement; the compound page tells which.
+
+## Compound selectivity
+A compound page has a **Selectivity** section when a dose-response experiment you can read has curves for it
+(for example, from CurveCurator).
+- **One experiment at a time:** pick the profiling experiment and dataset. Potencies are never pooled across
+  experiments.
+- **Tested and regulated:**
+  - **Tested:** proteins whose curve the tool classed as up, down or not.
+  - **Regulated:** the tool's own up/down call.
+  - Curves the tool left without a class are listed but not counted.
+- **Regulation counted:** choose up and down, down only or up only. In competition binding (e.g. affinity beads),
+  binding shows as a decrease: count **down only**. In expression proteomics, most calls are downstream effects.
+- **S(x):** the number of regulated proteins with EC50 at or below the threshold, divided by the proteins tested.
+  Lower is more selective. It follows Karaman et al. 2008, but uses the tool's apparent potency in this assay, not
+  a Kd. The page warns when the threshold or a potency lies outside the tested doses.
+- **Selectivity window:** the pEC50 of the annotated primary target minus that of the most potent other regulated
+  protein. If there is no window, the page says why. Annotations come from the target-annotation datasets, as in
+  the Targets table.
+- **Figure and table:** the figure ranks regulated proteins by pEC50, and the table lists all of them. Protein
+  groups and potencies outside the dose range are flagged.
+- **Sharing:** the experiment, direction and threshold are in the address, so you can share the view.
+
+## Email notifications
+Under your name (top right) → **Email notifications**, choose what reaches your inbox:
+- new hits for items you watch;
+- triage items assigned to you;
+- your pipeline runs finishing.
+
+Emails contain names and a link, never data values. If your installation has no email set up, the page says so.
+
 ## Lineage and audit
 - **Lineage:** shows where a release or chart came from: raw file → pipeline run (with its revision) → release →
   saved chart.
@@ -173,6 +400,9 @@ for example "Find experiments with HEK293" or "Show the significant hits of cont
 - **Visible tool calls:** the assistant answers through the same tools and permissions as you, and shows each
   call it made.
 - **Open in Explorer:** a data question becomes a validated query you can open there.
+- **Science questions:** "Which targets does CPD-000001 engage?", "How selective is CPD-000001?" and "Which sites of
+  P31749 were measured?" are answered from the Target evidence, Selectivity and Modification sites pages, with their
+  notes and a link to the page. The same tools are available to MCP clients.
 - **Changes need approval:** the assistant never changes data by itself. A proposed change waits for you to
   **Approve**, then runs as you and is audited.
 

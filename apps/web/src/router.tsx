@@ -1,10 +1,11 @@
 import { ViewsPage } from './explorer/ViewsPage.tsx';
 import { createRootRoute, createRoute, createRouter } from '@tanstack/react-router';
-import { ForbiddenPage, Layout } from './components/Layout.tsx';
+import { ForbiddenPage, Layout, RequireSystemAdmin } from './components/Layout.tsx';
 import { DatasetsPage, type DatasetsSearch } from './datasets/DatasetsPage.tsx';
 import { ExplorerPage, type ExplorerSearch } from './explorer/ExplorerPage.tsx';
 import { ComparePage } from './results/ComparePage.tsx';
 import { CompoundPage, ProteinPage } from './results/EntityPages.tsx';
+import { ReportPage } from './results/ReportPage.tsx';
 import { ResultsPage } from './results/ResultsPage.tsx';
 import { ReleasePage } from './datasets/ReleasePage.tsx';
 import { AdminPipelinesPage } from './pipelines/AdminPipelinesPage.tsx';
@@ -19,9 +20,17 @@ import { AccessPage } from './admin/AccessPage.tsx';
 import { HealthPage } from './admin/HealthPage.tsx';
 import { LifecyclePage } from './admin/LifecyclePage.tsx';
 import { ListsPage } from './admin/ListsPage.tsx';
+import { NotificationsPage } from './admin/NotificationsPage.tsx';
+import { UsagePage } from './admin/UsagePage.tsx';
+import { NotificationSettingsPage } from './settings/NotificationSettingsPage.tsx';
 import { ProgramsPage } from './admin/ProgramsPage.tsx';
 import { LineagePage, type LineageSearch } from './trust/LineagePage.tsx';
 import { NewExperimentPage } from './routes/NewExperimentPage.tsx';
+import { CompoundSearchPage, type CompoundSearchSearch } from './chem/CompoundSearchPage.tsx';
+import { QcPage, type QcSearch } from './qc/QcPage.tsx';
+import { EvidenceMatrixPage } from './results/EvidenceMatrixPage.tsx';
+import { SelectivityPage, type SelectivitySearch } from './results/SelectivityPage.tsx';
+import { TriagePage, type TriageSearch } from './triage/TriagePage.tsx';
 
 const str = (v: unknown) => (typeof v === 'string' && v !== '' ? v : undefined);
 
@@ -75,6 +84,15 @@ const explorerRoute = createRoute({
       ['q', 'view'].map((k) => [k, str(search[k])]).filter(([, v]) => v !== undefined),
     ) as ExplorerSearch,
 });
+const reportRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/experiments/$id/report',
+  component: ReportPage,
+  validateSearch: (search: Record<string, unknown>): { version?: string } => {
+    const version = str(search.version);
+    return version ? { version } : {};
+  },
+});
 const resultsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/experiments/$id/results',
@@ -93,6 +111,32 @@ const compoundRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/compounds/$id',
   component: CompoundPage,
+  // sel_release, pec50 and sel_dir: the selectivity section's dataset, threshold and direction (shareable).
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { program_id?: string; sel_release?: string; pec50?: string; sel_dir?: string } => ({
+    ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+    ...(str(search.sel_release) ? { sel_release: str(search.sel_release)! } : {}),
+    ...(str(search.sel_dir) ? { sel_dir: str(search.sel_dir)! } : {}),
+    // The router parses `pec50=7` as a number.
+    ...(typeof search.pec50 === 'number' || str(search.pec50) ? { pec50: String(search.pec50) } : {}),
+  }),
+});
+const compoundSearchRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/compounds/search',
+  component: CompoundSearchPage,
+  validateSearch: (search: Record<string, unknown>): CompoundSearchSearch => {
+    const mode = str(search.mode);
+    const type = str(search.type);
+    const min = Number(search.min);
+    return {
+      ...(str(search.q) ? { q: str(search.q)! } : {}),
+      ...(mode === 'substructure' || mode === 'similarity' ? { mode } : {}),
+      ...(type === 'smarts' || type === 'smiles' ? { type } : {}),
+      ...(Number.isFinite(min) && min > 0 && min <= 1 ? { min } : {}),
+    };
+  },
 });
 const viewsRoute = createRoute({ getParentRoute: () => rootRoute, path: '/views', component: ViewsPage });
 const compareRoute = createRoute({
@@ -104,7 +148,7 @@ const runRoute = createRoute({ getParentRoute: () => rootRoute, path: '/runs/$id
 const adminPipelinesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/pipelines',
-  component: AdminPipelinesPage,
+  component: adminOnly(AdminPipelinesPage),
 });
 const searchRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -118,6 +162,48 @@ const searchRoute = createRoute({
     ) as SearchPageSearch;
     const type = str(search.type);
     return type === 'experiment' || type === 'sample' ? { ...out, type } : out;
+  },
+});
+const qcRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/qc',
+  component: QcPage,
+  validateSearch: (search: Record<string, unknown>): QcSearch => {
+    const color = str(search.color_by);
+    return {
+      ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+      ...(color === 'experiment' || color === 'plate' || color === 'condition' || color === 'experiment_date'
+        ? { color_by: color }
+        : {}),
+    };
+  },
+});
+const selectivityRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/selectivity',
+  component: SelectivityPage,
+  validateSearch: (search: Record<string, unknown>): SelectivitySearch => ({
+    ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+    ...(typeof search.pec50 === 'number' || str(search.pec50) ? { pec50: String(search.pec50) } : {}),
+    ...(search.dir === 'down' || search.dir === 'up' ? { dir: search.dir } : {}),
+  }),
+});
+const evidenceMatrixRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/target-evidence',
+  component: EvidenceMatrixPage,
+});
+const triageRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/triage',
+  component: TriagePage,
+  validateSearch: (search: Record<string, unknown>): TriageSearch => {
+    const kind = str(search.kind);
+    return {
+      ...(str(search.item) ? { item: str(search.item)! } : {}),
+      ...(str(search.program_id) ? { program_id: str(search.program_id)! } : {}),
+      ...(kind === 'protein' || kind === 'compound' ? { kind } : {}),
+    };
   },
 });
 const lineageRoute = createRoute({
@@ -138,13 +224,28 @@ const lineageRoute = createRoute({
 const templatesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/templates',
-  component: TemplatesPage,
+  component: adminOnly(TemplatesPage),
 });
+const settingsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/settings/notifications',
+  component: NotificationSettingsPage,
+});
+/** Wraps an admin page so only system admins render it (AUTH-03). */
+function adminOnly(Page: () => React.ReactNode) {
+  return () => (
+    <RequireSystemAdmin>
+      <Page />
+    </RequireSystemAdmin>
+  );
+}
 const adminPage = (path: string, component: () => React.ReactNode) =>
-  createRoute({ getParentRoute: () => rootRoute, path, component });
+  createRoute({ getParentRoute: () => rootRoute, path, component: adminOnly(component) });
 const adminRoutes = [
   adminPage('/admin/programs', ProgramsPage),
   adminPage('/admin/lists', ListsPage),
+  adminPage('/admin/notifications', NotificationsPage),
+  adminPage('/admin/usage', UsagePage),
   adminPage('/admin/access', AccessPage),
   adminPage('/admin/lifecycle', LifecyclePage),
   adminPage('/admin/health', HealthPage),
@@ -152,7 +253,7 @@ const adminRoutes = [
 const auditRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/audit',
-  component: AuditPage,
+  component: adminOnly(AuditPage),
   validateSearch: (search: Record<string, unknown>): AuditSearch =>
     Object.fromEntries(
       ['action', 'entity_type', 'entity_id', 'from', 'to']
@@ -175,9 +276,15 @@ export const router = createRouter({
     datasetsRoute,
     explorerRoute,
     resultsRoute,
+    reportRoute,
     proteinRoute,
+    compoundSearchRoute,
     compoundRoute,
     compareRoute,
+    triageRoute,
+    qcRoute,
+    selectivityRoute,
+    evidenceMatrixRoute,
     viewsRoute,
     releaseRoute,
     runRoute,
@@ -187,6 +294,7 @@ export const router = createRouter({
     auditRoute,
     templatesRoute,
     ...adminRoutes,
+    settingsRoute,
     forbiddenRoute,
   ]),
 });

@@ -19,6 +19,8 @@ import { odcsYaml } from '../datasets/odcs.ts';
 import { readRelease } from '../datasets/query-client.ts';
 import { HttpError, notFound, parse } from '../errors.ts';
 import { respond } from '../respond.ts';
+import { notifyWatchers } from '../watch/notify.ts';
+import { releasePublished } from '../notifications/emit.ts';
 
 type IdParams = FastifyRequest<{ Params: { id: string } }>;
 
@@ -98,6 +100,11 @@ export function registerDatasetRoutes(
         reason: body.reason,
       });
     });
+    // Watchers of the release's hits hear about it (best effort; never fails the publish).
+    if (to === 'published') {
+      await notifyWatchers({ db, config, fetch: fetchImpl }, release.id, actor, request.log);
+      await releasePublished({ db, config }, actor, release.id, request.log);
+    }
     return respond(ReleaseDetailSchema, await detail(release.id));
   };
   app.post('/v1/releases/:id/publish', decide('published'));

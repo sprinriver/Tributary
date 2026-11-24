@@ -1,0 +1,1299 @@
+{
+  "compound": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "batch_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "compound_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "external_ids",
+          "type": "json",
+          "nullable": false
+        },
+        {
+          "name": "inchikey",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "name",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "program_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "smiles",
+          "type": "text",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "compound_property": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "assay_category",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "assay_name",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "batch_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "compound_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "property",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "qualifier",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "unit",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "value",
+          "type": "double",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "crispr_gene_summary": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "gene",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "n_guides",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "neg_fdr",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "neg_lfc",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "neg_p",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "neg_rank",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "neg_score",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "pos_fdr",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "pos_lfc",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "pos_p",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "pos_rank",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "pos_score",
+          "type": "double",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "differential_abundance": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "adj_method",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "adj_p_value",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "avg_log2_abundance",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "ci_high",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "ci_low",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "contrast_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "contrast_label",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "feature_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "feature_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "gene_names",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "imputed_pct",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "issue",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "log2_fc",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "method",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "method_version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "missing_pct",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "missingness_class",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "n_obs_den",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "n_obs_num",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "na_reason",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "p_value",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "protein_ids",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "se",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "source_columns",
+          "type": "json",
+          "nullable": false
+        },
+        {
+          "name": "t_stat",
+          "type": "double",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "dose_response": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "bottom",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "compound_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "curve_fold_change",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "curve_p_value",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "doses_molar",
+          "type": "double[]",
+          "nullable": false
+        },
+        {
+          "name": "ec50_molar",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "fdr",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "feature_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "gene_names",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "hill_slope",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "method",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "method_version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "n_doses",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "pec50",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "protein_ids",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "r2",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "regulation",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "relevance_score",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "responses",
+          "type": "double[]",
+          "nullable": false
+        },
+        {
+          "name": "top",
+          "type": "double",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "experiment_version": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "assay_type",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "experiment_date",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "experiment_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "experiment_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "program_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "published_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "species_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "species_label",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "urn",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "version_number",
+          "type": "integer",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "file_object": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "bucket",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "created_at",
+          "type": "timestamp",
+          "nullable": false
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": true
+        },
+        {
+          "name": "file_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "format",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "ingest_status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "sha256",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "size_bytes",
+          "type": "integer",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "id_mapping": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "ensembl_gene_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "gene_symbol",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "source",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "source_release",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "species",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "uniprot_accession",
+          "type": "text",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "pipeline_run": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "finished_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "pipeline_key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "pipeline_run_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "runner",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "started_at",
+          "type": "timestamp",
+          "nullable": true
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "triggered_by",
+          "type": "uuid",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "precursor_quant": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "charge",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "gene_names",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "global_q_value",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "instrument_run",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "intensity",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "ion_mobility",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "modified_sequence",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "pg_q_value",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "precursor_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "protein_group",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "protein_ids",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "q_value",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "retention_time",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "sample_key",
+          "type": "text",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "protein_quant": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "gene_names",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "instrument_run",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "intensity",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "is_imputed",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "log2_intensity",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "n_precursors",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "normalisation",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "protein_group",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "protein_ids",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "q_value",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "sample_key",
+          "type": "text",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "ptm_site_quant": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "amino_acid",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "gene_names",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "identification_type",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "instrument_run",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "intensity",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "localization_prob",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "localization_prob_sample",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "log2_intensity",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "method",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "method_version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "modification",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "multiplicity",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "pep",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "position",
+          "type": "integer",
+          "nullable": false
+        },
+        {
+          "name": "positions_in_proteins",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "protein",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "protein_ids",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "sample_key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "score_diff",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "sequence_window",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "site_id",
+          "type": "text",
+          "nullable": false
+        }
+      ]
+    }
+  },
+  "qc_metrics": {
+    "1.1.0": {
+      "columns": [
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "metric",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "scope",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "scope_key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "status",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "threshold",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "unit",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "value",
+          "type": "double",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "rnaseq_counts": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "count",
+          "type": "double",
+          "nullable": false
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "gene_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "gene_name",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "sample_key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "tpm",
+          "type": "double",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "sample": {
+    "1.1.0": {
+      "columns": [
+        {
+          "name": "biological_replicate",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "cell_line",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "cell_line_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "cell_type",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "cell_type_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "compound_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "condition",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "disease",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "disease_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "dose_display",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "dose_molar",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "fraction",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "instrument_run",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "label_channel",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "organism",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "organism_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "plate",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "raw_file",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "replicate_group",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "sample_key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "source_name",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "technical_replicate",
+          "type": "integer",
+          "nullable": true
+        },
+        {
+          "name": "time_display",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "time_hours",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "tissue",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "tissue_id",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "vehicle",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "well",
+          "type": "text",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "target_annotation": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "family",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "gene_symbol",
+          "type": "text",
+          "nullable": true
+        },
+        {
+          "name": "key",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "uniprot_accession",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "value",
+          "type": "text",
+          "nullable": true
+        }
+      ]
+    }
+  },
+  "thermal_shift": {
+    "1.0.0": {
+      "columns": [
+        {
+          "name": "a_treatment",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "a_vehicle",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "adj_method",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "adj_p_value",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "b_treatment",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "b_vehicle",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "comparison",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "compound_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "delta_tm",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "experiment_version_id",
+          "type": "uuid",
+          "nullable": false
+        },
+        {
+          "name": "fc_treatment",
+          "type": "double[]",
+          "nullable": false
+        },
+        {
+          "name": "fc_vehicle",
+          "type": "double[]",
+          "nullable": false
+        },
+        {
+          "name": "feature_id",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "fold_change_normalised",
+          "type": "boolean",
+          "nullable": false
+        },
+        {
+          "name": "fulfills_all_requirements",
+          "type": "boolean",
+          "nullable": true
+        },
+        {
+          "name": "gene_names",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "melt_point_treatment",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "melt_point_vehicle",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "method",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "method_version",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "min_slope",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "passed_filter",
+          "type": "boolean",
+          "nullable": true
+        },
+        {
+          "name": "plateau_treatment",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "plateau_vehicle",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "protein_ids",
+          "type": "text[]",
+          "nullable": false
+        },
+        {
+          "name": "r2_treatment",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "r2_vehicle",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "slope_treatment",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "slope_vehicle",
+          "type": "double",
+          "nullable": true
+        },
+        {
+          "name": "temperatures_c",
+          "type": "double[]",
+          "nullable": false
+        },
+        {
+          "name": "treatment_experiment",
+          "type": "text",
+          "nullable": false
+        },
+        {
+          "name": "vehicle_experiment",
+          "type": "text",
+          "nullable": false
+        }
+      ]
+    }
+  }
+}

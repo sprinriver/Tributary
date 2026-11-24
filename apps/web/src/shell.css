@@ -452,3 +452,25 @@
 .demo-banner code {
   font-size: 12px;
 }
+
+/* Print (Phase 33 reports): only the page content, without the app frame and its controls. */
+@media print {
+  .sidebar-rail,
+  .topbar,
+  .ai-panel,
+  .scrim,
+  .no-print,
+  .modebar-container {
+    display: none !important;
+  }
+  .app,
+  .app-body,
+  .app-main {
+    display: block;
+    background: #fff;
+  }
+  .report-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

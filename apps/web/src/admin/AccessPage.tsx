@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { api } from '../api.ts';
 import { RequireAuth } from '../components/Layout.tsx';
 import { ErrorMessage, Field } from '../components/ui.tsx';
+import { ScimPanel } from './ScimPanel.tsx';
 
 const ROLES: GroupMapping['role'][] = ['viewer', 'contributor', 'approver', 'admin', 'system_admin'];
 
@@ -18,6 +19,7 @@ export function AccessPage() {
           next request.
         </p>
         <Mappings />
+        <ScimPanel />
       </main>
     </RequireAuth>
   );

@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/NotificationPreferencesBody",
+  "$defs": {
+    "NotificationPreferencesBody": {
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "boolean"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "alert.created",
+              "triage.assigned",
+              "run.finished"
+            ]
+          }
+        }
+      },
+      "required": [
+        "email",
+        "events"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

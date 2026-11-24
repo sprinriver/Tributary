@@ -13,6 +13,8 @@ class DatasetKind(
             "precursor_quant",
             "differential_abundance",
             "dose_response",
+            "thermal_shift",
+            "ptm_site_quant",
             "qc_metrics",
             "rnaseq_counts",
             "crispr_gene_summary",
@@ -32,6 +34,8 @@ class DatasetKind(
         "precursor_quant",
         "differential_abundance",
         "dose_response",
+        "thermal_shift",
+        "ptm_site_quant",
         "qc_metrics",
         "rnaseq_counts",
         "crispr_gene_summary",
@@ -56,7 +60,17 @@ class Item(BaseModel):
     tool: str
     formats: list[str]
     kinds: list[DatasetKind]
-    needs: list[Literal["experiment_version", "contrast", "contrasts", "mapping", "source_release", "doses"]]
+    needs: list[
+        Literal[
+            "experiment_version",
+            "contrast",
+            "contrasts",
+            "mapping",
+            "source_release",
+            "doses",
+            "temperatures",
+        ]
+    ]
 
 
 class ImporterList(BaseModel):

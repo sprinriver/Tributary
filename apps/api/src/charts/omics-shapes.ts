@@ -140,13 +140,16 @@ export async function shapeQc(rows: Row[], spec: ChartSpec, o: O, compute: Compu
   const placed = rows.filter(
     (r) => r[run] != null && r[run] !== '' && r[feature] != null && r[feature] !== '',
   );
-  const quantified = (r: Row) => (toNumber(r[value]) ?? 0) > 0;
+  // Imputed values (is_imputed, when the dataset has it) are not measurements: not quantified either.
+  const imputed = placed.filter((r) => r['is_imputed'] === true).length;
+  const quantified = (r: Row) => r['is_imputed'] !== true && (toNumber(r[value]) ?? 0) > 0;
   const present = placed.filter(quantified);
   const runs = groupBy(placed, run);
   const allFeatures = new Set(placed.map((r) => toLabel(r[feature])));
   const panels: { title: string; traces: Record<string, unknown>[]; y: string }[] = [];
   const notes: string[] = [];
   const info: Record<string, string> = {};
+  if (imputed) notes.push(`${imputed} imputed value(s) counted as not quantified (left out of every panel)`);
   if (o.show_ids) {
     const ids = runs.map(([, rr]) => new Set(rr.filter(quantified).map((r) => toLabel(r[feature]))).size);
     panels.push({
@@ -183,7 +186,10 @@ export async function shapeQc(rows: Row[], spec: ChartSpec, o: O, compute: Compu
     });
   }
   if (o.show_cv) {
-    // CV of linear intensities per feature within each colour group (or across all runs); n < 2 → no CV.
+    // CV of linear intensities per feature within each colour group (or across all runs); n < 2 → no CV. With a
+    // group, runs without one (e.g. not in a joined sample sheet) form their own labelled group, never "all runs".
+    const UNMATCHED = 'not in the sample sheet';
+    const label = (g: string) => (group ? g || UNMATCHED : 'all runs');
     const groups = groupBy(present, group).flatMap(([g, gr]) =>
       groupBy(gr, feature).map(([f, fr]) => ({
         name: `${g}\u0000${f}`,
@@ -200,16 +206,32 @@ export async function shapeQc(rows: Row[], spec: ChartSpec, o: O, compute: Compu
         {
           type: 'box',
           name: 'CV (%)',
-          x: cvs.map((s) => s.name.split('\u0000')[0] || 'all runs'),
+          x: cvs.map((s) => label(s.name.split('\u0000')[0]!)),
           y: cvs.map((s) => s.cv! * 100),
           boxpoints: false,
           marker: { color: colourAt(spec, 2) },
         },
       ],
     });
-    notes.push(
-      `CV = SD / mean of linear ${value} per feature${group ? ` within ${group}` : ''}; ${summary.groups.length - cvs.length} feature(s) with < 2 values have none`,
-    );
+    const none = summary.groups.length - cvs.length;
+    if (group) {
+      const by = group.replace(/^[a-z][a-z0-9_]*\./, '');
+      const withCv = new Set(cvs.map((s) => s.name.split('\u0000')[0]!));
+      const without = [...new Set(summary.groups.map((s) => s.name.split('\u0000')[0]!))]
+        .filter((g) => !withCv.has(g))
+        .map(label);
+      notes.push(
+        `CV = SD / mean of linear ${value} per feature within ${by}; ${none} feature–${by} pair(s) with < 2 quantified values have no CV${
+          without.length ? `; no CV for: ${without.join(', ')}` : ''
+        }`,
+      );
+      const unmatched = runs.filter(([, rr]) => rr.every((r) => r[group] == null || r[group] === '')).length;
+      if (unmatched)
+        notes.push(`${unmatched} run(s) not in the sample sheet: their CVs form a separate group`);
+    } else
+      notes.push(
+        `CV = SD / mean of linear ${value} per feature across all runs; ${none} feature(s) with < 2 values have none`,
+      );
   }
   if (o.show_intensity) {
     const usable = present;

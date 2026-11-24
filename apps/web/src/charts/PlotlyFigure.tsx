@@ -14,6 +14,12 @@ type PlotElement = HTMLDivElement & {
 let plotly: Promise<PlotlyApi> | undefined;
 const loadPlotly = () => (plotly ??= import('./plotly-bundle.ts').then((m) => m.default));
 
+/** A rendered figure (the element Plotly drew into) as a PNG data URL, e.g. for slides. */
+export async function figureToPng(el: HTMLElement, width = 1200, height = 900): Promise<string> {
+  const Plotly = await loadPlotly();
+  return Plotly.toImage(el, { format: 'png', width, height });
+}
+
 /** A Plotly figure (lazy partial bundle), with PNG/SVG download and lasso/box selection. */
 export function PlotlyFigure({
   label,

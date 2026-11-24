@@ -8,3 +8,5 @@
   `src/query-validate.ts` (contract-aware validation), `src/datasets/experiment.ts` (dataset contracts).
 - Quality rules cite their source (`source` field). Never add a column meaning without one.
 - A breaking schema change needs an ADR and `pnpm gen`.
+- Dataset contracts change additively only (new nullable columns) and with a new version, then
+  `pnpm run contracts:lock` (ADR 0032). A test fails otherwise.

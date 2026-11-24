@@ -11,6 +11,8 @@ from tributary_compute.contracts.cluster_request import ClusterRequest
 from tributary_compute.contracts.cluster_result import ClusterResult
 from tributary_compute.contracts.embed_request import EmbedRequest
 from tributary_compute.contracts.embed_response import EmbedResponse
+from tributary_compute.contracts.enrichment_request import EnrichmentRequest
+from tributary_compute.contracts.enrichment_result import EnrichmentResult
 from tributary_compute.contracts.fit4pl_request import Fit4plRequest
 from tributary_compute.contracts.fit4pl_result import Fit4plResult
 from tributary_compute.contracts.group_summary_request import GroupSummaryRequest
@@ -27,7 +29,7 @@ from tributary_compute.contracts.zscore_request import ZScoreRequest
 from tributary_compute.contracts.zscore_result import ZScoreResult
 from tributary_compute.embed import embed
 from tributary_compute.sdrf import ExportResult, ImportResult, export_sdrf, import_sdrf
-from tributary_compute.stats import cluster, groups, simple
+from tributary_compute.stats import cluster, enrichment, groups, simple
 from tributary_compute.stats.errors import ComputeError
 from tributary_compute.tracing import request_context
 
@@ -79,6 +81,11 @@ def sdrf_import(request: SdrfImportRequest) -> ImportResult:
 @app.post("/stats/cluster")
 def stats_cluster(request: ClusterRequest) -> ClusterResult:
     return cluster.cluster(request)
+
+
+@app.post("/stats/enrichment")
+def stats_enrichment(request: EnrichmentRequest) -> EnrichmentResult:
+    return enrichment.enrichment(request)
 
 
 @app.post("/stats/kde")

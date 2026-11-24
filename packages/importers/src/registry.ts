@@ -1,5 +1,7 @@
 import { alphadiaPgMatrix, alphadiaPrecursors } from './alphadia/index.ts';
 import { curvecurator } from './curvecurator/index.ts';
+import { maxquantSites } from './maxquant_sites/index.ts';
+import { tppTr } from './tpp_tr/index.ts';
 import { customTabular } from './custom_tabular/index.ts';
 import { deqmsResult } from './deqms_result/index.ts';
 import { deseq2Results } from './deseq2_results/index.ts';
@@ -39,6 +41,8 @@ export const IMPORTERS: Readonly<Record<string, Importer>> = Object.fromEntries(
     deqmsResult,
     deseq2Results,
     curvecurator,
+    tppTr,
+    maxquantSites,
     mageckGeneSummary,
     customTabular,
     referenceCompound,

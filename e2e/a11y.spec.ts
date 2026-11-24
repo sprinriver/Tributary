@@ -41,6 +41,10 @@ test('OPS-09: every scientist page has no serious or critical accessibility viol
     '/proteins/P31749',
     '/compounds/CPD-000005',
     `/lineage/release/${release}`,
+    '/triage',
+    '/qc',
+    '/settings/notifications',
+    '/compounds/search?q=c1ccccc1&mode=substructure',
   ];
   const found: string[] = [];
   for (const path of paths) found.push(...(await expectNoSeriousViolations(page, path)));
@@ -56,6 +60,8 @@ test('OPS-09: every admin page has no serious or critical accessibility violatio
   for (const path of [
     '/admin/programs',
     '/admin/lists',
+    '/admin/notifications',
+    '/admin/usage',
     '/admin/access',
     '/admin/lifecycle',
     '/admin/health',

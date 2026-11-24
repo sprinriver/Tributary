@@ -13,6 +13,7 @@ import {
   readTsv,
   type FixtureExperiment,
 } from './fixtures.ts';
+import { seedNetworks } from './networks.ts';
 import { seedDemoPipeline } from './pipelines.ts';
 import { ensureBucket, stageFile, type StagingTarget } from './s3.ts';
 
@@ -158,8 +159,8 @@ export async function seedDatabase(db: Database, options: SeedOptions): Promise<
   return countRows(db);
 }
 
-type Base = { tenant_id: string; created_by: string };
-type Audit = (
+export type Base = { tenant_id: string; created_by: string };
+export type Audit = (
   action: string,
   entityType: string,
   entityId: string,
@@ -180,6 +181,7 @@ async function seedActor(trx: Transaction<DB>, tenant: string): Promise<string> 
       sub: SEED_SUB,
       email: 'db-seed@tributary.invalid',
       name: 'Seed service',
+      kind: 'service',
     })
     .execute();
   return id;
@@ -376,6 +378,8 @@ async function seedReference(
       })),
     )
     .execute();
+
+  await seedNetworks(trx, base, dir, audit);
 
   for (const [code, id] of programIds) {
     await audit('reference.import', 'program', id, {

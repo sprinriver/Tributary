@@ -145,9 +145,17 @@ in production (`NODE_ENV=production`) the required ones must be set, or the API 
 | `S3_ENDPOINT`, `S3_REGION`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | | Object storage (on AWS, leave keys unset to use the task role) |
 | `S3_RAW_BUCKET`, `S3_WAREHOUSE_BUCKET`, `S3_WORK_BUCKET` | | Buckets for raw files, releases and pipeline work |
 | `OLS_URL` | | Ontology lookup service (default EBI OLS4) |
+| `PROTEIN_MODELS_DIR` | | Directory of `<accession>.cif` 3D models (in-house or mirrored; dev default: the synthetic demo models) |
+| `EMAIL_TRANSPORT` | | Personal email: `ses` (Amazon SES, region `SES_REGION`/`AWS_REGION`) or `smtp` (`SMTP_URL`); unset = no email |
+| `EMAIL_FROM` | | Sender address for personal email |
+| `NOTIFY_EXTRA_HOSTS` | | Extra hosts Slack/Teams notification routes may post to (comma-separated; e.g. a corporate proxy) |
+| `ALPHAFOLD_URL` | | AlphaFold DB base URL the API fetches models from (default `https://www.alphafold.ebi.ac.uk`; empty turns it off) |
 | `SEARCH_EMBEDDINGS` | | `none` (default), `local`, `voyage_4` or `bedrock_titan_v2` (see ADR 0020) |
 | `SEARCH_EMBEDDING_DIMS`, `SEARCH_MIN_SIMILARITY`, `VOYAGE_API_KEY` | | Embedding options |
 | `SESSION_TTL_HOURS` | | Browser session lifetime (default 12) |
+| `RATE_LIMIT_PER_MINUTE` | | Requests per minute per credential (default 600 in production, off elsewhere; 0 = off) |
+| `RATE_LIMIT_ANON_PER_MINUTE` | | Requests per minute per client address without a credential (default 120) |
+| `TRUST_PROXY` | | Proxy hops in front of the API, so client addresses are real (CloudFront + load balancer = 2) |
 | `AI_PROVIDER` | | `none` (default), `anthropic`, `bedrock` or `stub` (tests). See ADR 0022 |
 | `AI_MODEL`, `AI_MONTHLY_TOKEN_BUDGET` | | Model id (required for `bedrock`); monthly token budget (default 5,000,000) |
 | `ANTHROPIC_API_KEY` / `BEDROCK_REGION` | | Credentials for `anthropic`; region for `bedrock` (uses the task role) |
@@ -252,7 +260,7 @@ docs              spec, architecture, plan, progress, ADRs
 - Conventions: [`CLAUDE.md`](CLAUDE.md) and `.claude/rules/`.
 
 - Read [`CONTRIBUTING.md`](CONTRIBUTING.md) and the [code of conduct](CODE_OF_CONDUCT.md). Report security
-  issues privately ([`SECURITY.md`](SECURITY.md)).
+  issues privately ([`SECURITY.md`](SECURITY.md)). For security reviews, see the [security whitepaper](docs/SECURITY_WHITEPAPER.md).
 
 ## Licence
 Apache License 2.0: see [`LICENSE`](LICENSE) and [`NOTICE`](NOTICE). The demo data is synthetic.

@@ -6,6 +6,7 @@ import { ASSAY_LABELS, ErrorMessage, Field, VersionStatus } from '../components/
 import { useCloneVersion, useExperiments, usePrograms } from '../registry/queries.ts';
 import { StatusBadge } from '@tributary/ui';
 import { useMe } from '../auth.ts';
+import { canWriteIn } from '../roles.ts';
 import { isActive, RUN_LABEL, RUN_TONE } from '../pipelines/labels.ts';
 import { canApproveIn, LaunchDialog, type LaunchTarget } from '../pipelines/LaunchDialog.tsx';
 
@@ -119,10 +120,7 @@ function ExperimentsList() {
   const clone = useCloneVersion();
   const me = useMe();
   const [launching, setLaunching] = useState<LaunchTarget | null>(null);
-  const canWriteIn = (programId: string) =>
-    (me.data?.roles ?? []).some(
-      (r) => r.role === 'system_admin' || (r.program_id === programId && r.role !== 'viewer'),
-    );
+  const canWrite = (programId?: string) => canWriteIn(me.data?.roles, programId);
 
   const setFilter = (patch: Partial<ExperimentsSearch>) => {
     setCursors([]);
@@ -138,9 +136,11 @@ function ExperimentsList() {
     <main>
       <div className="row" style={{ justifyContent: 'space-between' }}>
         <h1>Experiments</h1>
-        <Link to="/experiments/new" className="button primary">
-          New experiment
-        </Link>
+        {canWrite() && (
+          <Link to="/experiments/new" className="button primary">
+            New experiment
+          </Link>
+        )}
       </div>
 
       <form
@@ -289,7 +289,7 @@ function ExperimentsList() {
                 <div className="row" style={{ gap: 6 }}>
                   <button
                     type="button"
-                    disabled={e.current_version.status !== 'published' || !canWriteIn(e.program_id)}
+                    disabled={e.current_version.status !== 'published' || !canWrite(e.program_id)}
                     title={
                       e.current_version.status !== 'published'
                         ? 'Publish the version to launch a pipeline'
@@ -305,22 +305,24 @@ function ExperimentsList() {
                   >
                     Launch pipeline
                   </button>
-                  <button
-                    type="button"
-                    disabled={clone.isPending}
-                    onClick={() =>
-                      clone.mutate(e.current_version.id, {
-                        onSuccess: (v) =>
-                          void navigate({
-                            to: '/experiments/$id',
-                            params: { id: e.id },
-                            search: { version: v.id },
-                          }),
-                      })
-                    }
-                  >
-                    Create version
-                  </button>
+                  {canWrite(e.program_id) && (
+                    <button
+                      type="button"
+                      disabled={clone.isPending}
+                      onClick={() =>
+                        clone.mutate(e.current_version.id, {
+                          onSuccess: (v) =>
+                            void navigate({
+                              to: '/experiments/$id',
+                              params: { id: e.id },
+                              search: { version: v.id },
+                            }),
+                        })
+                      }
+                    >
+                      Create version
+                    </button>
+                  )}
                 </div>
               </td>
             </tr>

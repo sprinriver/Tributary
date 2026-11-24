@@ -15,7 +15,9 @@ e2e
 test-results
 playwright-report
 coverage
-infra/terraform
+# Terraform stays out, except the Content-Security-Policy the web build also reads (apps/web/vite.config.ts).
+infra/terraform/**
+!infra/terraform/modules/cloudfront/csp.json
 **/.env
 **/.env.*
 !**/.env.example

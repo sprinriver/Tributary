@@ -88,6 +88,15 @@ function plan(question: string): { name: string; input: unknown } {
       },
     };
   if (/invalid query/i.test(question)) return { name: 'build_query', input: { query_spec: { source: {} } } };
+  // Science questions (Phase 50): a compound ID with "target", "engage" or "evidence"; "selective"; a protein's sites.
+  const compound = /\bCPD-\d{6}\b/.exec(question)?.[0];
+  if (compound && /selectiv/i.test(question))
+    return { name: 'get_compound_selectivity', input: { compound_id: compound } };
+  if (compound && /target|engage|evidence|bind/i.test(question))
+    return { name: 'get_target_evidence', input: { compound_id: compound } };
+  const accession = /\b[OPQ]\d[A-Z0-9]{3}\d\b|\b[A-NR-Z]\d[A-Z][A-Z0-9]{2}\d\b/.exec(question)?.[0];
+  if (accession && /site|phospho|modif/i.test(question))
+    return { name: 'get_protein_sites', input: { accession } };
   if (id && /release/i.test(question))
     return {
       name: 'build_query',
@@ -124,6 +133,34 @@ function summarise(question: string, last: Result): string {
     }
     case 'list_datasets':
       return `You can see ${(o.datasets as unknown[]).length} datasets.`;
+    case 'get_target_evidence': {
+      const ps = o.proteins as {
+        gene: string | null;
+        accession: string | null;
+        lines: Record<string, boolean>;
+      }[];
+      const lines = (p: (typeof ps)[number]) =>
+        Object.entries(p.lines)
+          .filter(([, v]) => v)
+          .map(([k]) => k)
+          .join(' + ');
+      return ps.length
+        ? `${String(o.total_proteins)} protein(s) have evidence for ${String(o.compound_id)}; first: ${ps
+            .slice(0, 5)
+            .map((p) => `${p.gene ?? p.accession} (${lines(p)})`)
+            .join(', ')}. There is no combined score; see the notes and ${String(o.page)}.`
+        : `No readable evidence for ${String(o.compound_id)}.`;
+    }
+    case 'get_compound_selectivity':
+      return o.s_score === null
+        ? `No selectivity profile for ${String(o.compound_id)} in your programs.`
+        : `${String(o.compound_id)} in ${String(o.experiment)}: ${String(o.regulated)} of ${String(o.tested)} proteins regulated; S = ${Number(o.s_score).toFixed(3)}. pEC50 is apparent potency, not a binding constant.`;
+    case 'get_protein_sites': {
+      const sites = o.sites as { site_id: string; meets_threshold: boolean }[];
+      return sites.length
+        ? `${String(o.total_sites)} site(s) on ${String(o.accession)}: ${sites.map((x) => x.site_id).join(', ')} (localisation threshold ${String(o.loc_min)}, a display choice).`
+        : `No modification sites for ${String(o.accession)} in your programs.`;
+    }
     default:
       return `Done: ${last.name}.`;
   }

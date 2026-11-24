@@ -19,10 +19,13 @@ export const MeResponseSchema = z
   .meta({ id: 'MeResponse' });
 export type MeResponse = z.infer<typeof MeResponseSchema>;
 
+export const TokenScopeSchema = z.enum(['read', 'write', 'scim']);
+
 export const CreateTokenBodySchema = z
   .strictObject({
     name: z.string().trim().min(1).max(100),
-    scopes: z.array(z.enum(['read', 'write'])).min(1),
+    /** read/write: the /v1 API. scim: only SCIM provisioning at /scim/v2 (system admins). */
+    scopes: z.array(TokenScopeSchema).min(1),
     expires_in_days: z.int().min(1).max(365),
   })
   .meta({ id: 'CreateTokenBody' });
@@ -32,7 +35,7 @@ export const AccessTokenSchema = z
     id: z.uuid(),
     name: z.string(),
     token_prefix: z.string(),
-    scopes: z.array(z.enum(['read', 'write'])),
+    scopes: z.array(TokenScopeSchema),
     expires_at: TimestampSchema,
     revoked_at: TimestampSchema.nullable(),
     last_used_at: TimestampSchema.nullable(),

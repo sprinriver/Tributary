@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/ListAlertsQuery",
+  "$defs": {
+    "ListAlertsQuery": {
+      "type": "object",
+      "properties": {
+        "unread_only": {
+          "type": "string",
+          "enum": [
+            "true",
+            "false"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

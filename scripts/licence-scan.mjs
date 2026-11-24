@@ -9,6 +9,7 @@ const root = resolve(import.meta.dirname, '..');
 // SPDX ids plus the free-text spellings PyPI metadata uses for the same licences.
 const ALLOWED = new Set([
   'MIT',
+  'MIT-0', // MIT No Attribution: MIT without the notice requirement (nodemailer, approved 2026-11-04)
   'MIT License',
   'ISC',
   'BSD-2-Clause',
@@ -39,14 +40,27 @@ function isAllowed(licence) {
     .some((alternative) => alternative.split(/\s+AND\s+/).every((part) => ALLOWED.has(part.trim())));
 }
 
+/**
+ * Packages whose package.json has no licence field, checked by hand against their licence file. Exact versions only:
+ * a new version is unknown again until re-checked.
+ */
+const VERIFIED = new Map([
+  // LICENSE file: MIT text, "Copyright (c) 2011 Felix Geisendörfer" (via plotly.js → regl-scatter2d → glslify).
+  ['stack-trace@0.0.9', 'MIT'],
+]);
+
 const failures = [];
 let checked = 0;
 
-const nodeJson = execFileSync('pnpm', ['licenses', 'list', '--json'], { cwd: root, encoding: 'utf8' });
+// -r: every workspace package's dependencies, not only the root's.
+const nodeJson = execFileSync('pnpm', ['licenses', 'list', '--json', '-r'], { cwd: root, encoding: 'utf8' });
 for (const [licence, pkgs] of Object.entries(JSON.parse(nodeJson))) {
   for (const pkg of pkgs) {
-    checked += 1;
-    if (!isAllowed(licence)) failures.push(`node  ${pkg.name}@${pkg.versions.join(',')}  ${licence}`);
+    for (const version of pkg.versions) {
+      checked += 1;
+      const effective = VERIFIED.get(`${pkg.name}@${version}`) ?? licence;
+      if (!isAllowed(effective)) failures.push(`node  ${pkg.name}@${version}  ${licence}`);
+    }
   }
 }
 

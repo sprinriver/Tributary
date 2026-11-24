@@ -52,7 +52,7 @@ class SourceRef21(BaseModel):
     releaseIds: Annotated[list[ReleaseId], Field(min_length=1)]
 
 
-class ProgramId15(RootModel[UUID]):
+class ProgramId19(RootModel[UUID]):
     root: Annotated[
         UUID,
         Field(
@@ -74,7 +74,7 @@ class Scope(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    programIds: list[ProgramId15] | None = None
+    programIds: list[ProgramId19] | None = None
     experimentVersionIds: list[ExperimentVersionId] | None = None
     latestPublishedOnly: bool | None = None
 
@@ -86,6 +86,8 @@ class DatasetKind(
             "precursor_quant",
             "differential_abundance",
             "dose_response",
+            "thermal_shift",
+            "ptm_site_quant",
             "qc_metrics",
             "rnaseq_counts",
             "crispr_gene_summary",
@@ -105,6 +107,8 @@ class DatasetKind(
         "precursor_quant",
         "differential_abundance",
         "dose_response",
+        "thermal_shift",
+        "ptm_site_quant",
         "qc_metrics",
         "rnaseq_counts",
         "crispr_gene_summary",
@@ -283,6 +287,8 @@ class ChartSpec(BaseModel):
         "pca",
         "dose_response",
         "qc_panel",
+        "melting_curve",
+        "thermal_shift",
     ]
     title: str | None = None
     data: QuerySpec | Data

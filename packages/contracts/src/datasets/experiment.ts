@@ -155,6 +155,138 @@ export const doseResponse: DatasetContract = {
   ],
 };
 
+// Thermal proteome profiling, temperature range (Phase 46). Definitions: packages/importers/src/tpp_tr/SOURCE.md
+// (Bioconductor TPP 3.40.2). Temperatures in °C, as the tool's config table gives them.
+const DEG = { unit: '°C' };
+export const thermalShift: DatasetContract = {
+  kind: 'thermal_shift',
+  version: '1.0.0',
+  category: 'experiment',
+  description:
+    'Thermal shifts per feature × comparison (treatment vs vehicle): melting points, ΔTm and the fold changes by temperature.',
+  columns: [
+    evId,
+    col('feature_id', 'text'),
+    col('protein_ids', 'text[]'),
+    col('gene_names', 'text[]'),
+    col('compound_id', 'text'),
+    col('comparison', 'text', { description: '"treatment experiment vs vehicle experiment"' }),
+    col('treatment_experiment', 'text'),
+    col('vehicle_experiment', 'text'),
+    col('temperatures_c', 'double[]', {
+      ...DEG,
+      description: 'Ascending; the fold changes follow this order',
+    }),
+    col('fc_treatment', 'double[]', { description: 'Fold change relative to the lowest temperature' }),
+    col('fc_vehicle', 'double[]', { description: 'Fold change relative to the lowest temperature' }),
+    col('fold_change_normalised', 'boolean', { description: 'The tool normalised the fold changes' }),
+    opt('melt_point_treatment', 'double', {
+      ...DEG,
+      description: 'Temperature where the fitted curve is 0.5',
+    }),
+    opt('melt_point_vehicle', 'double', { ...DEG, description: 'Temperature where the fitted curve is 0.5' }),
+    opt('delta_tm', 'double', {
+      ...DEG,
+      description: 'Melting point, treatment − vehicle (positive: stabilised)',
+    }),
+    opt('min_slope', 'double', { description: 'The smaller of the two slopes at the inflection points' }),
+    opt('slope_treatment', 'double'),
+    opt('slope_vehicle', 'double'),
+    opt('plateau_treatment', 'double'),
+    opt('plateau_vehicle', 'double'),
+    opt('r2_treatment', 'double'),
+    opt('r2_vehicle', 'double'),
+    opt('a_treatment', 'double', {
+      description: 'Fitted parameter a of y = (1 − Pl) / (1 + exp(−(a/T − b))) + Pl',
+    }),
+    opt('b_treatment', 'double'),
+    opt('a_vehicle', 'double'),
+    opt('b_vehicle', 'double'),
+    opt('adj_p_value', 'double', {
+      description: 'Adjusted p of the melting-point difference; null if not tested',
+    }),
+    col('adj_method', 'text'),
+    opt('passed_filter', 'boolean', { description: 'The comparison passed the tool’s curve-quality filter' }),
+    opt('fulfills_all_requirements', 'boolean', {
+      description: 'The protein met all of the tool’s replicate checks (the same on each of its rows)',
+    }),
+    col('method', 'text'),
+    col('method_version', 'text'),
+  ],
+  joinKeys: ['experiment_version_id', 'compound_id', 'protein_ids', 'gene_names'],
+  qualityRules: [
+    uniqueRule('one_row_per_feature_comparison', ['experiment_version_id', 'comparison', 'feature_id']),
+    pValueRule('adj_p_value'),
+    enumRule('method', ['TPP']),
+  ],
+};
+
+// Modification sites (Phase 47). Definitions: packages/importers/src/maxquant_sites/SOURCE.md (MaxQuant site table).
+export const ptmSiteQuant: DatasetContract = {
+  kind: 'ptm_site_quant',
+  version: '1.0.0',
+  category: 'experiment',
+  description:
+    'Modification-site intensities in long format: one row per site × sample × multiplicity, as the tool reported them.',
+  columns: [
+    evId,
+    col('sample_key', 'text'),
+    col('instrument_run', 'text'),
+    col('site_id', 'text', { description: '<protein>_<residue><position>, e.g. P31749_S473' }),
+    col('protein', 'text', {
+      description: 'The protein the site is reported for (the tool’s leading protein)',
+    }),
+    col('protein_ids', 'text[]'),
+    col('positions_in_proteins', 'text[]', {
+      description: 'The site’s position in each of protein_ids, same order',
+    }),
+    col('gene_names', 'text[]'),
+    col('modification', 'text', { description: 'As the tool names it, e.g. "Phospho (STY)"' }),
+    col('amino_acid', 'text'),
+    col('position', 'integer', { description: 'Position in `protein` (first residue = 1)' }),
+    opt('sequence_window', 'text'),
+    opt('multiplicity', 'integer', {
+      description:
+        'Modifications of this type on the peptides behind the intensity (1, 2, 3 = three or more); null = all together',
+    }),
+    opt('localization_prob', 'double', {
+      description:
+        'Best localisation probability of the site over all samples in the table (MaxQuant Localization prob)',
+    }),
+    opt('localization_prob_sample', 'double', { description: 'Localisation probability in this sample' }),
+    opt('identification_type', 'text', {
+      description:
+        'How the site was identified in this sample, as the tool wrote it (e.g. "By MS/MS", "By matching")',
+    }),
+    opt('score_diff', 'double'),
+    opt('pep', 'double', { description: 'PEP of the best modified peptide with this site' }),
+    opt('intensity', 'double', { description: 'Linear scale; 0 = not quantified, as the tool writes it' }),
+    opt('log2_intensity', 'double'),
+    col('method', 'text'),
+    col('method_version', 'text'),
+  ],
+  joinKeys: ['experiment_version_id', 'sample_key', 'protein_ids', 'gene_names'],
+  qualityRules: [
+    probabilityRule(
+      'localization_prob',
+      'A localisation probability lies in [0, 1] (maxquant_sites/SOURCE.md)',
+    ),
+    probabilityRule(
+      'localization_prob_sample',
+      'A localisation probability lies in [0, 1] (maxquant_sites/SOURCE.md)',
+    ),
+    probabilityRule('pep', 'A posterior error probability lies in [0, 1] (maxquant_sites/SOURCE.md)'),
+    nonNegativeRule('intensity', 'Intensities are linear-scale abundances (SPEC §6.2)'),
+    uniqueRule('one_row_per_sample_site', [
+      'experiment_version_id',
+      'sample_key',
+      'instrument_run',
+      'site_id',
+      'multiplicity',
+    ]),
+  ],
+};
+
 export const qcMetrics: DatasetContract = {
   kind: 'qc_metrics',
   version: '1.1.0',

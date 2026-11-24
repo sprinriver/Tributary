@@ -23,6 +23,8 @@ export interface SourceInput {
   contract: DatasetContract;
   files?: string[];
   table?: string;
+  /** Nullable contract columns none of the files has (written under an older contract version): read as null. */
+  missing?: string[];
 }
 
 /** The primary source and one input per join, in `spec.joins` order. */

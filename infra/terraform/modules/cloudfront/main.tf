@@ -44,6 +44,15 @@ variable "web_acl_arn" {
   default     = null
 }
 
+variable "upload_origin" {
+  description = "Origin browsers upload to with presigned URLs (the raw bucket), allowed in the CSP connect-src."
+  type        = string
+  validation {
+    condition     = can(regex("^https://[a-z0-9.-]+$", var.upload_origin))
+    error_message = "upload_origin must be a bare https origin, e.g. https://bucket.s3.eu-west-1.amazonaws.com."
+  }
+}
+
 variable "logs_bucket_domain" {
   description = "Bucket domain for CloudFront access logs."
   type        = string
@@ -54,6 +63,15 @@ locals {
   caching_optimized      = "658327ea-f89d-4fab-a63d-7e88639e58f6"
   caching_disabled       = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad"
   all_viewer_except_host = "b689b0a8-53d0-40ab-baf2-68738e2966ac"
+
+  # Content-Security-Policy from csp.json, the one policy the Vite servers also send (apps/web/src/security/csp.ts
+  # builds the same string: directives sorted by name, sources in order, joined with "; ").
+  csp_policy = jsondecode(file("${path.module}/csp.json"))
+
+  csp = join("; ", [
+    for name in sort(keys(local.csp_policy)) :
+    "${name} ${join(" ", [for s in local.csp_policy[name] : s == "{upload_origin}" ? var.upload_origin : s])}"
+  ])
 }
 
 # Security headers on every response (the managed SecurityHeadersPolicy, plus a longer HSTS and no framing).
@@ -77,6 +95,10 @@ resource "aws_cloudfront_response_headers_policy" "security" {
     referrer_policy {
       referrer_policy = "strict-origin-when-cross-origin"
       override        = true
+    }
+    content_security_policy {
+      content_security_policy = local.csp
+      override                = true
     }
     xss_protection {
       protection = true

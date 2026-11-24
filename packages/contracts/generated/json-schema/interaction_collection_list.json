@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/InteractionCollectionList",
+  "$defs": {
+    "InteractionCollectionList": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/InteractionCollection"
+          }
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "additionalProperties": false
+    },
+    "InteractionCollection": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid",
+          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+        },
+        "name": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "source_release": {
+          "type": "string"
+        },
+        "species": {
+          "type": "string"
+        },
+        "id_type": {
+          "type": "string",
+          "enum": [
+            "gene_symbol",
+            "uniprot_accession"
+          ]
+        },
+        "licence": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "edge_count": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "node_count": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "created_at": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "source",
+        "source_release",
+        "species",
+        "id_type",
+        "licence",
+        "edge_count",
+        "node_count",
+        "created_at"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
