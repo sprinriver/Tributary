@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Tributary — Understanding the data and generating insights</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 18mm 15mm; }
+  :root { --ink:#1b2230; --muted:#5a6475; --line:#d9dee7; --accent:#1d4ed8; --soft:#eef3fb; --warn:#fff7e6; --warnline:#e8b64c; }
+  * { box-sizing: border-box; }
+  body { font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); font-size: 10.5pt; line-height: 1.5; margin: 0; }
+  h1 { font-size: 24pt; margin: 0 0 4pt; line-height: 1.15; }
+  h2 { font-size: 15pt; margin: 18pt 0 6pt; padding-bottom: 3pt; border-bottom: 2px solid var(--accent); break-after: avoid; }
+  h3 { font-size: 12pt; margin: 12pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 6pt; }
+  ul, ol { margin: 0 0 6pt; padding-left: 18pt; }
+  li { margin-bottom: 2pt; }
+  code { font-family: Consolas, "Courier New", monospace; font-size: 9.5pt; background: #f1f3f7; padding: 0 3px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 4pt 0 8pt; font-size: 9.5pt; break-inside: avoid; }
+  th, td { border: 1px solid var(--line); padding: 4pt 6pt; text-align: left; vertical-align: top; }
+  th { background: var(--soft); }
+  .cover { height: 250mm; display: flex; flex-direction: column; justify-content: center; break-after: page; }
+  .cover .kicker { color: var(--accent); font-weight: 600; letter-spacing: .5px; text-transform: uppercase; font-size: 10pt; }
+  .cover .sub { font-size: 13pt; color: var(--muted); margin-top: 8pt; max-width: 150mm; }
+  .cover .meta { margin-top: 28pt; font-size: 9.5pt; color: var(--muted); }
+  .note { background: var(--warn); border-left: 4px solid var(--warnline); padding: 6pt 9pt; margin: 6pt 0 10pt; break-inside: avoid; }
+  .insight { background: var(--soft); border-left: 4px solid var(--accent); padding: 6pt 9pt; margin: 6pt 0 10pt; break-inside: avoid; }
+  .insight b:first-child { color: var(--accent); }
+  figure { margin: 6pt 0 12pt; break-inside: avoid; }
+  figure img { width: 100%; max-height: 225mm; object-fit: contain; border: 1px solid var(--line); border-radius: 4px; display: block; }
+  figure.narrow img { width: 78%; margin: 0 auto; }
+  figure.tall img { width: 62%; margin: 0 auto; }
+  figcaption { font-size: 9pt; color: var(--muted); margin-top: 3pt; text-align: center; }
+  .step { break-before: auto; }
+  .steplabel { display: inline-block; background: var(--accent); color: #fff; font-weight: 700; font-size: 9pt; padding: 1pt 7pt; border-radius: 10pt; margin-right: 6pt; vertical-align: 1pt; }
+  .flow { display: flex; align-items: stretch; gap: 4pt; margin: 6pt 0 10pt; break-inside: avoid; }
+  .flow div { flex: 1; border: 1px solid var(--line); border-radius: 5px; padding: 5pt; font-size: 8.8pt; background: #fff; }
+  .flow div b { display: block; font-size: 9.5pt; margin-bottom: 2pt; }
+  .flow .arrow { flex: 0 0 auto; border: none; background: none; align-self: center; font-size: 14pt; color: var(--muted); padding: 0; }
+  .pb { break-before: page; }
+  .toc li { margin-bottom: 1pt; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="kicker">Tributary · user guide</div>
+  <h1>Understanding the data and<br>generating insights</h1>
+  <div class="sub">How to run the application, what each dataset means, how it maps to a real drug-discovery
+    question, and a step-by-step walk through the application from raw tool output to a defensible finding.</div>
+  <div class="meta">
+    Version 2 · 24 November 2026 · adds "Running the application" and <code>pnpm demo:data</code><br>
+    Screenshots: local instance at <code>http://localhost:5173</code>, signed in as <code>scientist</code><br>
+    All data shown is <b>synthetic</b> (the built-in demo corpus). No real compounds, results or client data appear.
+  </div>
+</section>
+
+<h2>Contents</h2>
+<ol class="toc">
+  <li>What Tributary does</li>
+  <li>Running the application</li>
+  <li>The datasets, explained</li>
+  <li>Key terms</li>
+  <li>Step by step: from file to insight (10 steps)</li>
+  <li>What the demo data tells us</li>
+  <li>Using your own data</li>
+  <li>Good practice and limits</li>
+</ol>
+
+<h2>1. What Tributary does</h2>
+<p>A drug-discovery lab treats cells with a compound, measures thousands of proteins on a mass spectrometer and runs
+analysis software on the raw files. Tributary stores the <b>outputs of that software</b> in one place, checks them,
+locks them as versioned <b>releases</b>, and lets scientists query, chart and compare them across every experiment
+they have access to.</p>
+
+<div class="flow">
+  <div><b>Experiment</b>Cells + compound + controls, described as samples and contrasts</div>
+  <div class="arrow">→</div>
+  <div><b>Instrument</b>Mass spectrometer produces raw files</div>
+  <div class="arrow">→</div>
+  <div><b>Analysis tools</b>DIA-NN, limma, CurveCurator, MaxQuant…</div>
+  <div class="arrow">→</div>
+  <div><b>Tributary release</b>Checked, versioned, immutable table</div>
+  <div class="arrow">→</div>
+  <div><b>Insight</b>Results pages, Explore, Compare, protein and compound pages</div>
+</div>
+
+<p>Three properties make the results trustworthy:</p>
+<ul>
+  <li><b>Nothing changes silently.</b> A published release can never be edited; a correction becomes a new release.</li>
+  <li><b>Every number has a source.</b> Each release records the input file, its checksum, the importer and every
+    transformation applied. The lineage page shows the chain.</li>
+  <li><b>Every action is audited.</b> Imports, publications and exports are logged with who, when and why.</li>
+</ul>
+
+<h2 class="pb">2. Running the application</h2>
+<p>Tributary runs on your own computer for development and demos. Four small services run as Node.js and Python
+processes, and the database, file storage and sign-in server run in Docker.</p>
+
+<h3>What you need</h3>
+<table>
+  <tr><th style="width:22%">Tool</th><th style="width:20%">Version</th><th>Notes</th></tr>
+  <tr><td>Node.js</td><td>24 LTS (24.15 or newer recommended)</td><td>Includes corepack, which provides the exact pnpm
+      version the project pins (12.15.0).</td></tr>
+  <tr><td>Python + uv</td><td>Python 3.12 or newer</td><td>For the statistics service. Install uv from
+      <code>docs.astral.sh/uv</code>.</td></tr>
+  <tr><td>Docker Desktop</td><td>With Compose v2</td><td>Runs Postgres, SeaweedFS (S3 storage) and Keycloak (sign-in).
+      Needs about 4 GB of free memory.</td></tr>
+  <tr><td>Git</td><td>Any recent</td><td></td></tr>
+  <tr><td>Operating system</td><td>macOS, Linux or Windows</td><td>The project officially supports macOS, Linux and WSL2.
+      Native Windows works with the notes under "Windows" below.</td></tr>
+</table>
+
+<h3>First-time setup (once per computer)</h3>
+<ol>
+  <li>Get the code: <code>git clone https://github.com/sprinriver/Tributary.git</code> then <code>cd Tributary</code>.</li>
+  <li>Enable pnpm: <code>corepack enable</code>.</li>
+  <li>Install dependencies: <code>pnpm run bootstrap</code>. This installs the exact locked versions for Node.js and
+    Python and never changes the lockfiles.</li>
+  <li>Start the supporting services: <code>docker compose up -d --wait</code>. This starts Postgres on port 5432,
+    S3 storage on 8333 and Keycloak on 8080, and waits until all three are healthy.</li>
+  <li>Create the database tables: <code>pnpm db:migrate</code>.</li>
+  <li>Load the demo registry: <code>pnpm db:seed</code>. This adds 2 programmes, 12 experiments, their samples,
+    compounds and the search index. It is safe to run again.</li>
+</ol>
+
+<h3>Start the application (every time)</h3>
+<ol>
+  <li>Make sure Docker Desktop is running, then <code>docker compose up -d --wait</code> (does nothing if the
+    services are already up).</li>
+  <li>Run <code>pnpm dev</code> and leave this terminal open. It starts the web app, API, query service and
+    statistics service. Press <b>Ctrl+C</b> in this terminal to stop them all.</li>
+  <li>Open <code>http://localhost:5173</code> and click <b>Sign in</b>.</li>
+</ol>
+<table>
+  <tr><th style="width:30%">Service</th><th style="width:30%">Address</th><th>Purpose</th></tr>
+  <tr><td>Web app</td><td><code>http://localhost:5173</code></td><td>What you use in the browser</td></tr>
+  <tr><td>API</td><td><code>http://localhost:3000</code></td><td>Health check at <code>/healthz</code></td></tr>
+  <tr><td>Query service</td><td><code>http://localhost:3100</code></td><td>Internal: runs queries over dataset files</td></tr>
+  <tr><td>Statistics service</td><td><code>http://localhost:8000</code></td><td>Internal: curve fits, clustering, PCA</td></tr>
+  <tr><td>Keycloak admin</td><td><code>http://localhost:8080</code></td><td>Sign-in server (admin / admin-dev)</td></tr>
+</table>
+
+<h3>Load the demo datasets in one command</h3>
+<p>The seed registers experiments but no data releases, so Explore and the charts start empty. With
+<code>pnpm dev</code> running, open a <b>second terminal</b> in the project folder and run:</p>
+<p><code>pnpm demo:data</code></p>
+<p>It uploads the demo tool outputs from <code>fixtures/experiments/</code>, imports them, and publishes four datasets,
+each on a new published experiment version: limma results for ONC-DIA-05 and IMM-DIA-06, the DIA-NN protein matrix
+for ONC-DIA-05, and the CurveCurator dose-response fits for ONC-DIA-01. It usually finishes in under a minute and
+prints one line per dataset. Running it again is safe: datasets that already exist are skipped. The work is recorded in the audit log
+under the user "Demo loader". It is for local development only and refuses to run in production.</p>
+<div class="note"><b>Your data lives on your computer.</b> Experiments and datasets are stored in the Docker
+containers on the machine where you created them; they are not in Git. On a new computer, run the setup above and
+then <code>pnpm demo:data</code> to get the same demo data back.</div>
+
+<h3>Sign in</h3>
+<table>
+  <tr><th style="width:22%">User</th><th style="width:18%">Password</th><th>Can do</th></tr>
+  <tr><td><code>admin</code></td><td><code>admin</code></td><td>Everything, including Pipelines, Health and the Audit log</td></tr>
+  <tr><td><code>scientist</code></td><td><code>scientist</code></td><td>Create and edit experiments, upload and import data, explore</td></tr>
+  <tr><td><code>viewer</code></td><td><code>viewer</code></td><td>Read-only</td></tr>
+</table>
+
+<h3>Alternative: everything in one container</h3>
+<p>For a quick demo without installing Node.js or Python, build and run the single-container image:</p>
+<p><code>docker build -f deploy/huggingface/Dockerfile --build-context source=. -t tributary-space .</code><br>
+<code>docker run --rm -p 7860:7860 -e PUBLIC_URL=http://localhost:7860 -e TRIBUTARY_ADMIN_PASSWORD=&lt;choose one&gt; tributary-space</code></p>
+<p>Open <code>http://localhost:7860</code>; sign in as <code>scientist</code> / <code>scientist</code>, or as
+<code>admin</code> with the password you chose. Data resets every time the container restarts.</p>
+
+<h3>Common problems</h3>
+<table>
+  <tr><th style="width:38%">Symptom</th><th>Fix</th></tr>
+  <tr><td><code>Port 5173 is already in use</code> when running <code>pnpm dev</code></td><td>An earlier
+      <code>pnpm dev</code> is still running. Use it, or stop it (close its terminal, or end the old Node.js
+      processes) and start again.</td></tr>
+  <tr><td>The API stops at start-up with <code>ECONNREFUSED … 8333</code></td><td>The S3 storage container is not running:
+      <code>docker compose up -d --wait</code>, then <code>pnpm db:seed</code> to restore the demo files.</td></tr>
+  <tr><td>Explore shows no releases, charts are empty</td><td>Run <code>pnpm demo:data</code> (needs <code>pnpm dev</code>).</td></tr>
+  <tr><td><code>demo:data: the API is not reachable</code></td><td>Start <code>pnpm dev</code> first and wait until
+      <code>http://localhost:3000/healthz</code> answers.</td></tr>
+  <tr><td>Sign-in loops back to the start page</td><td>Keycloak must be healthy on port 8080; check
+      <code>docker compose ps</code>. In the one-container setup, the address must match <code>PUBLIC_URL</code> exactly.</td></tr>
+  <tr><td>Search finds nothing</td><td>Run <code>pnpm db:seed</code> again; it rebuilds the search index.</td></tr>
+</table>
+
+<h3>Windows</h3>
+<ul>
+  <li><b>pnpm fails with "Cannot find module … pnpm.cjs".</b> The corepack bundled with older Node.js 24 releases does
+    not understand pnpm 12. Upgrade Node.js to 24.15 or newer, or install a newer corepack
+    (<code>npm install -g corepack@0.35.0</code>) and delete the cached copy in
+    <code>%LOCALAPPDATA%\node\corepack\v1\pnpm\12.15.0</code>.</li>
+  <li><b>The one-container image stops with <code>set: pipefail: invalid option name</code>.</b> Git converted the
+    shell scripts to Windows line endings. In the project folder run <code>git config core.autocrlf input</code>,
+    then, <b>only when you have no uncommitted changes</b> (they would be lost),
+    <code>git rm -rq --cached .</code> followed by <code>git reset --hard</code>. Rebuild the image afterwards.</li>
+  <li><b>WSL2 is the smoothest option</b> if you hit other differences: clone the project inside the Linux file
+    system (for example <code>~/Tributary</code>) rather than on a Windows drive.</li>
+</ul>
+
+<h2 class="pb">3. The datasets, explained</h2>
+<p>The demo contains 12 registered experiments across two programmes: <b>ONC</b> (oncology) and <b>IMM</b>
+(immunology). <code>pnpm demo:data</code> imports and publishes the four datasets below so that every chart in the
+application has data.</p>
+
+<table>
+  <tr><th style="width:23%">Dataset (tool)</th><th style="width:27%">Experiment design</th><th style="width:22%">One row is…</th><th>Question it answers</th></tr>
+  <tr><td><b>ONC-DIA-05 protein quant</b><br>DIA-NN · 942 rows</td>
+      <td>MCF-7 breast-cancer cells. 3 samples with compound CPD-000005 at 1 µM, 3 with DMSO (solvent only)</td>
+      <td>One protein in one sample, with its measured intensity</td>
+      <td>Did each sample run well? Do replicates agree? Do treated samples differ overall?</td></tr>
+  <tr><td><b>ONC-DIA-05 differential abundance</b><br>limma · 157 rows</td>
+      <td>Same experiment; contrast <i>CPD-000005@1 µM vs DMSO</i></td>
+      <td>One protein: log2 fold change and adjusted p-value</td>
+      <td>Which proteins did the compound change, in which direction, and how confidently?</td></tr>
+  <tr><td><b>ONC-DIA-01 dose response</b><br>CurveCurator · 157 rows</td>
+      <td>HeLa cells. CPD-000001 at 0 (vehicle), 1 nM, 10 nM, 100 nM, 1 µM and 10 µM, 2 samples each</td>
+      <td>One protein: fitted dose curve, regulation, pEC50</td>
+      <td>Which proteins respond to the compound, and at what concentration (potency)?</td></tr>
+  <tr><td><b>IMM-DIA-06 differential abundance</b><br>limma · 157 rows</td>
+      <td>K-562 leukaemia cells; contrast <i>CPD-000006@1 µM vs DMSO</i></td>
+      <td>One protein: log2 fold change and adjusted p-value</td>
+      <td>Does a second compound act like the first? (used on the Compare page)</td></tr>
+</table>
+
+<h3>How each one connects to a real decision</h3>
+<ul>
+  <li><b>Protein quant → data quality.</b> Before anyone believes a result, the team checks that every run
+    identified a similar number of proteins and that missing values are low. A bad run is caught here, not in a
+    meeting three months later.</li>
+  <li><b>Differential abundance → mechanism of action.</b> "Our compound is designed to act on pathway X. Do the
+    proteins in pathway X move?" Unexpected strong changes are early warnings of off-target effects.</li>
+  <li><b>Dose response → potency and selectivity.</b> If the intended target responds at 10 nM and an unwanted
+    protein only at 5 µM, there is a safety window. Medicinal chemists use these numbers to choose which molecule
+    to make next.</li>
+  <li><b>Comparing contrasts → shared or distinct biology.</b> Overlapping hits between two compounds suggest a
+    shared mechanism; distinct hits can explain different side-effect profiles.</li>
+</ul>
+
+<h2>4. Key terms</h2>
+<table>
+  <tr><th style="width:24%">Term</th><th>Meaning</th></tr>
+  <tr><td>Contrast</td><td>The comparison being tested, written <i>numerator vs denominator</i>, e.g.
+      <i>CPD-000005@1 µM vs DMSO</i>.</td></tr>
+  <tr><td>log2 fold change (log2 FC)</td><td>log2(numerator ÷ denominator). +1 = doubled, −1 = halved, 0 = no change.
+      +2.2 means about 4.6 times higher in treated cells.</td></tr>
+  <tr><td>Adjusted p-value</td><td>Confidence that a change is real after correcting for testing many proteins at once
+      (Benjamini–Hochberg here). Smaller is stronger; 0.05 is a common cut-off.</td></tr>
+  <tr><td>pEC50</td><td>−log10 of the concentration (in molar) giving half the maximal effect. Higher = more potent;
+      pEC50 7 = 100 nM, pEC50 8 = 10 nM.</td></tr>
+  <tr><td>Regulation (dose response)</td><td>CurveCurator's call for each curve: <i>up</i>, <i>down</i>, <i>not</i>
+      (no response) or <i>unclear</i>.</td></tr>
+  <tr><td>Release</td><td>An imported, validated version of a dataset. <i>Staged</i> = under review;
+      <i>Published</i> = locked and visible in Explore.</td></tr>
+  <tr><td>Experiment version</td><td>A locked description of the experiment (samples, contrasts, files). Changes
+      create a new version; results pages show the latest published version.</td></tr>
+</table>
+
+<div class="note"><b>Display thresholds are not statistical tests.</b> The default volcano thresholds
+(|log2 FC| ≥ 1 and adjusted p ≤ 0.05) only colour the chart. The statistics come from the source tool (limma,
+CurveCurator); Tributary does not recompute them.</div>
+
+<h2 class="pb">5. Step by step: from file to insight</h2>
+
+<div class="step">
+<h3><span class="steplabel">Step 1</span>Sign in and find the experiment</h3>
+<ol>
+  <li>Open <code>http://localhost:5173</code> and click <b>Sign in</b>. Use <code>scientist</code> /
+    <code>scientist</code> (can create and edit) or <code>viewer</code> / <code>viewer</code> (read-only).</li>
+  <li>Click <b>Experiments</b> in the left menu. Filter by name, assay type, programme or date.</li>
+  <li>Click an experiment name, for example <b>ONC-DIA-05: contrast in MCF-7</b>.</li>
+</ol>
+<p>Tip: press <b>Ctrl+K</b> anywhere to search experiments, samples, proteins and compounds by keyword.</p>
+<figure><img src="{{01-experiments.png}}"><figcaption>Figure 1. The experiment list: 12 demo experiments across the ONC and IMM programmes.</figcaption></figure>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 2</span>Check the experiment design before the data</h3>
+<p>Results only make sense if the design is right. On the experiment page:</p>
+<ol>
+  <li><b>Overview</b> shows the assay, species, version and its permanent identifier (URN).</li>
+  <li><b>Samples</b> lists every sample: cell line, compound, dose and replicate. Confirm there are enough
+    replicates per group (here 3 DMSO and 3 treated).</li>
+  <li><b>Contrasts</b> shows exactly what is compared with what. Read it as numerator vs denominator.</li>
+</ol>
+<figure><img src="{{03-samples.png}}"><figcaption>Figure 2. Samples tab: three DMSO controls (S01–S03) and three samples treated with CPD-000005 (S04–S06).</figcaption></figure>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 3</span>Bring the data in: upload and quality check</h3>
+<div class="note"><b>Shortcut for the demo data.</b> <code>pnpm demo:data</code> performs Steps 3 to 5 for the four
+demo datasets automatically. Follow these steps by hand to learn the workflow, or when importing your own files.</div>
+<p>Published experiment versions are locked, so new files go into a new draft version.</p>
+<ol>
+  <li>Click <b>Create version</b>. A <i>Draft</i> version 2 appears.</li>
+  <li>Open the <b>Files</b> tab, set <b>Role</b> to <i>processed</i> (tool output), click <b>Choose files</b> and
+    then <b>Upload</b>. Files go directly to storage, in parts, and resume if interrupted.</li>
+  <li>Wait for the status to change from <i>Checking…</i> to <b>QC passed</b>. Tributary has recognised the format
+    and recorded a checksum, so the exact file can be proven later.</li>
+</ol>
+<figure><img src="{{04-files-qc.png}}"><figcaption>Figure 3. Files tab: both tool outputs passed QC and each has an <b>Import…</b> button.</figcaption></figure>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 4</span>Import the file as a dataset</h3>
+<ol>
+  <li>Click <b>Import…</b> next to the file. Tributary suggests the right importer from the file contents
+    (here <i>limma topTable</i>).</li>
+  <li>Give the dataset a clear <b>name</b>, e.g. <i>ONC-DIA-05 differential abundance</i>. Later imports with the
+    same name become new releases of the same dataset.</li>
+  <li>For statistical results, choose the <b>Contrast</b> the file belongs to. For dose-response files, enter the
+    <b>compound</b> and the exact <b>doses</b> used (for this demo: CPD-000001; 0, 1, 10, 100, 1000, 10000 with
+    dose scale 1e-9, i.e. nanomolar).</li>
+  <li>Click <b>Import</b>.</li>
+</ol>
+<figure><img src="{{05-import-dialog.png}}"><figcaption>Figure 4. The import dialog. The note under Contrast restates the convention: log2 FC = log2(numerator / denominator).</figcaption></figure>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 5</span>Review the staged release, then publish</h3>
+<p>The import creates a <b>staged</b> release. Before publishing, check:</p>
+<ul>
+  <li><b>Quality rules</b>: every <i>error</i> rule must pass (p-values between 0 and 1, one row per protein per
+    contrast, and so on). <i>Warnings</i> need a judgement. In the demo, a warning says the synthetic
+    <code>SYNP…</code> IDs are not real UniProt accessions, which is expected.</li>
+  <li><b>Column statistics</b>: row count, empty values, minimum and maximum. Sudden gaps signal a parsing problem.</li>
+  <li><b>Provenance</b>: original column names and each transformation applied.</li>
+  <li><b>First rows</b>: a sanity check of the actual values.</li>
+</ul>
+<p>Click <b>Publish release</b> and give a reason (it goes into the audit log). Then go back to the experiment and
+<b>Publish</b> the draft version so the Results page shows the new data.</p>
+<figure><img src="{{06-release.png}}"><figcaption>Figure 5. A published release: 157 rows, all error-level contract rules passed.</figcaption></figure>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 6</span>Read the experiment's Results page</h3>
+<p>On the experiment, click <b>Results</b>. Read the page from top to bottom:</p>
+<ol>
+  <li><b>Methods</b>: an automatically written paragraph describing the experiment and tools. <b>Copy methods</b>
+    pastes it into a report.</li>
+  <li><b>QC</b>: proteins identified per run, missing values, variability (CV) per condition and intensity
+    distributions. Look for a run that stands out.</li>
+  <li><b>Volcano</b>: each dot is a protein. Right = increased, left = decreased, higher = more confident.
+    Red and blue dots pass both thresholds.</li>
+  <li><b>Top hits</b>: the same proteins as a sortable table. Click a protein to open its page.</li>
+  <li><b>Pathway enrichment</b> and <b>Interaction network</b>: check whether hits cluster in known biology.</li>
+</ol>
+<figure><img src="{{10a-results-qc.png}}"><figcaption>Figure 6a. QC panel for ONC-DIA-05: proteins identified per run, missing values, variability (CV) per condition and intensity distribution per run.</figcaption></figure>
+<figure><img src="{{10b-results-volcano.png}}"><figcaption>Figure 6b. Volcano for CPD-000005 vs DMSO: 5 proteins up, 4 down, 148 not significant. P31749 is AKT1 and P09874 is PARP1.</figcaption></figure>
+<figure class="narrow"><img src="{{10c-results-tophits.png}}"><figcaption>Figure 6c. Top hits, sorted by adjusted p-value. Each protein links to its own page.</figcaption></figure>
+<div class="insight"><b>Insight.</b> QC is clean: about 150 proteins identified in every run, 2.5–3.8 % missing values
+and similar intensity distributions, so the comparison is fair. CPD-000005 strongly increases <b>AKT1</b>
+(log2 FC +2.20, about 4.6×, adjusted p 4.5×10<sup>−17</sup>) and decreases <b>PARP1</b> (−1.59, adjusted p 4.2×10<sup>−9</sup>).
+Only 9 of 157 proteins pass both thresholds, so the effect is focused rather than global.</div>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 7</span>Read dose-response curves for potency</h3>
+<p>Open <b>ONC-DIA-01 → Results</b>. The <b>Dose-response</b> panel draws the measured points and the fitted curve
+for each protein.</p>
+<ol>
+  <li>Use <b>Regulation</b> to show <i>up</i> and/or <i>down</i> curves, and <b>FDR at most</b> to keep only
+    confident fits.</li>
+  <li>Set how many <b>Curves</b> to show and how to <b>Sort</b> them (by FDR by default), then click <b>Apply</b>.</li>
+  <li>Read each curve: where it crosses half-way is the EC50. A curve that drops at 10–100 nM shows a potent effect;
+    one that drops only at 10 µM shows a weak effect.</li>
+</ol>
+<figure><img src="{{11-dose-response.png}}"><figcaption>Figure 7. Twelve of 157 fitted curves for CPD-000001 in HeLa cells, from 1 nM to 10 µM on a log axis.</figcaption></figure>
+<div class="insight"><b>Insight.</b> Most responding proteins decrease with dose, but they do so at different
+concentrations: some fall between 10 nM and 100 nM, others only above 1 µM. That spread is the selectivity window.
+A few proteins (for example P07437 and SYNP0094) increase. Twelve vehicle (dose 0) points are left off the log axis,
+as the page states.</div>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 8</span>Ask questions across experiments in Explore</h3>
+<p>Explore queries every published dataset you are allowed to see, without writing code.</p>
+<ol>
+  <li>Click <b>Explore</b>. Choose a <b>Dataset kind</b> (e.g. <i>differential abundance</i>) and tick
+    <b>Latest published versions only</b>.</li>
+  <li>Under <b>Filters</b>, click <b>+ Rule</b> and build a condition, e.g. <code>adj_p_value &lt; 0.05</code>.
+    Add more rules or groups as needed (AND / OR / Not).</li>
+  <li>Optionally <b>Add join</b> to attach other information, such as target annotations or experiment details.</li>
+  <li>Click <b>Run query</b>. The table shows the matching rows; <b>Columns</b> chooses what to display and
+    <b>Export</b> downloads them (exports are audited).</li>
+</ol>
+<figure><img src="{{07-explore-filter.png}}"><figcaption>Figure 8. Explore: 26 protein–contrast results with adjusted p &lt; 0.05 across both differential datasets.</figcaption></figure>
+<p>Then scroll to <b>Chart</b>:</p>
+<ol>
+  <li>Pick a <b>Chart type</b>. For a volcano: X = <code>log2_fc</code>, Y = <code>adj_p_value</code>,
+    Colour = <code>contrast_label</code>, Label = <code>gene_names</code>, Label top hits = 10.</li>
+  <li>Click <b>Apply</b>. Hover over points for details; draw a box or lasso to select a cluster.</li>
+  <li><b>Provenance</b> shows exactly which releases and settings produced the chart; <b>Download PNG/SVG</b> saves it.</li>
+  <li><b>Save view</b> stores the query and chart so colleagues can reopen it; <b>Copy as code</b> gives the same
+    query in Python or R.</li>
+</ol>
+<figure class="narrow"><img src="{{08-volcano.png}}"><figcaption>Figure 9. Volcano across both contrasts: 314 points, 16 up, 10 down, 288 not significant.</figcaption></figure>
+<p>For protein-level data (dataset kind <i>protein quant</i>), a <b>PCA</b> shows whether samples group by
+treatment: Row label = <code>sample_key</code>, Values = <code>log2_intensity</code>, Feature =
+<code>protein_group</code>.</p>
+<figure class="narrow"><img src="{{09-pca.png}}"><figcaption>Figure 10. PCA of the six ONC-DIA-05 samples (PC1 23.3 %, PC2 22.6 %).</figcaption></figure>
+<div class="insight"><b>Insight, and a caution.</b> The DMSO samples (S01–S03) and treated samples (S04–S06) do
+<i>not</i> separate cleanly on PCA. This is consistent with the volcano: only about 9 of 157 proteins change, so
+the overall profile is dominated by ordinary sample-to-sample variation. A weak PCA does not mean "no effect"; look
+at the targeted statistics.</div>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 9</span>Compare two compounds</h3>
+<ol>
+  <li>Click <b>Compare</b>, tick 2 to 6 contrasts and set the thresholds (default |log2 FC| ≥ 1, adjusted p ≤ 0.05).</li>
+  <li>Click <b>Compare</b>. Read the three panels:
+    <ul>
+      <li><b>Fold-change scatter</b>: each protein's change in one contrast against the other. Points on the
+        diagonal behave the same way in both.</li>
+      <li><b>Hits shared between contrasts</b>: how many significant proteins are unique to each contrast or shared.</li>
+      <li><b>Overlap table</b>: every protein significant in at least one, with both values side by side
+        (a dot marks significance).</li>
+    </ul></li>
+</ol>
+<figure class="tall"><img src="{{12-compare.png}}"><figcaption>Figure 11. CPD-000006 (IMM-DIA-06) vs CPD-000005 (ONC-DIA-05): 16 hits only in the first, 8 only in the second, 1 shared.</figcaption></figure>
+<div class="insight"><b>Insight.</b> The two compounds act very differently: they share only one hit,
+<b>SYNP0078</b>, and it moves in <i>opposite</i> directions (+1.62 with CPD-000006, −1.52 with CPD-000005). AKT1 rises
+with CPD-000005 but is flat with CPD-000006, while CPD-000006 changes TP53, EGFR, SRC and PTEN, which CPD-000005
+leaves alone. Bear in mind that the cell lines also differ (K-562 vs MCF-7), so the next experiment should test both
+compounds in the same cells.</div>
+</div>
+
+<div class="step">
+<h3><span class="steplabel">Step 10</span>Follow one protein, and trace any number to its source</h3>
+<p>Click any protein link (or go to <code>/proteins/&lt;UniProt ID&gt;</code>). The protein page gathers everything
+known about it: annotations, every experiment where it was measured, its dose-response curves and modification sites.
+<b>Add to triage</b> puts it on the team's shortlist; <b>Watch</b> subscribes you to alerts about it (shown under <b>Alerts</b> at the top right).</p>
+<figure><img src="{{13-protein-AKT1.png}}"><figcaption>Figure 12. AKT1 (P31749): strongly up with CPD-000005 (+2.20), unchanged with CPD-000006 (−0.18, adjusted p 0.83).</figcaption></figure>
+<p>To prove where a result came from, open a release and click <b>Lineage</b>. It shows the chain
+from file to experiment version to release (and on to charts and views made from it). The table underneath lists
+each step with its status.</p>
+<figure><img src="{{14-lineage.png}}"><figcaption>Figure 13. Lineage of the ONC-DIA-05 differential release: built from <i>toptable.tsv</i> (QC passed) in experiment version 2.</figcaption></figure>
+<p>Admins can also open <b>Audit</b> to see every import, publication and export, with the reason given.</p>
+</div>
+
+<h2 class="pb">6. What the demo data tells us</h2>
+<table>
+  <tr><th style="width:28%">Question</th><th>Answer from the data</th><th style="width:20%">Where</th></tr>
+  <tr><td>Is the ONC-DIA-05 data good enough to interpret?</td><td>Yes. About 150 proteins per run, 2.5–3.8 % missing,
+      similar distributions across all six runs.</td><td>Results → QC</td></tr>
+  <tr><td>What does CPD-000005 do in MCF-7 cells?</td><td>A focused response: 5 proteins up and 4 down out of 157. The
+      strongest named changes are AKT1 up (+2.20) and PARP1 down (−1.59).</td><td>Results → Volcano, Top hits</td></tr>
+  <tr><td>How potent is CPD-000001 in HeLa cells?</td><td>Responding proteins change between roughly 10 nM and
+      10 µM, giving a range of potencies to rank targets and off-targets.</td><td>Results → Dose-response</td></tr>
+  <tr><td>Do CPD-000005 and CPD-000006 work the same way?</td><td>No. 16 and 8 distinct hits, one shared (SYNP0078) moving
+      in opposite directions. Different cell lines, so confirm in matched cells.</td><td>Compare</td></tr>
+  <tr><td>Across all data, how many significant results are there?</td><td>26 protein–contrast pairs with adjusted
+      p &lt; 0.05; all also pass |log2 FC| ≥ 1.</td><td>Explore</td></tr>
+  <tr><td>Can each number be traced?</td><td>Yes. Each release links to its input file, checksum, importer and
+      experiment version.</td><td>Release → Lineage</td></tr>
+</table>
+
+<h3>A repeatable routine for any new experiment</h3>
+<ol>
+  <li><b>Check the design</b> (samples, replicates, contrast direction).</li>
+  <li><b>Check QC</b> before looking at any hit.</li>
+  <li><b>Find the hits</b> on the volcano and top-hits table.</li>
+  <li><b>Ask "is this biology?"</b> with pathway enrichment and the interaction network.</li>
+  <li><b>Check potency</b> with dose-response data where it exists.</li>
+  <li><b>Put it in context</b> with Compare, protein pages and Explore across experiments.</li>
+  <li><b>Record and share</b>: Save view, Copy methods, the Report button, and triage for follow-up.</li>
+</ol>
+
+<h2>7. Using your own data</h2>
+<table>
+  <tr><th>Your lab's output</th><th>Choose this importer</th><th>Becomes</th></tr>
+  <tr><td>DIA-NN <code>report.pg_matrix.tsv</code>, MaxQuant <code>proteinGroups.txt</code>, Spectronaut, FragPipe, AlphaDIA</td><td>The matching tool importer</td><td>Protein quant</td></tr>
+  <tr><td>limma, MSstats, DEqMS or DESeq2 results</td><td>The matching tool importer (choose the contrast)</td><td>Differential abundance</td></tr>
+  <tr><td>CurveCurator <code>curves.txt</code></td><td>CurveCurator (enter compound and doses)</td><td>Dose response</td></tr>
+  <tr><td>TPP-TR result table</td><td>TPP-TR</td><td>Thermal shift</td></tr>
+  <tr><td>MaxQuant <code>&lt;modification&gt;Sites.txt</code></td><td>MaxQuant site table</td><td>PTM site quant</td></tr>
+  <tr><td>MAGeCK <code>gene_summary.txt</code></td><td>MAGeCK RRA</td><td>CRISPR gene summary</td></tr>
+  <tr><td>Any other table</td><td>Custom table with a column mapping</td><td>A dataset kind you choose</td></tr>
+</table>
+<p>The steps are always the same: create or version the experiment → describe samples and contrasts → upload on the
+Files tab → <b>Import…</b> → review → publish the release → publish the version → analyse. If raw files are
+uploaded instead, <b>Launch pipeline</b> runs the processing and imports the outputs automatically.</p>
+
+<h2>8. Good practice and limits</h2>
+<ul>
+  <li><b>Enter doses and contrasts exactly as run.</b> A wrong dose scale shifts every pEC50; a reversed contrast flips
+    every fold change.</li>
+  <li><b>Thresholds are for display.</b> Changing the volcano cut-offs changes the colours, not the statistics.</li>
+  <li><b>Replicates matter.</b> With three per group, modest changes will not reach significance; absence of a hit is
+    not proof of no effect.</li>
+  <li><b>Different cell lines are different experiments.</b> Compare across them for hypotheses, then confirm in
+    matched conditions.</li>
+  <li><b>Nothing is imputed or filtered silently.</b> Any transformation appears in the release's provenance; read it
+    before drawing conclusions.</li>
+  <li><b>This guide uses synthetic data.</b> Identifiers beginning <code>SYNP</code> / <code>SYNTH</code> are
+    invented. Named proteins (AKT1, PARP1, TP53…) carry synthetic values and say nothing about real compounds.</li>
+  <li><b>External services.</b> The 3D-model panel on protein pages fetches from AlphaFold DB and shows an error when
+    that service is unreachable from your network; all other features work offline.</li>
+</ul>
+
+</body>
+</html>

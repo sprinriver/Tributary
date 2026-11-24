@@ -263,6 +263,8 @@ docs              spec, architecture, plan, progress, ADRs
 - [`docs/PLAN.md`](docs/PLAN.md), [`docs/PROGRESS.md`](docs/PROGRESS.md): phases and what was built
 - [`docs/adr/`](docs/adr): architecture decision records
 - [`docs/BUILD_KIT.md`](docs/BUILD_KIT.md): how this repo is built with Claude Code (prompts, guardrails, phase loop)
+- [`artifacts/guide/Tributary-Data-and-Insights-Guide.pdf`](artifacts/guide/Tributary-Data-and-Insights-Guide.pdf):
+  running the app, the demo datasets explained, and a step-by-step guide to generating insights (with screenshots)
 
 ## Contributing
 - One phase of `docs/PLAN.md` per change. Commit the failing tests first, then the implementation.
