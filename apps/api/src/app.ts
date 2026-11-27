@@ -39,6 +39,7 @@ import { registerOnboardingRoutes } from './routes/onboarding.ts';
 import { registerEnrichmentRoutes } from './routes/enrichment.ts';
 import { registerRateLimit } from './rate-limit.ts';
 import { registerChemRoutes } from './routes/chem.ts';
+import { registerReferenceRoutes } from './routes/reference.ts';
 import { registerInteractionRoutes } from './routes/interactions.ts';
 import { registerEvidenceRoutes } from './routes/evidence.ts';
 import { registerPtmRoutes } from './routes/ptm.ts';
@@ -181,6 +182,7 @@ export function buildApp(options: AppOptions = {}): FastifyInstance {
     registerPtmRoutes(scoped, { db, config, fetch: fetchImpl });
     registerEvidenceRoutes(scoped, { db, config, fetch: fetchImpl });
     registerProteinModelRoutes(scoped, { config, fetch: fetchImpl });
+    registerReferenceRoutes(scoped, { db, config, fetch: fetchImpl });
     registerNotificationRoutes(scoped, { db, config, fetch: fetchImpl });
     registerEmailRoutes(scoped, { db, config });
     registerScimRoutes(scoped, { db, config });

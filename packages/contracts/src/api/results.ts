@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TimestampSchema } from '../common.ts';
 import { DatasetKindSchema } from '../datasets/index.ts';
 
 // SPEC M8 — experiment results, compound and protein pages, contrast comparison.
@@ -83,10 +84,41 @@ export const ProteinPageSchema = z
     accession: z.string(),
     gene_symbol: z.string().nullable(),
     annotations: z.array(
-      z.object({ key: z.string(), value: z.string().nullable(), family: z.string().nullable() }),
+      z.object({
+        key: z.string(),
+        value: z.string().nullable(),
+        family: z.string().nullable(),
+        /** External source of the fact (e.g. "UniProt"); null for curated or seeded annotations. */
+        source: z.string().nullable(),
+        /** The source's release the fact came from, e.g. UniProt "2026_04". */
+        source_release: z.string().nullable(),
+        retrieved_at: TimestampSchema.nullable(),
+      }),
     ),
   })
   .meta({ id: 'ProteinPage' });
+
+/** A UniProt refresh takes no options: it asks about every accession in published results. */
+export const UniprotRefreshBodySchema = z.strictObject({}).meta({ id: 'UniprotRefreshBody' });
+
+/** Result of a UniProt refresh (public annotation plan, stage 1). */
+export const UniprotRefreshResultSchema = z
+  .object({
+    source: z.literal('UniProt'),
+    /** UniProt release named by the service (X-UniProt-Release), e.g. "2026_04". */
+    release: z.string(),
+    release_date: z.string().nullable(),
+    /** Accessions sent to UniProt (UniProt format only). */
+    requested: z.int().nonnegative(),
+    /** Accessions whose facts were stored. */
+    updated: z.int().nonnegative(),
+    /** Requested accessions UniProt did not return (obsolete, merged or unknown): reported, never guessed. */
+    not_found: z.array(z.string()),
+    /** Identifiers in published results that are not UniProt accessions (e.g. synthetic IDs): never sent. */
+    skipped: z.int().nonnegative(),
+  })
+  .meta({ id: 'UniprotRefreshResult' });
+export type UniprotRefreshResult = z.infer<typeof UniprotRefreshResultSchema>;
 
 export const CompareBodySchema = z
   .strictObject({

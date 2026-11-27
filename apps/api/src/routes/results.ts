@@ -146,15 +146,24 @@ export function registerResultRoutes(
     // Reference annotations are tenant-wide (not program data).
     const rows = await db
       .selectFrom('target_annotation')
-      .select(['gene_symbol', 'key', 'value', 'family'])
+      .select(['gene_symbol', 'key', 'value', 'family', 'source', 'source_release', 'retrieved_at'])
       .where('uniprot_accession', '=', request.params.id)
       .where('deleted_at', 'is', null)
       .orderBy('key')
       .execute();
+    // The curated symbol first, then the one from a public source (e.g. UniProt's primary gene name).
+    const symbol = rows.find((r) => r.gene_symbol && !r.source) ?? rows.find((r) => r.gene_symbol);
     return respond(ProteinPageSchema, {
       accession: request.params.id,
-      gene_symbol: rows.find((r) => r.gene_symbol)?.gene_symbol ?? null,
-      annotations: rows.map(({ key, value, family }) => ({ key, value, family })),
+      gene_symbol: symbol?.gene_symbol ?? null,
+      annotations: rows.map(({ key, value, family, source, source_release, retrieved_at }) => ({
+        key,
+        value,
+        family,
+        source,
+        source_release,
+        retrieved_at: retrieved_at ? new Date(retrieved_at).toISOString() : null,
+      })),
     });
   });
 

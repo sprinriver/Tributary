@@ -23,6 +23,7 @@ import { EMAIL_ROUTES } from './routes-email.ts';
 import { USAGE_ROUTES } from './routes-usage.ts';
 import { NOTIFICATION_ROUTES } from './routes-notifications.ts';
 import { PROTEIN_MODEL_ROUTES } from './routes-protein-model.ts';
+import { REFERENCE_ROUTES } from './routes-reference.ts';
 import { QC_ROUTES } from './routes-qc.ts';
 import { VIEW_ROUTES } from './routes-views.ts';
 import type { ApiRoute } from './route.ts';
@@ -310,6 +311,7 @@ export const API_ROUTES = {
   ...QC_ROUTES,
   ...CHEM_ROUTES,
   ...PROTEIN_MODEL_ROUTES,
+  ...REFERENCE_ROUTES,
   ...NOTIFICATION_ROUTES,
   ...EMAIL_ROUTES,
   ...USAGE_ROUTES,

@@ -4,6 +4,7 @@ import { api, buildUrl } from '../api.ts';
 import { RequireAuth } from '../components/Layout.tsx';
 import { ErrorMessage } from '../components/ui.tsx';
 import { AiSettingsCard } from './AiSettings.tsx';
+import { ReferenceDataCard } from './ReferenceData.tsx';
 
 const TONE = { ok: 'ok', degraded: 'warning', down: 'error' } as const;
 const LABEL = { ok: 'OK', degraded: 'Degraded', down: 'Down' } as const;
@@ -97,6 +98,7 @@ function Health() {
               Runner credentials and queues are set in the deployment (environment and Terraform), not here.
             </p>
           </section>
+          <ReferenceDataCard />
           <AiSettingsCard />
         </>
       )}

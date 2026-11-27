@@ -2,7 +2,17 @@
 #   filename:  protein_page.json
 
 from __future__ import annotations
-from pydantic import BaseModel, ConfigDict, RootModel
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
+from typing import Annotated
+
+
+class RetrievedAt(RootModel[AwareDatetime]):
+    root: Annotated[
+        AwareDatetime,
+        Field(
+            pattern="^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+        ),
+    ]
 
 
 class Annotation(BaseModel):
@@ -12,6 +22,9 @@ class Annotation(BaseModel):
     key: str
     value: str | None
     family: str | None
+    source: str | None
+    source_release: str | None
+    retrieved_at: RetrievedAt | None
 
 
 class ProteinPage(BaseModel):

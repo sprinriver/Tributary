@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$ref": "#/$defs/UniprotRefreshResult",
+  "$defs": {
+    "UniprotRefreshResult": {
+      "type": "object",
+      "properties": {
+        "source": {
+          "type": "string",
+          "const": "UniProt"
+        },
+        "release": {
+          "type": "string"
+        },
+        "release_date": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "requested": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "updated": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "not_found": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "skipped": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "source",
+        "release",
+        "release_date",
+        "requested",
+        "updated",
+        "not_found",
+        "skipped"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

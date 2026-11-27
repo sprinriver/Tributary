@@ -18,15 +18,23 @@ const entry = (acc: string, gene: string, name: string, fn: string, locations: s
   genes: [{ geneName: { value: gene } }],
   comments: [
     { commentType: 'FUNCTION', texts: [{ value: fn }] },
-    { commentType: 'SUBCELLULAR LOCATION', subcellularLocations: locations.map((value) => ({ location: { value } })) },
+    {
+      commentType: 'SUBCELLULAR LOCATION',
+      subcellularLocations: locations.map((value) => ({ location: { value } })),
+    },
   ],
 });
 const KNOWN: Record<string, Json> = {
-  P31749: entry('P31749', 'AKT1', 'RAC-alpha serine/threonine-protein kinase', 'Kinase in growth signalling.', [
-    'Cytoplasm',
+  P31749: entry(
+    'P31749',
+    'AKT1',
+    'RAC-alpha serine/threonine-protein kinase',
+    'Kinase in growth signalling.',
+    ['Cytoplasm', 'Nucleus'],
+  ),
+  P09874: entry('P09874', 'PARP1', 'Poly [ADP-ribose] polymerase 1', 'Repairs DNA strand breaks.', [
     'Nucleus',
   ]),
-  P09874: entry('P09874', 'PARP1', 'Poly [ADP-ribose] polymerase 1', 'Repairs DNA strand breaks.', ['Nucleus']),
 };
 
 function uniprotStub() {
@@ -71,7 +79,15 @@ describe('protein facts from UniProt (public annotation plan, stage 1)', () => {
   const uniprotRows = (deleted: boolean) =>
     t.db
       .selectFrom('target_annotation')
-      .select(['uniprot_accession', 'gene_symbol', 'key', 'value', 'source', 'source_release', 'retrieved_at'])
+      .select([
+        'uniprot_accession',
+        'gene_symbol',
+        'key',
+        'value',
+        'source',
+        'source_release',
+        'retrieved_at',
+      ])
       .where('source', '=', 'UniProt')
       .where('deleted_at', deleted ? 'is not' : 'is', null)
       .orderBy('uniprot_accession')
@@ -125,7 +141,9 @@ describe('protein facts from UniProt (public annotation plan, stage 1)', () => {
       ['protein_name', 'RAC-alpha serine/threonine-protein kinase'],
       ['subcellular_location', 'Cytoplasm; Nucleus'],
     ]);
-    expect(akt1.every((r) => r.gene_symbol === 'AKT1' && r.source_release === '2026_04' && r.retrieved_at)).toBe(true);
+    expect(
+      akt1.every((r) => r.gene_symbol === 'AKT1' && r.source_release === '2026_04' && r.retrieved_at),
+    ).toBe(true);
 
     const audit = await t.db
       .selectFrom('audit_log')

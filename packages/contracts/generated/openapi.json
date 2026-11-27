@@ -13308,6 +13308,105 @@
         }
       }
     },
+    "/v1/admin/reference/uniprot": {
+      "post": {
+        "operationId": "refreshUniprot",
+        "summary": "Refresh protein facts from UniProt for the accessions in published results; stores them with the UniProt release (system admin)",
+        "parameters": [
+          {
+            "name": "X-Change-Reason",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Recorded in the audit log"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UniprotRefreshBody"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UniprotRefreshResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/v1/notification-routes": {
       "get": {
         "operationId": "listNotificationRoutes",
@@ -24963,12 +25062,39 @@
                     "string",
                     "null"
                   ]
+                },
+                "source": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "source_release": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "retrieved_at": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
                 }
               },
               "required": [
                 "key",
                 "value",
-                "family"
+                "family",
+                "source",
+                "source_release",
+                "retrieved_at"
               ],
               "additionalProperties": false
             }
@@ -30738,6 +30864,60 @@
         },
         "required": [
           "items"
+        ],
+        "additionalProperties": false
+      },
+      "UniprotRefreshBody": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "UniprotRefreshResult": {
+        "type": "object",
+        "properties": {
+          "source": {
+            "type": "string",
+            "const": "UniProt"
+          },
+          "release": {
+            "type": "string"
+          },
+          "release_date": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "requested": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "updated": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "not_found": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "skipped": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "source",
+          "release",
+          "release_date",
+          "requested",
+          "updated",
+          "not_found",
+          "skipped"
         ],
         "additionalProperties": false
       },

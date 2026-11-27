@@ -2037,3 +2037,28 @@ Entry template:
   typecheck and the remaining API, query and compute suites. Needs CI (Linux) on the pull request before DEMO-01
   is flipped to passing.
 - Dependencies added: none.
+
+## 2026-11-27 — Public annotation plan, stage 1 (UniProt) + AlphaFold fix — prototype on a branch
+- Scope agreed with the user: fix the protein 3D viewer and add stage 1 of the public annotation plan; built on
+  `feat/uniprot-annotations` as a prototype until the lead approves the plan.
+- STRUC-04 (bug fix): protein pages showed "AlphaFold DB answered HTTP 403" for every real accession. Two causes,
+  both confirmed against the live service: AlphaFold DB refuses Node's default User-Agent, and its API on
+  www.alphafold.ebi.ac.uk links model files on alphafold.ebi.ac.uk, which the same-host check refused. Outbound
+  requests now send `Tributary/2 (…)` (`apps/api/src/outbound.ts`) and a leading `www.` is not treated as another
+  host; look-alike hosts are still refused.
+- UNI-01/02: `POST /v1/admin/reference/uniprot` (system admin, audited) collects the protein accessions of the
+  latest published release of every experiment dataset kind with `protein_ids`, plus annotated accessions; sends
+  only UniProt-format accessions (synthetic and in-house IDs never leave); fetches name, function, subcellular
+  location, organism and gene from `/uniprotkb/accessions` in batches of 100; stores them in `target_annotation`
+  with `source`, `source_release` (X-UniProt-Release) and `retrieved_at` (migration 0031). A refresh soft-deletes
+  the previous UniProt rows of the accessions it asked about. Unknown accessions are reported, not guessed. The
+  protein page shows an "About this protein" panel with the release, date and CC BY 4.0 attribution (long function
+  text collapsed); the Health page has a "Reference data" card with the refresh button.
+- Also: `packages/db/scripts/gen-types.ts` runs kysely-codegen through its entry script (same Windows `.cmd` shim
+  problem as vitest-pattern), so `pnpm gen` works on Windows. ARCHITECTURE §9 records runtime data licences.
+- Evidence: `pnpm run test:api "STRUC-0|UNI-0"` 10 passed; related API tests (PTM-03, RES-0x, STRUC, UNI) 28
+  passed; `pnpm run test:contracts` 92, `test:db` 17, `test:web` 61 passed; `pnpm run lint` ✓. Live check against
+  rest.uniprot.org (release 2026_04): 34 of 34 real accessions stored, 124 synthetic IDs not sent; AKT1's AlphaFold
+  model renders coloured by pLDDT. Screenshots in `artifacts/phase-uniprot/`.
+- Not run: full `pnpm check` (stops on the known Windows-only DS-02 importer failures); API typecheck runs in CI.
+- Dependencies added: none.

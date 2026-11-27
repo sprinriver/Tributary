@@ -904,6 +904,9 @@ export interface TargetAnnotation {
   gene_symbol: string | null;
   id: Generated<string>;
   key: string;
+  retrieved_at: Timestamp | null;
+  source: string | null;
+  source_release: string | null;
   tenant_id: string;
   uniprot_accession: string;
   updated_at: Generated<Timestamp>;

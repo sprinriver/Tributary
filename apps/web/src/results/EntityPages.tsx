@@ -1,4 +1,5 @@
 import { ProteinModelPanel } from '../structure/ProteinModelPanel.tsx';
+import { ProteinFactsSection } from './ProteinFacts.tsx';
 import { ProteinSitesSection } from './SitesSection.tsx';
 import { TargetEvidenceSection } from './TargetEvidenceSection.tsx';
 import { CompoundStructurePanel } from '../chem/Structure.tsx';
@@ -116,6 +117,7 @@ export function ProteinPage() {
         itemKey={id}
         {...(protein.data?.gene_symbol ? { label: protein.data.gene_symbol } : {})}
       />
+      <ProteinFactsSection annotations={protein.data?.annotations ?? []} />
       <Section title="3D model">
         <ProteinModelPanel accession={id} />
       </Section>
@@ -124,7 +126,9 @@ export function ProteinPage() {
         <Table
           label="Annotations"
           head={['key', 'value', 'family']}
-          rows={(protein.data?.annotations ?? []).map((a) => [a.key, a.value, a.family])}
+          rows={(protein.data?.annotations ?? [])
+            .filter((a) => !a.source)
+            .map((a) => [a.key, a.value, a.family])}
         />
       </Section>
       <Section title="Measured in">

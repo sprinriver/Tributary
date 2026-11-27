@@ -11,9 +11,12 @@ try {
   const db = createDb(testDb.url);
   await migrateToLatest(db);
   await db.destroy();
+  // The package's own CLI script, run with this Node: `.bin/kysely-codegen` is a `.cmd` shim on Windows, which
+  // spawnSync cannot start without a shell.
   const result = spawnSync(
-    resolve(root, 'node_modules/.bin/kysely-codegen'),
+    process.execPath,
     [
+      resolve(root, 'node_modules/kysely-codegen/dist/cli/bin.js'),
       '--dialect=postgres',
       `--url=${testDb.url}`,
       '--out-file=src/generated/db.ts',

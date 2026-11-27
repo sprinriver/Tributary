@@ -5,6 +5,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { ApiConfig } from '../config.ts';
 import { HttpError, notFound } from '../errors.ts';
+import { outboundHeaders } from '../outbound.ts';
 
 /** UniProt accession (with an optional isoform suffix): the only identifiers sent to AlphaFold DB. */
 const UNIPROT = /^([OPQ][0-9][A-Z0-9]{3}[0-9]|[A-NR-Z][0-9]([A-Z][A-Z0-9]{2}[0-9]){1,2})(-\d+)?$/;
@@ -32,6 +33,9 @@ export function confidenceMetric(cif: string): string | null {
   if (!/_ma_qa_metric\.mode/.test(cif)) return null;
   return /\bplddt\b/i.test(cif) ? 'pLDDT' : 'local QA metric';
 }
+
+const bareHost = (host: string) => host.toLowerCase().replace(/^www\./, '');
+const sameHost = (a: string, b: string) => bareHost(a) === bareHost(b);
 
 export function checkAccession(id: string): void {
   if (!LOCAL_ID.test(id)) throw new HttpError(400, 'invalid_accession', 'Not a protein accession.', 'id');
@@ -67,6 +71,7 @@ async function alphafold(config: ApiConfig, fetchImpl: typeof fetch, id: string)
   let res: Response;
   try {
     res = await fetchImpl(`${base}/api/prediction/${id}`, {
+      headers: outboundHeaders({ accept: 'application/json' }),
       signal: AbortSignal.timeout(20_000),
       redirect: 'error',
     });
@@ -79,8 +84,9 @@ async function alphafold(config: ApiConfig, fetchImpl: typeof fetch, id: string)
   const entry = Array.isArray(entries) ? entries[0] : undefined;
   if (!entry || typeof entry.cifUrl !== 'string') return null;
   const cifUrl = entry.cifUrl;
-  // Only files on the configured AlphaFold DB host are fetched (the API never follows a link elsewhere).
-  if (new URL(cifUrl, base).host !== new URL(base).host)
+  // Only files on the configured AlphaFold DB host are fetched (the API never follows a link elsewhere). The live
+  // API on www.alphafold.ebi.ac.uk links files on alphafold.ebi.ac.uk, so a leading "www." is not a different host.
+  if (!sameHost(new URL(cifUrl, base).host, new URL(base).host))
     throw new HttpError(502, 'untrusted_model_url', 'AlphaFold DB pointed to a file on another host.');
   return {
     model: {
@@ -98,6 +104,7 @@ async function alphafold(config: ApiConfig, fetchImpl: typeof fetch, id: string)
       const cached = cache.get(cifUrl);
       if (cached !== undefined) return cached;
       const file = await fetchImpl(new URL(cifUrl, base), {
+        headers: outboundHeaders(),
         signal: AbortSignal.timeout(60_000),
         redirect: 'error', // a redirect could leave the checked host
       }).catch(() => {

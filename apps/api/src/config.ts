@@ -32,6 +32,8 @@ export interface ApiConfig {
   olsUrl: string;
   /** Protein 3D models: a directory of <accession>.cif (empty: none) and AlphaFold DB's base URL (empty: off). */
   proteinModels: { dir: string; alphafoldUrl: string };
+  /** UniProt REST API base URL for protein facts (UNIPROT_URL; empty: off). */
+  uniprotUrl: string;
   /** Hosts notification routes may post to besides Slack's and Teams' own (NOTIFY_EXTRA_HOSTS, comma-separated). */
   notifyExtraHosts: string[];
   /** Personal email (Phase 34): EMAIL_TRANSPORT ses | smtp | none (default none: emails are not queued). */
@@ -210,6 +212,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ApiConfig {
         (production ? '' : resolve(import.meta.dirname, '../../../fixtures/structures')),
       alphafoldUrl: env.ALPHAFOLD_URL ?? 'https://www.alphafold.ebi.ac.uk',
     },
+    uniprotUrl: env.UNIPROT_URL ?? 'https://rest.uniprot.org',
     sessionTtlHours: Number(env.SESSION_TTL_HOURS ?? 12),
     // On in production; off elsewhere unless set (tests and local e2e send bursts from one address).
     rateLimit: {

@@ -255,6 +255,12 @@ InCHlib (no licence), Soda Core v4 (Elastic 2.0), OpenMetadata ingestion (Collat
 (BUSL-1.1; its README also objects to AI agents reading its code — keep it out of Claude Code entirely),
 MinIO CE (AGPL, unmaintained).
 
+**Public data fetched at run time (attribution shown in the UI next to the data):** AlphaFold DB (CC BY 4.0;
+protein 3D models, STRUC-01), UniProt (CC BY 4.0, https://www.uniprot.org/help/license; protein facts, UNI-01,
+stored with the UniProt release). Only public identifiers are sent; in-house compound structures never are.
+Share-alike data (ChEMBL CC BY-SA 3.0, Guide to Pharmacology CC BY-SA 4.0) needs a licence review before use;
+sources with non-commercial terms are not used.
+
 **Proprietary tools — ingest outputs only, never bundle:** DIA-NN (academic edition is non-profit only),
 Spectronaut, MaxQuant. Have counsel confirm the container-separation pattern before the first sale.
 
