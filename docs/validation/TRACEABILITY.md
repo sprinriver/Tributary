@@ -1,8 +1,8 @@
 # Traceability matrix
 
-Generated 2026-11-23 by `pnpm run validation:pack` from `docs/features.json` and the test titles. Do not edit by hand.
+Generated 2026-11-27 by `pnpm run validation:pack` from `docs/features.json` and the test titles. Do not edit by hand.
 
-174 requirements · 173 passing · 702 automated tests linked.
+175 requirements · 173 passing · 706 automated tests linked.
 A requirement is verified by the automated tests whose titles start with its ID (run by `pnpm check` and
 `pnpm e2e` in CI on every change), or by the command or document check named in "Verify". Evidence of a run is
 the CI result for the release's commit.
@@ -183,3 +183,4 @@ the CI result for the release's commit.
 | EVD-03 | 51 | Compound × protein evidence matrix for one program: cells with the compound page's lines of evidence, best pEC50, thermal direction and annotation; limits stated; no combined score | automated test | `pnpm run test:api EVD-03` | apps/api/src/evidence-matrix.test.ts › EVD-03: compounds as columns, proteins with a measured line as rows, cells with each line<br>apps/api/src/evidence-matrix.test.ts › EVD-03: thresholds change the cells; limits are stated; only readable programs | passing |
 | EVD-04 | 51 | Analysis → Target evidence page: the matrix with a legend, compound links and caveats | automated test | `pnpm e2e EVD-04` | e2e/evidence-matrix.spec.ts › EVD-04: Analysis → Target evidence shows the compound × protein matrix with a legend and compound links | passing |
 | OPS-10 | 40 | Files outside apps/web that the web build reads (the CSP policy) reach the Docker build context of the deploy images; Terraform code stays out | automated test | `pnpm run test:scripts` | scripts/dockerignore.test.mjs › OPS-10: files the web build reads from outside apps/web are in the Docker build context<br>scripts/dockerignore.test.mjs › OPS-10: the rest of the Terraform code stays out of the build context | passing |
+| DEMO-01 | demo | One-command demo data loader: pnpm demo:data imports and publishes the synthetic demo datasets (limma, DIA-NN, CurveCurator) through the API as a contributor; idempotent; local development only | automated test | `pnpm run test:api DEMO-01` | apps/api/src/demo-data.test.ts › DEMO-01: a viewer cannot load demo data<br>apps/api/src/demo-data.test.ts › DEMO-01: differential releases carry the experiment contrast (numerator vs denominator)<br>apps/api/src/demo-data.test.ts › DEMO-01: loads every demo dataset as a published release on a new published version<br>apps/api/src/demo-data.test.ts › DEMO-01: running it again changes nothing | not yet implemented |
