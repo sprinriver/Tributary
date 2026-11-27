@@ -98,3 +98,48 @@ describe('protein 3D models', () => {
     expect((await t.app.inject({ method: 'GET', url: '/v1/proteins/P04637/model' })).statusCode).toBe(401);
   });
 });
+
+// AlphaFold DB answers 403 to Node's default User-Agent, and its API on www.alphafold.ebi.ac.uk links files on
+// alphafold.ebi.ac.uk (checked against the live service, release 2026-11).
+describe('protein 3D models from the live AlphaFold DB layout', () => {
+  let t: TestApi;
+  let token: string;
+  const WWW = 'https://www.afdb.test';
+  const BARE = 'https://afdb.test';
+  const agents: (string | null)[] = [];
+  const fetchImpl = (async (input: string | URL | Request, init?: RequestInit) => {
+    const url = String(input instanceof Request ? input.url : input);
+    const agent = new Headers(init?.headers).get('user-agent');
+    agents.push(agent);
+    if (!agent) return new Response('Forbidden', { status: 403 });
+    if (url === `${WWW}/api/prediction/P04637`)
+      return Response.json([{ entryId: 'AF-P04637-F1', cifUrl: `${BARE}/files/AF-P04637-F1-model_v6.cif` }]);
+    if (url === `${BARE}/files/AF-P04637-F1-model_v6.cif`) return new Response(CIF);
+    if (url === `${WWW}/api/prediction/P12345`)
+      return Response.json([{ entryId: 'AF-P12345-F1', cifUrl: 'https://wwwafdb.test/x.cif' }]);
+    return new Response('[]', { status: 404 });
+  }) as typeof fetch;
+
+  beforeAll(async () => {
+    t = await startTestApi({ fetch: fetchImpl, config: { proteinModels: { dir: '', alphafoldUrl: WWW } } });
+    const program = await t.program('STW');
+    token = (await t.user('stw-user', { [program]: 'viewer' })).token;
+  }, 300_000);
+  afterAll(() => t.close());
+
+  it('STRUC-04: AlphaFold DB requests identify the client with a User-Agent', async () => {
+    const res = await t.call(token, { method: 'GET', url: '/v1/proteins/P04637/model' });
+    expect(res.statusCode, res.body).toBe(200);
+    expect(agents.length).toBeGreaterThan(0);
+    expect(agents.every((a) => a?.startsWith('Tributary/'))).toBe(true);
+  });
+
+  it('STRUC-04: a www. base URL accepts files on the same host without www.; other hosts are still refused', async () => {
+    const file = await t.call(token, { method: 'GET', url: '/v1/proteins/P04637/model.cif' });
+    expect(file.statusCode, file.body).toBe(200);
+    expect(file.body).toBe(CIF);
+    const lookalike = await t.call(token, { method: 'GET', url: '/v1/proteins/P12345/model.cif' });
+    expect(lookalike.statusCode).toBe(502);
+    expect(lookalike.json()).toMatchObject({ code: 'untrusted_model_url' });
+  });
+});
