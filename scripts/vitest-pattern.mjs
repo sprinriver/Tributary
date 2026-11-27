@@ -9,12 +9,14 @@ if (!pkgDir) {
   process.exit(2);
 }
 const cwd = resolve(import.meta.dirname, '..', pkgDir);
-const bin = join(cwd, 'node_modules', '.bin', 'vitest');
-if (!existsSync(bin)) {
+// The package's own entry script, run with this Node: `.bin/vitest` is a `.cmd` shim on Windows, which
+// spawnSync cannot start without a shell.
+const entry = join(cwd, 'node_modules', 'vitest', 'vitest.mjs');
+if (!existsSync(entry)) {
   console.error(`vitest is not installed in ${pkgDir}; run \`pnpm run bootstrap\` first.`);
   process.exit(2);
 }
 const pattern = patternParts.join(' ');
 const args = ['run', ...(pattern ? ['-t', pattern] : [])];
-const result = spawnSync(bin, args, { cwd, stdio: 'inherit' });
+const result = spawnSync(process.execPath, [entry, ...args], { cwd, stdio: 'inherit' });
 process.exit(result.status ?? 1);

@@ -86,6 +86,15 @@ pnpm db:seed                         # synthetic demo corpus: 2 programs, 12 exp
 The seed loads only synthetic data from `fixtures/` (written by `pnpm synth`). Running it again is safe; the
 search index is rebuilt each time.
 
+The seed registers experiments but no dataset releases, so Explore and the charts start empty. Once `pnpm dev`
+is running (next section), load the demo datasets with one command:
+```bash
+pnpm demo:data                       # imports + publishes 4 demo datasets through the API (safe to re-run)
+```
+It publishes limma results for ONC-DIA-05 and IMM-DIA-06, the DIA-NN protein matrix for ONC-DIA-05 and the
+CurveCurator dose-response fits for ONC-DIA-01, each on a new published experiment version. The work is done by a
+local "Demo loader" user and is audited like any other import. Local development only.
+
 ## Running the app
 ```bash
 pnpm dev
@@ -108,7 +117,7 @@ Sign in with a local Keycloak user (password = username):
 
 Things to try:
 1. Experiments → open `ONC-DIA-01`.
-2. Explore → pick a release, filter and chart it.
+2. Explore → pick a release, filter and chart it (run `pnpm demo:data` first so there are releases).
 3. Press **⌘K** (Ctrl+K) and search `HEK293`.
 4. As `admin`: Pipelines, and the Audit log.
 
@@ -191,6 +200,7 @@ docs              spec, architecture, plan, progress, ADRs
 | Regenerate OpenAPI, JSON Schema, Python models and Kysely types after a contract or migration change | `pnpm gen` |
 | Add a migration | new folder `packages/db/migrations/NNNN_name/` with `up.sql` and `down.sql` (never edit a committed one) |
 | Regenerate the synthetic corpus | `pnpm synth` |
+| Load the demo datasets (releases for Explore, charts and results pages) | `pnpm demo:data` (needs `pnpm dev`) |
 | Benchmark the query service | `pnpm bench:query` |
 | Check dependency licences | `pnpm run licence:scan` |
 | Score the assistant on the golden questions | `pnpm eval:ai` |
@@ -253,6 +263,8 @@ docs              spec, architecture, plan, progress, ADRs
 - [`docs/PLAN.md`](docs/PLAN.md), [`docs/PROGRESS.md`](docs/PROGRESS.md): phases and what was built
 - [`docs/adr/`](docs/adr): architecture decision records
 - [`docs/BUILD_KIT.md`](docs/BUILD_KIT.md): how this repo is built with Claude Code (prompts, guardrails, phase loop)
+- [`artifacts/guide/Tributary-Data-and-Insights-Guide.pdf`](artifacts/guide/Tributary-Data-and-Insights-Guide.pdf):
+  running the app, the demo datasets explained, and a step-by-step guide to generating insights (with screenshots)
 
 ## Contributing
 - One phase of `docs/PLAN.md` per change. Commit the failing tests first, then the implementation.

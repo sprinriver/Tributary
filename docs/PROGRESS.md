@@ -2013,3 +2013,27 @@ Entry template:
   e2e (ADM, AUD, REG, SCIM, USE, SUP, PIPE-06, A11Y, NOTIF) passed except ADM-03, whose AI-provider assertion needs
   the stub provider that a hand-started dev server does not set (unrelated); `pnpm check` ✓.
 - Dependencies added: none.
+
+## 2026-11-24 — DEMO-01: One-command demo data loader — implemented, `pnpm check` not green on this machine
+- Why: `pnpm db:seed` registers experiments but no dataset releases, so on a fresh machine Explore, charts and
+  results pages are empty until someone imports files by hand.
+- Built: `apps/api/src/demo/loader.ts` imports `fixtures/experiments/*` tool outputs into their seeded experiments
+  through the API's own routes (upload → QC → import → publish release → publish a new experiment version), as the
+  caller, so permissions, contract rules and audit are those of the normal endpoints. Datasets: limma for ONC-DIA-05
+  and IMM-DIA-06 (with the experiment's contrast), the DIA-NN matrix for ONC-DIA-05, CurveCurator for ONC-DIA-01
+  (CPD-000001; doses 0, 1, 10, 100, 1000, 10000 × 1e-9 M, as in `e2e/data.ts`). Idempotent: a dataset with a
+  published release for its experiment is skipped. `pnpm demo:data` (`apps/api/scripts/demo-data.ts`) runs it
+  against the live API as a local "Demo loader" contributor with a one-hour token that it revokes afterwards;
+  refuses NODE_ENV=production. README setup and common tasks updated.
+- Also: `scripts/vitest-pattern.mjs` now runs vitest's entry script with Node; on Windows the `.bin/vitest` `.cmd`
+  shim cannot be spawned without a shell, so every `pnpm run test:<pkg>` exited 1 silently. `.playwright-mcp/`
+  added to `.gitignore`.
+- Evidence: `pnpm run test:api DEMO-01` — 4 passed (viewer refused; 4 releases with 157/942/157/157 rows on
+  published v2 versions; contrast labels; second run changes nothing). `pnpm demo:data` against a local stack that
+  already had the datasets: all 4 reported "already published", nothing written. `pnpm run lint` ✓,
+  `pnpm run test:scripts` ✓.
+- Not green: `pnpm check` on Windows stops at 2 pre-existing failures in `packages/importers` (DS-02 diann_pg_matrix
+  golden hash mismatch; no importer, fixture or query file changed on this branch), so turbo skipped the API
+  typecheck and the remaining API, query and compute suites. Needs CI (Linux) on the pull request before DEMO-01
+  is flipped to passing.
+- Dependencies added: none.
